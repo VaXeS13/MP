@@ -39,7 +39,8 @@
       "Bash(git push:*)",
       "Bash(git merge:*)",
       "Bash(dotnet ef migrations remove:*)",
-      "mcp__linear-server__create_comment"
+      "mcp__linear-server__create_comment",
+      "Bash(git branch:*)"
     ],
     "deny": [],
     "ask": []
