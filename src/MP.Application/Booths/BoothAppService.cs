@@ -49,7 +49,6 @@ namespace MP.Booths
 
         public async Task<PagedResultDto<BoothListDto>> GetListAsync(GetBoothListDto input)
         {
-            // Use repository method with active rentals included
             var totalCount = await _boothRepository.GetCountAsync(input.Filter, input.Status);
             var items = await _boothRepository.GetListWithActiveRentalsAsync(
                 input.SkipCount,
@@ -58,7 +57,31 @@ namespace MP.Booths
                 input.Status
             );
 
+            // Get all active rentals
+            var activeRentals = await _rentalRepository.GetActiveRentalsAsync();
+            var today = DateTime.Today;
+
+            // Filter to only rentals active today and create a lookup by BoothId
+            var activeRentalsByBoothId = activeRentals
+                .Where(r => r.Period.StartDate <= today && r.Period.EndDate >= today)
+                .GroupBy(r => r.BoothId)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            // Map booths to DTOs
             var dtos = ObjectMapper.Map<List<Booth>, List<BoothListDto>>(items);
+
+            // Populate CurrentRental fields
+            foreach (var dto in dtos)
+            {
+                if (activeRentalsByBoothId.TryGetValue(dto.Id, out var rental))
+                {
+                    dto.CurrentRentalId = rental.Id;
+                    dto.CurrentRentalUserName = $"{rental.User.Name} {rental.User.Surname}";
+                    dto.CurrentRentalUserEmail = rental.User.Email;
+                    dto.CurrentRentalStartDate = rental.Period.StartDate;
+                    dto.CurrentRentalEndDate = rental.Period.EndDate;
+                }
+            }
 
             return new PagedResultDto<BoothListDto>(totalCount, dtos);
         }
@@ -153,7 +176,6 @@ namespace MP.Booths
 
         public async Task<PagedResultDto<BoothListDto>> GetMyBoothsAsync(GetBoothListDto input)
         {
-            // Use repository method with active rentals included
             var totalCount = await _boothRepository.GetCountAsync(input.Filter, input.Status);
             var items = await _boothRepository.GetListWithActiveRentalsAsync(
                 input.SkipCount,
@@ -162,7 +184,31 @@ namespace MP.Booths
                 input.Status
             );
 
+            // Get all active rentals
+            var activeRentals = await _rentalRepository.GetActiveRentalsAsync();
+            var today = DateTime.Today;
+
+            // Filter to only rentals active today and create a lookup by BoothId
+            var activeRentalsByBoothId = activeRentals
+                .Where(r => r.Period.StartDate <= today && r.Period.EndDate >= today)
+                .GroupBy(r => r.BoothId)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            // Map booths to DTOs
             var dtos = ObjectMapper.Map<List<Booth>, List<BoothListDto>>(items);
+
+            // Populate CurrentRental fields
+            foreach (var dto in dtos)
+            {
+                if (activeRentalsByBoothId.TryGetValue(dto.Id, out var rental))
+                {
+                    dto.CurrentRentalId = rental.Id;
+                    dto.CurrentRentalUserName = $"{rental.User.Name} {rental.User.Surname}";
+                    dto.CurrentRentalUserEmail = rental.User.Email;
+                    dto.CurrentRentalStartDate = rental.Period.StartDate;
+                    dto.CurrentRentalEndDate = rental.Period.EndDate;
+                }
+            }
 
             return new PagedResultDto<BoothListDto>(totalCount, dtos);
         }

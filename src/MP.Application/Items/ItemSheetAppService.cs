@@ -85,7 +85,10 @@ namespace MP.Items
 
         public async Task<ItemSheetDto> AddItemToSheetAsync(Guid sheetId, AddItemToSheetDto input)
         {
-            var sheet = await _itemSheetRepository.GetAsync(sheetId);
+            var sheet = await _itemSheetRepository.GetWithItemsAsync(sheetId);
+            if (sheet == null)
+                throw new Volo.Abp.BusinessException("ITEM_SHEET_NOT_FOUND");
+
             var item = await _itemRepository.GetAsync(input.ItemId);
 
             if (sheet.UserId != CurrentUser.Id.Value)
@@ -100,7 +103,9 @@ namespace MP.Items
         {
             var result = new BatchAddItemsResultDto();
 
-            var sheet = await _itemSheetRepository.GetAsync(input.SheetId);
+            var sheet = await _itemSheetRepository.GetWithItemsAsync(input.SheetId);
+            if (sheet == null)
+                throw new Volo.Abp.BusinessException("ITEM_SHEET_NOT_FOUND");
 
             if (sheet.UserId != CurrentUser.Id.Value)
                 throw new Volo.Abp.Authorization.AbpAuthorizationException("You can only modify your own sheets");
@@ -147,7 +152,10 @@ namespace MP.Items
 
         public async Task<ItemSheetDto> RemoveItemFromSheetAsync(Guid sheetId, Guid itemId)
         {
-            var sheet = await _itemSheetRepository.GetAsync(sheetId);
+            var sheet = await _itemSheetRepository.GetWithItemsAsync(sheetId);
+            if (sheet == null)
+                throw new Volo.Abp.BusinessException("ITEM_SHEET_NOT_FOUND");
+
             var item = await _itemRepository.GetAsync(itemId);
 
             if (sheet.UserId != CurrentUser.Id.Value)
@@ -160,7 +168,10 @@ namespace MP.Items
 
         public async Task<ItemSheetDto> AssignToRentalAsync(Guid sheetId, AssignSheetToRentalDto input)
         {
-            var sheet = await _itemSheetRepository.GetAsync(sheetId);
+            var sheet = await _itemSheetRepository.GetWithItemsAsync(sheetId);
+            if (sheet == null)
+                throw new Volo.Abp.BusinessException("ITEM_SHEET_NOT_FOUND");
+
             var rental = await _rentalRepository.GetAsync(input.RentalId);
 
             if (sheet.UserId != CurrentUser.Id.Value)
@@ -187,7 +198,9 @@ namespace MP.Items
 
         public async Task<ItemSheetDto> GenerateBarcodesAsync(Guid sheetId)
         {
-            var sheet = await _itemSheetRepository.GetAsync(sheetId);
+            var sheet = await _itemSheetRepository.GetWithItemsAsync(sheetId);
+            if (sheet == null)
+                throw new Volo.Abp.BusinessException("ITEM_SHEET_NOT_FOUND");
 
             if (sheet.UserId != CurrentUser.Id.Value)
                 throw new Volo.Abp.Authorization.AbpAuthorizationException("You can only modify your own sheets");

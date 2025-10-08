@@ -62,15 +62,9 @@ namespace MP.Booths
             CancellationToken cancellationToken = default)
         {
             var dbContext = await GetDbContextAsync();
-            var today = DateTime.Today;
 
             var query = dbContext.Booths
                 .AsNoTracking()
-                .Include(b => b.Rentals.Where(r =>
-                    (r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended) &&
-                    r.Period.StartDate <= today &&
-                    r.Period.EndDate >= today))
-                .ThenInclude(r => r.User)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(filter))

@@ -1333,7 +1333,7 @@ namespace MP.EntityFrameworkCore
 
                 // Relacja z Rental (opcjonalna)
                 b.HasOne(x => x.Rental)
-                    .WithMany()
+                    .WithMany(r => r.ItemSheets)
                     .HasForeignKey(x => x.RentalId)
                     .OnDelete(DeleteBehavior.SetNull);
 

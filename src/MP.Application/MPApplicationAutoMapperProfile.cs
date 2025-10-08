@@ -42,21 +42,17 @@ public class MPApplicationAutoMapperProfile : Profile
         CreateMap<UpdateBoothTypeDto, BoothType>();
 
         // RENTAL ITEMS MAPPINGS
+        // Note: BoothListDto CurrentRental* fields are populated in BoothAppService
         CreateMap<Booth, BoothListDto>()
                 .ForMember(dest => dest.StatusDisplayName,
                     opt => opt.MapFrom(src => GetBoothStatusDisplayName(src.Status)))
                 .ForMember(dest => dest.CurrencyDisplayName,
                     opt => opt.MapFrom(src => GetCurrencyDisplayName(src.Currency)))
-                .ForMember(dest => dest.CurrentRentalId,
-                    opt => opt.MapFrom(src => src.Rentals.FirstOrDefault() != null ? src.Rentals.FirstOrDefault()!.Id : (Guid?)null))
-                .ForMember(dest => dest.CurrentRentalUserName,
-                    opt => opt.MapFrom(src => src.Rentals.FirstOrDefault() != null ? $"{src.Rentals.FirstOrDefault()!.User.Name} {src.Rentals.FirstOrDefault()!.User.Surname}" : null))
-                .ForMember(dest => dest.CurrentRentalUserEmail,
-                    opt => opt.MapFrom(src => src.Rentals.FirstOrDefault() != null ? src.Rentals.FirstOrDefault()!.User.Email : null))
-                .ForMember(dest => dest.CurrentRentalStartDate,
-                    opt => opt.MapFrom(src => src.Rentals.FirstOrDefault() != null ? src.Rentals.FirstOrDefault()!.Period.StartDate : (DateTime?)null))
-                .ForMember(dest => dest.CurrentRentalEndDate,
-                    opt => opt.MapFrom(src => src.Rentals.FirstOrDefault() != null ? src.Rentals.FirstOrDefault()!.Period.EndDate : (DateTime?)null));
+                .ForMember(dest => dest.CurrentRentalId, opt => opt.Ignore())
+                .ForMember(dest => dest.CurrentRentalUserName, opt => opt.Ignore())
+                .ForMember(dest => dest.CurrentRentalUserEmail, opt => opt.Ignore())
+                .ForMember(dest => dest.CurrentRentalStartDate, opt => opt.Ignore())
+                .ForMember(dest => dest.CurrentRentalEndDate, opt => opt.Ignore());
 
         // NOWE MAPPINGI RENTAL
         CreateMap<Rental, RentalDto>()
@@ -141,21 +137,17 @@ public class MPApplicationAutoMapperProfile : Profile
         CreateMap<UpdateFloorPlanElementDto, FloorPlanElement>();
 
         // BOOTH MAPPINGS (ensure this is present for complete mapping)
+        // Note: BoothDto CurrentRental* fields are populated where needed
         CreateMap<Booth, BoothDto>()
             .ForMember(dest => dest.StatusDisplayName,
                 opt => opt.MapFrom(src => GetBoothStatusDisplayName(src.Status)))
             .ForMember(dest => dest.CurrencyDisplayName,
                 opt => opt.MapFrom(src => GetCurrencyDisplayName(src.Currency)))
-            .ForMember(dest => dest.CurrentRentalId,
-                opt => opt.MapFrom(src => src.Rentals.FirstOrDefault() != null ? src.Rentals.FirstOrDefault()!.Id : (Guid?)null))
-            .ForMember(dest => dest.CurrentRentalUserName,
-                opt => opt.MapFrom(src => src.Rentals.FirstOrDefault() != null ? $"{src.Rentals.FirstOrDefault()!.User.Name} {src.Rentals.FirstOrDefault()!.User.Surname}" : null))
-            .ForMember(dest => dest.CurrentRentalUserEmail,
-                opt => opt.MapFrom(src => src.Rentals.FirstOrDefault() != null ? src.Rentals.FirstOrDefault()!.User.Email : null))
-            .ForMember(dest => dest.CurrentRentalStartDate,
-                opt => opt.MapFrom(src => src.Rentals.FirstOrDefault() != null ? src.Rentals.FirstOrDefault()!.Period.StartDate : (DateTime?)null))
-            .ForMember(dest => dest.CurrentRentalEndDate,
-                opt => opt.MapFrom(src => src.Rentals.FirstOrDefault() != null ? src.Rentals.FirstOrDefault()!.Period.EndDate : (DateTime?)null));
+            .ForMember(dest => dest.CurrentRentalId, opt => opt.Ignore())
+            .ForMember(dest => dest.CurrentRentalUserName, opt => opt.Ignore())
+            .ForMember(dest => dest.CurrentRentalUserEmail, opt => opt.Ignore())
+            .ForMember(dest => dest.CurrentRentalStartDate, opt => opt.Ignore())
+            .ForMember(dest => dest.CurrentRentalEndDate, opt => opt.Ignore());
 
         // TERMINAL SETTINGS MAPPINGS
         CreateMap<TenantTerminalSettings, TerminalSettingsDto>();

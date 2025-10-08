@@ -18,9 +18,6 @@ namespace MP.Domain.Booths
         public decimal PricePerDay { get; private set; }
         public Currency Currency { get; private set; }
 
-        // Navigation property for current rentals
-        public ICollection<Rental> Rentals { get; set; } = new List<Rental>();
-
         // Konstruktor dla EF Core
         private Booth() { }
 
