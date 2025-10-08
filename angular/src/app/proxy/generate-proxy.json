@@ -11613,6 +11613,23 @@
                   }
                 },
                 {
+                  "name": "BatchAddItemsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Items.BatchAddItemsDto, MP.Application.Contracts",
+                      "type": "MP.Items.BatchAddItemsDto",
+                      "typeSimple": "MP.Items.BatchAddItemsDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Items.BatchAddItemsResultDto",
+                    "typeSimple": "MP.Items.BatchAddItemsResultDto"
+                  }
+                },
+                {
                   "name": "RemoveItemFromSheetAsync",
                   "parametersOnMethod": [
                     {
@@ -11983,6 +12000,43 @@
               "returnValue": {
                 "type": "MP.Items.ItemSheetDto",
                 "typeSimple": "MP.Items.ItemSheetDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Items.IItemSheetAppService"
+            },
+            "BatchAddItemsAsyncByInput": {
+              "uniqueName": "BatchAddItemsAsyncByInput",
+              "name": "BatchAddItemsAsync",
+              "httpMethod": "POST",
+              "url": "api/app/item-sheet/batch-add-items",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Items.BatchAddItemsDto, MP.Application.Contracts",
+                  "type": "MP.Items.BatchAddItemsDto",
+                  "typeSimple": "MP.Items.BatchAddItemsDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Items.BatchAddItemsDto",
+                  "typeSimple": "MP.Items.BatchAddItemsDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Items.BatchAddItemsResultDto",
+                "typeSimple": "MP.Items.BatchAddItemsResultDto"
               },
               "allowAnonymous": false,
               "implementFrom": "MP.Items.IItemSheetAppService"
@@ -25525,6 +25579,141 @@
           "type": "System.Guid",
           "typeSimple": "string",
           "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Items.BatchAddItemsDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "SheetId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ItemIds",
+          "jsonName": null,
+          "type": "[System.Guid]",
+          "typeSimple": "[string]",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CommissionPercentage",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0",
+          "maximum": "100",
+          "regex": null
+        }
+      ]
+    },
+    "MP.Items.BatchAddItemsResultDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Results",
+          "jsonName": null,
+          "type": "[MP.Items.BatchItemResultDto]",
+          "typeSimple": "[MP.Items.BatchItemResultDto]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SuccessCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FailureCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Items.BatchItemResultDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "ItemId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Success",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ErrorMessage",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,

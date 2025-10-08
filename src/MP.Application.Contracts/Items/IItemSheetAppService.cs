@@ -17,6 +17,8 @@ namespace MP.Items
 
         Task<ItemSheetDto> AddItemToSheetAsync(Guid sheetId, AddItemToSheetDto input);
 
+        Task<BatchAddItemsResultDto> BatchAddItemsAsync(BatchAddItemsDto input);
+
         Task<ItemSheetDto> RemoveItemFromSheetAsync(Guid sheetId, Guid itemId);
 
         Task<ItemSheetDto> AssignToRentalAsync(Guid sheetId, AssignSheetToRentalDto input);
