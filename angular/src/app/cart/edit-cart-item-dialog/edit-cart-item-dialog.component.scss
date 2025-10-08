@@ -1,0 +1,146 @@
+// Calendar styles (copied from rental-calendar component)
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 1rem;
+}
+
+.day-header {
+  text-align: center;
+  font-weight: 600;
+  padding: 0.75rem 0.5rem;
+  background: var(--bs-light);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: var(--bs-dark);
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 8px;
+  position: relative;
+  transition: all 0.2s ease;
+  background: white;
+
+  .day-number {
+    font-weight: 500;
+    font-size: 0.9rem;
+    z-index: 1;
+  }
+
+  .day-indicators {
+    font-size: 0.65rem;
+    margin-top: 2px;
+    z-index: 1;
+  }
+
+  &.other-month {
+    opacity: 0.6; // Slightly dimmed but still visible and clickable
+    // Removed pointer-events: none to allow clicking
+  }
+
+  &.today {
+    .day-number {
+      color: var(--bs-primary);
+      font-weight: 700;
+    }
+  }
+
+  &.selectable {
+    cursor: pointer;
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      border-color: var(--bs-success);
+      z-index: 2;
+    }
+  }
+
+  &.selected,
+  &.range-start,
+  &.range-end {
+    background: var(--bs-success) !important;
+    color: white !important;
+    border-color: var(--bs-success) !important;
+    font-weight: 600;
+    z-index: 10;
+
+    .day-number {
+      color: white !important;
+      font-weight: 700;
+    }
+  }
+
+  &.in-range {
+    background: var(--bs-success) !important;
+    color: white !important;
+    border-color: var(--bs-success) !important;
+
+    .day-number {
+      color: white !important;
+      font-weight: 600;
+    }
+  }
+
+  // Status colors
+  &.status-available {
+    background: white;
+  }
+
+  &.status-reserved {
+    background: #fff3cd;
+    border-color: #ffc107;
+    cursor: not-allowed;
+  }
+
+  &.status-occupied {
+    background: #f8d7da;
+    border-color: #dc3545;
+    cursor: not-allowed;
+  }
+
+  &.status-unavailable {
+    background: #e2e3e5;
+    border-color: #6c757d;
+    cursor: not-allowed;
+  }
+
+  &.status-past {
+    background: #f8f9fa;
+    color: #adb5bd;
+    cursor: not-allowed;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .calendar-grid {
+    gap: 2px;
+  }
+
+  .calendar-day {
+    padding: 0.25rem;
+    border-radius: 4px;
+
+    .day-number {
+      font-size: 0.8rem;
+    }
+
+    .day-indicators {
+      font-size: 0.6rem;
+    }
+  }
+
+  .day-header {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
+}

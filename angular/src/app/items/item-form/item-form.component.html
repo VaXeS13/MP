@@ -1,0 +1,112 @@
+<p-dialog
+  [header]="item?.id ? 'Edit Item' : 'Create Item'"
+  [(visible)]="visible"
+  (onHide)="onHide()"
+  [modal]="true"
+  [style]="{width: '500px'}"
+  [draggable]="false"
+  [resizable]="false">
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-grid">
+      <!-- Name -->
+      <div class="form-field">
+        <label for="name" class="required">Name</label>
+        <input
+          pInputText
+          id="name"
+          formControlName="name"
+          placeholder="Enter item name"
+          [class.ng-invalid]="isFieldInvalid('name')"
+          [class.ng-dirty]="isFieldInvalid('name')" />
+        <small class="p-error" *ngIf="isFieldInvalid('name')">
+          {{ getFieldError('name') }}
+        </small>
+      </div>
+
+      <!-- Category -->
+      <div class="form-field">
+        <label for="category">Category</label>
+        <input
+          pInputText
+          id="category"
+          formControlName="category"
+          placeholder="Enter category (optional)"
+          [class.ng-invalid]="isFieldInvalid('category')"
+          [class.ng-dirty]="isFieldInvalid('category')" />
+        <small class="p-error" *ngIf="isFieldInvalid('category')">
+          {{ getFieldError('category') }}
+        </small>
+      </div>
+
+      <!-- Price -->
+      <div class="form-field">
+        <label for="price" class="required">Price</label>
+        <p-inputNumber
+          inputId="price"
+          formControlName="price"
+          mode="decimal"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2"
+          placeholder="0.00"
+          [class.ng-invalid]="isFieldInvalid('price')"
+          [class.ng-dirty]="isFieldInvalid('price')">
+        </p-inputNumber>
+        <small class="p-error" *ngIf="isFieldInvalid('price')">
+          {{ getFieldError('price') }}
+        </small>
+      </div>
+
+      <!-- Currency -->
+      <div class="form-field">
+        <label for="currency" class="required">Currency</label>
+        <p-dropdown
+          inputId="currency"
+          formControlName="currency"
+          [options]="currencies"
+          placeholder="Select currency"
+          appendTo="body"
+          [class.ng-invalid]="isFieldInvalid('currency')"
+          [class.ng-dirty]="isFieldInvalid('currency')">
+        </p-dropdown>
+        <small class="p-error" *ngIf="isFieldInvalid('currency')">
+          {{ getFieldError('currency') }}
+        </small>
+      </div>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="footer-content">
+      <div class="footer-left">
+        <p-checkbox
+          *ngIf="!item?.id"
+          [(ngModel)]="createAnother"
+          [binary]="true"
+          inputId="createAnother"
+          label="Create another">
+        </p-checkbox>
+      </div>
+      <div class="footer-right">
+        <button
+          pButton
+          type="button"
+          label="Cancel"
+          icon="pi pi-times"
+          (click)="onHide()"
+          class="p-button-text"
+          [disabled]="saving">
+        </button>
+        <button
+          pButton
+          type="button"
+          label="Save"
+          icon="pi pi-check"
+          (click)="save()"
+          [loading]="saving"
+          [disabled]="saving">
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</p-dialog>

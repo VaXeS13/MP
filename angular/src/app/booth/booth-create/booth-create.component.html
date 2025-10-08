@@ -1,0 +1,130 @@
+<div class="modern-form-container">
+  <form [formGroup]="boothForm" (ngSubmit)="onSave()" class="modern-form">
+
+    <!-- Header Section -->
+    <div class="form-header">
+      <div class="header-icon">
+        <i class="pi pi-plus-circle"></i>
+      </div>
+      <div class="header-content">
+        <h3>{{ '::Booth:NewBooth' | abpLocalization }}</h3>
+        <p>{{ '::Booth:Subtitle' | abpLocalization }}</p>
+      </div>
+    </div>
+
+    <!-- Form Fields -->
+    <div class="form-body">
+
+      <!-- Booth Number Field -->
+      <div class="form-field">
+        <label for="number" class="form-label">
+          <i class="pi pi-tag"></i>
+          {{ '::Common:Number' | abpLocalization }}
+          <span class="required">*</span>
+        </label>
+        <div class="input-wrapper">
+          <input
+            id="number"
+            type="text"
+            pInputText
+            formControlName="number"
+            [placeholder]="'::Booth:NumberPlaceholder' | abpLocalization"
+            [class.error]="isFieldInvalid('number')"
+            maxlength="10"
+            class="modern-input">
+          <div class="input-icon">
+            <i class="pi pi-hashtag"></i>
+          </div>
+        </div>
+        <div class="field-error" *ngIf="isFieldInvalid('number')">
+          <i class="pi pi-exclamation-triangle"></i>
+          {{ '::Booth:NumberRequired' | abpLocalization }}
+        </div>
+      </div>
+
+      <!-- Currency Field -->
+      <div class="form-field">
+        <label for="currency" class="form-label">
+          <i class="pi pi-dollar"></i>
+          {{ '::Booth:Currency' | abpLocalization }}
+          <span class="required">*</span>
+        </label>
+        <p-dropdown
+          id="currency"
+          formControlName="currency"
+          [options]="currencyOptions"
+          [placeholder]="'::Currency:SelectCurrency' | abpLocalization"
+          [class.error]="isFieldInvalid('currency')"
+          styleClass="modern-dropdown">
+
+          <ng-template pTemplate="selectedItem" let-selectedOption>
+            <div class="currency-option">
+              <span class="currency-code">{{ selectedOption?.label }}</span>
+            </div>
+          </ng-template>
+
+          <ng-template pTemplate="item" let-option>
+            <div class="currency-option">
+              <span class="currency-code">{{ option.label }}</span>
+              <span class="currency-name">{{ getCurrencyName(option.value) }}</span>
+            </div>
+          </ng-template>
+        </p-dropdown>
+        <div class="field-error" *ngIf="isFieldInvalid('currency')">
+          <i class="pi pi-exclamation-triangle"></i>
+          {{ '::Booth:CurrencyRequired' | abpLocalization }}
+        </div>
+      </div>
+
+      <!-- Price Field -->
+      <div class="form-field">
+        <label for="pricePerDay" class="form-label">
+          <i class="pi pi-money-bill"></i>
+          {{ '::Booth:PricePerDay' | abpLocalization }}
+          <span class="required">*</span>
+        </label>
+        <div class="price-input-container">
+          <p-inputNumber
+            id="pricePerDay"
+            formControlName="pricePerDay"
+            mode="currency"
+            [currency]="getSelectedCurrencyCode()"
+            [locale]="getCurrentLocale()"
+            [minFractionDigits]="2"
+            [maxFractionDigits]="2"
+            [min]="0.01"
+            [max]="99999.99"
+            placeholder="0,00"
+            [class.error]="isFieldInvalid('pricePerDay')"
+            styleClass="modern-price-input">
+          </p-inputNumber>
+        </div>
+        <div class="field-error" *ngIf="isFieldInvalid('pricePerDay')">
+          <i class="pi pi-exclamation-triangle"></i>
+          {{ '::Validation:MustBeGreaterThanZero' | abpLocalization }}
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="form-footer">
+      <p-button
+        [label]="'::Common:Cancel' | abpLocalization"
+        icon="pi pi-times"
+        class="cancel-button"
+        (click)="onCancel()"
+        [disabled]="saving">
+      </p-button>
+      <p-button
+        [label]="'::Booth:CreateBooth' | abpLocalization"
+        icon="pi pi-check"
+        class="save-button"
+        [disabled]="boothForm.invalid || saving"
+        [loading]="saving"
+        type="submit">
+      </p-button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,246 @@
+# CLAUDE.md  
+Project memory and operational guidance for **Second-hand Booth Management Web Application**.  
+This file serves as a reference for Claude and team members. Store at `./CLAUDE.md` or `./.claude/CLAUDE.md`.
+
+---
+
+## Purpose / Short Description
+This project is a **multi-tenant web platform for managing second-hand sale booths**.  
+Customers bring items to physical stores and rent booths for a defined period to sell their goods.  
+The application handles **booth booking, payment processing, and item management**.  
+It is functionally similar to [Kirpparikalle](https://www.kirpparikalle.net/) but with enhanced features,  
+including **interactive floor-plan mapping**, multi-floor support, and flexible payment providers.
+
+Tech stack:
+- **Backend**: ABP Framework (free) v9.2 (.NET, modular, DDD, multi-tenant).
+- **Frontend**: Angular 19.1 with PrimeNG UI components.
+- **Database**: SQL Server (EF Core).
+- **Payments**: Przelewy24 (current) with planned support for multiple providers.
+
+---
+
+## High-Level Features
+### Tenant Isolation
+- Each **tenant** is a separate store or chain location, served on its own subdomain (e.g., `warszawa.example.com`).
+- Each tenant can configure:
+  - Booth types (commission %, pricing rules)
+  - Floor plans and multi-floor maps
+  - Default currency and business settings.
+
+### User Roles
+- **End User (Customer)**:  
+  - Registers/logs in, purchases booth rentals, adds and manages items for sale.  
+  - Pays via Przelewy24 (future: Stripe, PayPal, etc.).
+- **Business Administrator**:  
+  - Creates and manages booths and booth types.
+  - Defines pricing, currency, and commissions.
+  - Configures interactive floor maps (per floor).
+  - Can manually mark booths as purchased with cash and assign to a user for a date range.
+- **Map Designer** (optional new permission or role):  
+  - Designs and edits interactive floor plans for each tenant.
+
+### Booth Reservation Modes
+- **List + Calendar View (current)**: User selects a booth from a list and picks dates in a calendar.
+- **Interactive Floor Plan (new)**:
+  - Visual map of the store, including **multiple floors**.
+  - User clicks a booth on the map to view availability and reserve.
+  - Supports zoom, drag, and filtering by booth type or price.
+- **Mixed View (optional)**:
+  - Combination of floor plan selection with side-panel calendar booking.
+
+### Floor Plan Management
+- Each tenant can create one or more **floor plans** (e.g., Parter, 1st Floor).
+- Administrator with proper permissions can:
+  - Draw the store layout and place booths (drag & drop).
+  - Assign booth types, prices, and metadata directly on the map.
+  - Save and publish new map versions.
+- Data model additions:
+  - `AppFloorPlans`: tenant-specific floor definitions.
+  - `AppFloorPlanBooths`: booth coordinates and layout per floor.
+  - (Optional) `AppFloorPlanVersions`: versioning/history.
+
+### Booth Lifecycle
+- Booths can be created, priced, activated/deactivated, and reserved.
+- Supports **commission logic** defined at the booth type level.
+- Business admin may override or manually assign booths.
+
+### Item Management
+- Users can add individual items to their rented booth:
+  - Name, description, estimated price, category, actual sale price.
+  - Track item status (available, sold, expired).
+  - Commission applied automatically.
+
+### Payment and Reporting
+- Current integration with **Przelewy24** for online payments.
+- Supports manual cash payments recorded by the administrator.
+- Planned expansion to multiple payment gateways.
+- Business dashboard includes:
+  - Revenue statistics,
+  - Occupancy reports,
+  - Sales and commission summaries.
+
+---
+
+## Multitenancy and Hostnames
+- **Tenant resolution** via subdomain.
+- Development example:  
+  - Tenant `warszawa` → `warszawa.localhost:4200`
+- Production example:  
+  - Tenant `warszawa` → `warszawa.mp.com`
+- ABP multi-tenant middleware resolves tenant from subdomain and falls back to default host if necessary.
+
+---
+
+## Key Domain Model (Suggested)
+- **Tenant**: subdomain, name, settings (currency, locale, floor plans).
+- **Booth**: id, number, description, price/day, currency, status, tenantId, metadata (map position, size).
+- **BoothType**: id, name, description, commission percentage, isActive.
+- **Rental (Booking)**: id, boothId, boothTypeId, userId, startDate, endDate, totalAmount, paidAmount, paymentStatus, paymentProviderTransactionId.
+- **RentalItem**: id, rentalId, name, description, category, estimatedPrice, actualPrice, commissionPercentage, status.
+- **FloorPlan**: id, tenantId, name, level, width, height.
+- **FloorPlanBooth**: id, floorPlanId, boothId, x, y, width, height, rotation.
+- **User**: id, email, role (user, businessAdmin, mapDesigner, systemAdmin), tenantId.
+
+(See `@docs/data-model.md` for detailed schemas and relationships.)
+
+---
+
+## UX / User Flows
+1. **Visitor**:
+   - Opens tenant subdomain → sees landing page → registers/logs in.
+2. **Customer**:
+   - After login, can browse booths in either **list/calendar** or **interactive map** mode.
+   - Selects dates and pays online.
+   - Adds items to the rented booth, manages sales and item statuses.
+3. **Business Administrator**:
+   - Accesses an Admin Dashboard to:
+     - Create/edit booths and booth types.
+     - Configure interactive floor plans.
+     - View statistics and export reports.
+     - Assign cash-based rentals.
+4. **Map Designer** (if separate):
+   - Uses a drag-and-drop editor to manage booth positions across multiple floors.
+
+---
+
+## Tech Stack
+- **Backend**: ABP Framework (free) v9.2 (.NET)
+- **Frontend**: Angular 19.1 + PrimeNG
+- **Authentication**: ABP default (JWT / cookie)
+- **Database**: SQL Server (EF Core)
+- **Payment**: Przelewy24 (extensible)
+- **Hosting**: Document in `@docs/deployment.md`
+
+---
+
+## Development
+### Backend (.NET)
+```bash
+dotnet build
+dotnet run --project src/MP.DbMigrator   # database migrations
+dotnet run --project src/MP.HttpApi.Host # start API server
+abp install-libs
+dotnet dev-certs https -v -ep openiddict.pfx -p <password>
+
+Frontend (Angular)
+cd angular
+npm install
+npm start            # http://localhost:4200
+ng build --configuration production
+npm run lint
+npm test
+
+Project Architecture
+Backend (ABP DDD)
+
+MP.Domain: Core entities (Booths, BoothTypes, Rentals, RentalItems, FloorPlans).
+
+MP.Application: Application services and DTOs.
+
+MP.EntityFrameworkCore: EF Core context and repositories.
+
+MP.HttpApi: API controllers.
+
+MP.HttpApi.Host: Startup and tenant resolution.
+
+MP.DbMigrator: Database migrations and seeding.
+
+Frontend (Angular)
+src/app/booth: Booth booking and management.
+src/app/booth-type: Booth type administration.
+src/app/floor-plan: Interactive map components and editor.
+src/app/services: API communication.
+src/app/shared: Shared models and UI components.
+
+Environment & Deployment
+Configure subdomains per tenant (CNAME/A records, SSL).
+Provide environment variables for:
+Connection strings
+Payment provider keys
+Multi-tenant settings
+See @docs/deployment.md for CI/CD details.
+
+Key Recent Enhancements
+Dynamic BoothType Management with per-type commissions.
+Interactive Multi-Floor Floor Plan definition per tenant.
+Manual Cash Booking by administrators.
+Pluggable Payment Providers with current Przelewy24 integration.
+
+## Database Configuration
+- **Default provider**: SQL Server.
+- Check `src/MP.HttpApi.Host/appsettings.json` and `src/MP.DbMigrator/appsettings.json` for connection strings.
+- Run `MP.DbMigrator` before first use to create database structure and seed default data.
+- Core tables:
+  - **AppBooths** – Booth metadata (number, price, currency, status).
+  - **AppBoothTypes** – Booth type definitions with commission percentages.
+  - **AppRentals** – Booth rentals (bookings) with payment status.
+  - **AppRentalItems** – Individual items within a rental.
+  - **AppFloorPlans / AppFloorPlanBooths** – Interactive map and booth positioning.
+
+---
+
+## Multi-Tenancy Implementation
+- Tenants resolved via subdomain.
+- **Development**:
+  - Use local DNS/hosts mapping (e.g., `warszawa.localhost`).
+  - ABP middleware reads subdomain to determine tenant context.
+- **Production**:
+  - Configure DNS CNAME/A records per tenant (e.g., `warszawa.mp.com`).
+  - Each tenant has isolated data, floor plans, booth types, and payment settings.
+
+---
+
+## Operational Guidance
+- **Adding a New Tenant**:
+  1. Create a new tenant via ABP admin interface.
+  2. Configure DNS subdomain and SSL certificates.
+  3. Define booth types and pricing rules.
+  4. Design floor plans (levels, booth positions).
+  5. Publish and test reservation workflow.
+- **Payment Integration**:
+  - Current: Przelewy24.
+  - Future: Stripe, PayPal, Klarna, etc.
+  - Ensure ABP payment module is extended for new providers.
+- **Scaling**:
+  - Multi-floor and multi-tenant support requires appropriate SQL indexing on booth/rental tables.
+  - Consider caching floor plans for high-traffic tenants.
+
+---
+
+## Future Roadmap
+- Additional payment providers (Stripe, PayPal, Klarna).
+- Advanced analytics (sales trends, floor heatmaps).
+- Mobile-first enhancements for floor plan selection.
+- Integration with physical POS systems for item checkouts.
+
+---
+
+## Key Takeaways
+This application extends the Kirpparikalle concept with:
+- **Interactive multi-floor maps** for booth selection.
+- **Dynamic booth type and commission management**.
+- **Multi-tenant subdomain architecture** for franchise or chain scalability.
+- **Flexible payments** and manual cash handling.
+
+Use this file as the **canonical project memory** for developers and Claude instances.  
+Update whenever major domain logic, tech stack, or architectural decisions change.

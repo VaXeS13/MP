@@ -1,0 +1,92 @@
+<div class="booth-type-form-container">
+  <form [formGroup]="boothTypeForm" (ngSubmit)="onSave()">
+
+    <!-- Name Field -->
+    <div class="form-field">
+      <label for="name" class="field-label">
+        <i class="pi pi-tag"></i>
+        {{ '::BoothType:Name' | abpLocalization }} <span class="required">*</span>
+      </label>
+      <input
+        id="name"
+        type="text"
+        pInputText
+        formControlName="name"
+        [placeholder]="'::BoothType:NamePlaceholder' | abpLocalization"
+        [class.invalid]="isFieldInvalid('name')"
+        class="form-input"
+        maxlength="100">
+      <div class="field-error" *ngIf="isFieldInvalid('name')">
+        {{ getFieldError('name') }}
+      </div>
+      <small class="field-hint">{{ '::BoothType:MaxLength100' | abpLocalization }}</small>
+    </div>
+
+    <!-- Description Field -->
+    <div class="form-field">
+      <label for="description" class="field-label">
+        <i class="pi pi-info-circle"></i>
+        {{ '::BoothType:Description' | abpLocalization }} <span class="required">*</span>
+      </label>
+      <textarea
+        id="description"
+        pInputTextarea
+        formControlName="description"
+        [placeholder]="'::BoothType:DescriptionPlaceholder' | abpLocalization"
+        [class.invalid]="isFieldInvalid('description')"
+        class="form-textarea"
+        maxlength="500"
+        rows="4">
+      </textarea>
+      <div class="field-error" *ngIf="isFieldInvalid('description')">
+        {{ getFieldError('description') }}
+      </div>
+      <small class="field-hint">{{ '::BoothType:MaxLength500' | abpLocalization }}</small>
+    </div>
+
+    <!-- Commission Percentage Field -->
+    <div class="form-field">
+      <label for="commissionPercentage" class="field-label">
+        <i class="pi pi-percentage"></i>
+        {{ '::BoothType:Commission' | abpLocalization }} <span class="required">*</span>
+      </label>
+      <p-inputNumber
+        id="commissionPercentage"
+        formControlName="commissionPercentage"
+        [min]="0"
+        [max]="100"
+        [maxFractionDigits]="2"
+        suffix="%"
+        placeholder="0.00"
+        [class.invalid]="isFieldInvalid('commissionPercentage')"
+        styleClass="form-input">
+      </p-inputNumber>
+      <div class="field-error" *ngIf="isFieldInvalid('commissionPercentage')">
+        {{ getFieldError('commissionPercentage') }}
+      </div>
+      <small class="field-hint">{{ '::BoothType:CommissionRange' | abpLocalization }}</small>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <p-button
+        type="button"
+        [label]="'::Common:Cancel' | abpLocalization"
+        icon="pi pi-times"
+        severity="secondary"
+        [text]="true"
+        (click)="onCancel()"
+        [disabled]="saving">
+      </p-button>
+
+      <p-button
+        type="submit"
+        [label]="'::Common:Save' | abpLocalization"
+        icon="pi pi-check"
+        [loading]="saving"
+        [disabled]="boothTypeForm.invalid">
+      </p-button>
+    </div>
+
+  </form>
+</div>

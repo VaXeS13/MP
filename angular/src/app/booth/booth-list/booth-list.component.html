@@ -1,0 +1,413 @@
+<div class="booth-management-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <div class="title-section">
+        <h1><i class="pi pi-box"></i> {{ '::Booth:Title' | abpLocalization }}</h1>
+        <p>{{ '::Booth:ManageSubtitle' | abpLocalization }}</p>
+      </div>
+      <div class="action-section">
+        <p-button
+          [label]="'::Booth:GapSettings' | abpLocalization"
+          icon="pi pi-calendar-day"
+          [routerLink]="['/booths/settings']"
+          styleClass="p-button-secondary mr-2"
+          [pTooltip]="'::Booth:GapSettingsTooltip' | abpLocalization">
+        </p-button>
+        <p-button
+          [label]="'::Booth:NewBooth' | abpLocalization"
+          icon="pi pi-plus"
+          (click)="showCreateDialog()"
+          class="primary-button">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-card">
+    <div class="quick-filters">
+      <div class="search-wrapper">
+        <i class="pi pi-search"></i>
+        <input
+          type="text"
+          pInputText
+          [(ngModel)]="filterText"
+          (input)="onFilter()"
+          [placeholder]="'::Booth:SearchPlaceholder' | abpLocalization"
+          class="search-input">
+      </div>
+
+      <div class="filter-selects">
+        <p-dropdown
+          [options]="statusOptions"
+          [(ngModel)]="selectedStatus"
+          (onChange)="onFilter()"
+          [placeholder]="'::Status:AllStatuses' | abpLocalization"
+          [showClear]="true"
+          styleClass="filter-dropdown">
+        </p-dropdown>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Booths Grid/List -->
+  <div class="booths-section">
+    <div class="section-header">
+      <h3>{{ '::Booth:Booths' | abpLocalization }} ({{ totalCount }})</h3>
+      <div class="view-controls">
+        <p-button
+          icon="pi pi-th-large"
+          [class]="viewMode === 'grid' ? 'p-button-outlined' : 'p-button-text'"
+          (click)="setViewMode('grid')"
+          [pTooltip]="'::Common:GridView' | abpLocalization">
+        </p-button>
+        <p-button
+          icon="pi pi-list"
+          [class]="viewMode === 'list' ? 'p-button-outlined' : 'p-button-text'"
+          (click)="setViewMode('list')"
+          [pTooltip]="'::Common:ListView' | abpLocalization">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Grid View -->
+    <div *ngIf="viewMode === 'grid'" class="booths-grid">
+      <div *ngFor="let booth of booths" class="booth-card">
+        <div class="booth-card-header">
+          <div class="booth-number">
+            <i class="pi pi-box"></i>
+            <span>{{ booth.number }}</span>
+          </div>
+          <div class="booth-actions">
+            <p-button
+              icon="pi pi-pencil"
+              class="p-button-text p-button-sm"
+              (click)="showEditDialog(booth)"
+              [pTooltip]="'::Common:Edit' | abpLocalization">
+            </p-button>
+            <p-button
+              *abpPermission="'MP.Booths.ManualReservation'"
+              icon="pi pi-user-plus"
+              class="p-button-text p-button-info p-button-sm"
+              (click)="openManualReservationDialog(booth)"
+              [pTooltip]="'::Booth:ManualReservationTooltip' | abpLocalization">
+            </p-button>
+            <p-button
+              *ngIf="booth.status === 1"
+              icon="pi pi-wrench"
+              class="p-button-text p-button-warning p-button-sm"
+              (click)="changeBoothStatus(booth, 3)"
+              [pTooltip]="'::Booth:SetMaintenance' | abpLocalization">
+            </p-button>
+            <p-button
+              *ngIf="booth.status === 3"
+              icon="pi pi-check"
+              class="p-button-text p-button-success p-button-sm"
+              (click)="changeBoothStatus(booth, 1)"
+              [pTooltip]="'::Booth:SetAvailable' | abpLocalization">
+            </p-button>
+            <p-button
+              *ngIf="booth.status !== 2"
+              icon="pi pi-trash"
+              class="p-button-text p-button-danger p-button-sm"
+              (click)="deleteBooth(booth)"
+              [pTooltip]="'::Common:Delete' | abpLocalization">
+            </p-button>
+          </div>
+        </div>
+
+        <div class="booth-card-body">
+
+          <div class="booth-info-row">
+            <span class="label">{{ '::Common:Status' | abpLocalization }}:</span>
+            <p-tag
+              [value]="booth.statusDisplayName"
+              [severity]="getStatusSeverity(booth.status)">
+            </p-tag>
+          </div>
+
+          <div class="booth-info-row">
+            <span class="label">{{ '::Booth:PricePerDay' | abpLocalization }}:</span>
+            <span class="price">{{ booth.pricePerDay | currency:booth.currencyDisplayName:'symbol':'1.2-2':currentLocale }}</span>
+          </div>
+
+          <div class="booth-info-row" *ngIf="booth.currentRentalUserName && booth.status === 2">
+            <span class="label">{{ '::Booth:ReservedBy' | abpLocalization }}:</span>
+            <span class="renter-info">
+              <i class="pi pi-user"></i>
+              {{ booth.currentRentalUserName }}
+              <small *ngIf="booth.currentRentalUserEmail">({{ booth.currentRentalUserEmail }})</small>
+            </span>
+          </div>
+
+          <div class="booth-info-row" *ngIf="booth.currentRentalUserName && booth.status === 3">
+            <span class="label">{{ '::Booth:RentedBy' | abpLocalization }}:</span>
+            <span class="renter-info">
+              <i class="pi pi-user"></i>
+              {{ booth.currentRentalUserName }}
+              <small *ngIf="booth.currentRentalUserEmail">({{ booth.currentRentalUserEmail }})</small>
+            </span>
+          </div>
+
+        </div>
+
+        <div class="booth-card-footer">
+          <small>{{ '::Common:Created' | abpLocalization }} {{ booth.creationTime | date:'dd.MM.yyyy HH:mm':currentLocale }}</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- List View (Table) -->
+    <div *ngIf="viewMode === 'list'" class="booths-table">
+      <p-table
+        [value]="booths"
+        [loading]="loading"
+        [paginator]="true"
+        [rows]="rows"
+        [totalRecords]="totalCount"
+        [lazy]="true"
+        (onLazyLoad)="onPageChange($event)"
+        [showCurrentPageReport]="true"
+        [currentPageReportTemplate]="'::Common:PaginationTemplate' | abpLocalization"
+        responsiveLayout="scroll"
+        styleClass="modern-table">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th>{{ '::Common:Number' | abpLocalization }}</th>
+            <th>{{ '::Common:Status' | abpLocalization }}</th>
+            <th>{{ '::Booth:PricePerDay' | abpLocalization }}</th>
+            <th>{{ '::Common:Customer' | abpLocalization }}</th>
+            <th>{{ '::Common:Created' | abpLocalization }}</th>
+            <th>{{ '::Common:Actions' | abpLocalization }}</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-booth>
+          <tr>
+            <td>
+              <div class="booth-number-cell">
+                <i class="pi pi-box"></i>
+                <strong>{{ booth.number }}</strong>
+              </div>
+            </td>
+            <td>
+              <p-tag
+                [value]="booth.statusDisplayName"
+                [severity]="getStatusSeverity(booth.status)">
+              </p-tag>
+            </td>
+            <td>
+              <strong class="price-cell">{{ booth.pricePerDay | currency:booth.currencyDisplayName:'symbol':'1.2-2':currentLocale }}</strong>
+            </td>
+            <td>
+              <div *ngIf="booth.currentRentalUserName && (booth.status === 2 || booth.status === 3)" class="renter-info">
+                <i class="pi pi-user"></i>
+                <span>{{ booth.currentRentalUserName }}</span>
+                <small *ngIf="booth.currentRentalUserEmail" class="text-muted">({{ booth.currentRentalUserEmail }})</small>
+              </div>
+              <span *ngIf="!booth.currentRentalUserName || (booth.status !== 2 && booth.status !== 3)">-</span>
+            </td>
+            <td>
+              <span class="date-cell">{{ booth.creationTime | date:'dd.MM.yyyy':currentLocale }}</span>
+            </td>
+            <td>
+              <div class="table-actions">
+                <p-button
+                  icon="pi pi-pencil"
+                  class="p-button-text p-button-info p-button-sm"
+                  (click)="showEditDialog(booth)"
+                  [pTooltip]="'::Common:Edit' | abpLocalization">
+                </p-button>
+
+                <p-button
+                  *abpPermission="'MP.Booths.ManualReservation'"
+                  icon="pi pi-user-plus"
+                  class="p-button-text p-button-info p-button-sm"
+                  (click)="openManualReservationDialog(booth)"
+                  [pTooltip]="'::Booth:ManualReservationTooltip' | abpLocalization">
+                </p-button>
+
+                <p-button
+                  *ngIf="booth.status === 1"
+                  icon="pi pi-wrench"
+                  class="p-button-text p-button-warning p-button-sm"
+                  (click)="changeBoothStatus(booth, 3)"
+                  [pTooltip]="'::Booth:SetMaintenance' | abpLocalization">
+                </p-button>
+
+                <p-button
+                  *ngIf="booth.status === 3"
+                  icon="pi pi-check"
+                  class="p-button-text p-button-success p-button-sm"
+                  (click)="changeBoothStatus(booth, 1)"
+                  [pTooltip]="'::Booth:SetAvailable' | abpLocalization">
+                </p-button>
+
+                <p-button
+                  *ngIf="booth.status !== 2"
+                  icon="pi pi-trash"
+                  class="p-button-text p-button-danger p-button-sm"
+                  (click)="deleteBooth(booth)"
+                  [pTooltip]="'::Common:Delete' | abpLocalization">
+                </p-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="empty-state">
+              <div class="empty-content">
+                <i class="pi pi-box empty-icon"></i>
+                <h4>{{ '::Booth:NoBooths' | abpLocalization }}</h4>
+                <p>{{ '::Booth:NoBoothsMessage' | abpLocalization }}</p>
+                <p-button
+                  [label]="'::Booth:AddFirstBooth' | abpLocalization"
+                  icon="pi pi-plus"
+                  (click)="showCreateDialog()"
+                  class="p-button-outlined">
+                </p-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Pagination for Grid View -->
+    <div *ngIf="viewMode === 'grid' && totalCount > rows" class="grid-pagination">
+      <p-paginator
+        [rows]="rows"
+        [totalRecords]="totalCount"
+        (onPageChange)="onPageChange($event)"
+        [showCurrentPageReport]="true"
+        [currentPageReportTemplate]="'::Common:PaginationTemplate' | abpLocalization">
+      </p-paginator>
+    </div>
+  </div>
+</div>
+
+<!-- Dialogs -->
+<p-dialog
+  [header]="'::Booth:NewBooth' | abpLocalization"
+  [(visible)]="displayCreateDialog"
+  [style]="{ width: '600px' }"
+  [modal]="true"
+  [closable]="true"
+  styleClass="modern-dialog">
+
+  <app-booth-create
+    *ngIf="displayCreateDialog"
+    (saved)="onBoothCreated()"
+    (cancelled)="displayCreateDialog = false">
+  </app-booth-create>
+</p-dialog>
+
+<p-dialog
+  [header]="'::Booth:EditBooth' | abpLocalization"
+  [(visible)]="displayEditDialog"
+  [style]="{ width: '600px' }"
+  [modal]="true"
+  [closable]="true"
+  styleClass="modern-dialog">
+
+  <app-booth-edit
+    *ngIf="displayEditDialog && selectedBooth"
+    [booth]="selectedBooth"
+    (saved)="onBoothUpdated()"
+    (cancelled)="displayEditDialog = false">
+  </app-booth-edit>
+</p-dialog>
+
+<!-- Manual Reservation Dialog -->
+<p-dialog
+  [header]="'::Booth:ManualReservation' | abpLocalization"
+  [(visible)]="displayManualReservationDialog"
+  [style]="{ width: '600px' }"
+  [modal]="true"
+  [closable]="true"
+  styleClass="modern-dialog">
+
+  <div *ngIf="displayManualReservationDialog && selectedBooth" class="manual-reservation-form">
+    <div class="form-grid p-fluid">
+
+      <div class="field">
+        <label for="booth-info">{{ '::Common:Booth' | abpLocalization }}</label>
+        <input id="booth-info" type="text" pInputText [value]="selectedBooth.number" [disabled]="true" />
+      </div>
+
+      <div class="field">
+        <label for="user-select">{{ '::Booth:SelectUser' | abpLocalization }} *</label>
+        <p-dropdown
+          id="user-select"
+          [(ngModel)]="selectedUserId"
+          [options]="availableUsers"
+          optionLabel="displayName"
+          optionValue="id"
+          [placeholder]="'::Booth:SelectUser' | abpLocalization"
+          appendTo="body"
+          [filter]="true"
+          filterBy="displayName">
+        </p-dropdown>
+      </div>
+
+      <div class="field">
+        <label for="start-date">{{ '::Booth:StartDate' | abpLocalization }} *</label>
+        <p-calendar
+          id="start-date"
+          [(ngModel)]="reservationStartDate"
+          [showTime]="false"
+          dateFormat="dd.mm.yy"
+          appendTo="body">
+        </p-calendar>
+      </div>
+
+      <div class="field">
+        <label for="end-date">{{ '::Booth:EndDate' | abpLocalization }} *</label>
+        <p-calendar
+          id="end-date"
+          [(ngModel)]="reservationEndDate"
+          [showTime]="false"
+          dateFormat="dd.mm.yy"
+          appendTo="body">
+        </p-calendar>
+      </div>
+
+      <div class="field">
+        <label for="target-status">{{ '::Booth:SelectTargetStatus' | abpLocalization }} *</label>
+        <p-dropdown
+          id="target-status"
+          [(ngModel)]="reservationStatus"
+          [options]="statusOptionsForReservation"
+          optionLabel="label"
+          optionValue="value"
+          [placeholder]="'::Booth:SelectTargetStatus' | abpLocalization"
+          appendTo="body">
+        </p-dropdown>
+      </div>
+
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      [label]="'::Common:Cancel' | abpLocalization"
+      icon="pi pi-times"
+      (click)="displayManualReservationDialog = false"
+      class="p-button-text">
+    </p-button>
+    <p-button
+      [label]="'::Common:Save' | abpLocalization"
+      icon="pi pi-check"
+      (click)="createManualReservation()"
+      [disabled]="!selectedUserId || !reservationStartDate || !reservationEndDate">
+    </p-button>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

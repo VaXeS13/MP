@@ -1,0 +1,13 @@
+<button
+  class="cart-icon-button"
+  (click)="navigateToCart()"
+  [pTooltip]="'View Cart (' + itemCount + ' items)'"
+  tooltipPosition="bottom">
+  <div class="cart-icon-content">
+    <i class="pi pi-shopping-cart"></i>
+    <span class="cart-badge" *ngIf="itemCount > 0">{{ itemCount }}</span>
+  </div>
+  <div class="cart-amount" *ngIf="totalAmount > 0">
+    {{ totalAmount | currency:currency:'symbol':'1.0-0' }}
+  </div>
+</button>

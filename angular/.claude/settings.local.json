@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude mcp add:*)",
+      "mcp__socket__depscore",
+      "Read(//c/Users/mhinc/source/repos/MP/MP/**)",
+      "mcp__snyk__snyk_auth_status",
+      "mcp__snyk__snyk_sca_scan",
+      "mcp__snyk__snyk_trust",
+      "mcp__snyk__snyk_code_scan",
+      "Bash(npm audit:*)",
+      "Bash(ng build:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm view:*)",
+      "Bash(npm install)",
+      "Bash(dotnet list:*)",
+      "Bash(find:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet build:*)",
+      "Bash(npm install:*)",
+      "Bash(powershell:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(abp generate-proxy:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

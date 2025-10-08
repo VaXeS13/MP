@@ -1,0 +1,104 @@
+<div class="checkout-container container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="mb-4">
+        <h2 class="h3"><i class="pi pi-credit-card me-2"></i>Checkout</h2>
+        <p class="text-muted">Review your order and complete payment</p>
+      </div>
+
+      <div *ngIf="loading" class="text-center py-5"><p-progressSpinner></p-progressSpinner></div>
+
+      <div *ngIf="!loading && cart" class="row">
+        <div class="col-lg-8">
+          <!-- Step 1: Order Review -->
+          <div *ngIf="step === 'review'" class="card mb-4">
+            <div class="card-header"><h5 class="mb-0"><i class="pi pi-list me-2"></i>Order Review</h5></div>
+            <div class="card-body">
+              <table class="table">
+                <thead class="table-light">
+                  <tr><th>Booth</th><th>Period</th><th>Days</th><th class="text-end">Amount</th></tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of cart.items">
+                    <td><strong>{{ item.boothNumber }}</strong><br><small class="text-muted">{{ item.boothTypeName }}</small></td>
+                    <td><small>{{ formatDate(item.startDate) }} - {{ formatDate(item.endDate) }}</small></td>
+                    <td>{{ item.daysCount }}</td>
+                    <td class="text-end">{{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-footer text-end">
+              <button class="btn btn-primary btn-lg" (click)="goToPaymentSelection()">Continue to Payment<i class="pi pi-arrow-right ms-2"></i></button>
+            </div>
+          </div>
+
+          <!-- Step 2: Payment Selection -->
+          <div *ngIf="step === 'payment'">
+            <div class="card mb-4">
+              <div class="card-header"><h5 class="mb-0"><i class="pi pi-wallet me-2"></i>Select Payment Method</h5></div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-md-6" *ngFor="let provider of providers">
+                    <div class="payment-provider-card" [class.selected]="selectedProvider?.id === provider.id" (click)="selectProvider(provider)">
+                      <div class="d-flex align-items-center">
+                        <div class="provider-logo me-3">
+                          <img *ngIf="provider.logoUrl" [src]="provider.logoUrl" [alt]="provider.displayName" class="provider-logo-img">
+                          <i *ngIf="!provider.logoUrl" class="pi pi-credit-card fs-3"></i>
+                        </div>
+                        <div><h6 class="mb-1">{{ provider.name }}</h6><small class="text-muted">{{ provider.description }}</small></div>
+                      </div>
+                      <i class="pi pi-check-circle check-icon" *ngIf="selectedProvider?.id === provider.id"></i>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="selectedProvider && availableMethods.length > 0" class="mt-4">
+                  <h6 class="mb-3">Select Payment Option:</h6>
+                  <div class="row g-3">
+                    <div class="col-md-4" *ngFor="let method of availableMethods">
+                      <div class="payment-method-card" [class.selected]="selectedMethod?.id === method.id" (click)="selectMethod(method)">
+                        <div class="text-center">
+                          <div class="method-icon mb-2">
+                            <img *ngIf="method.iconUrl" [src]="method.iconUrl" [alt]="method.displayName" class="method-icon-img">
+                            <i *ngIf="!method.iconUrl" class="pi pi-credit-card fs-2"></i>
+                          </div>
+                          <div class="small">{{ method.displayName }}</div>
+                        </div>
+                        <i class="pi pi-check-circle check-icon" *ngIf="selectedMethod?.id === method.id"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer d-flex justify-content-between">
+                <button class="btn btn-outline-secondary" (click)="goBackToReview()"><i class="pi pi-arrow-left me-2"></i>Back</button>
+                <button class="btn btn-success btn-lg" [disabled]="!canProceed() || processing" (click)="completeCheckout()">
+                  <span *ngIf="processing"><i class="pi pi-spin pi-spinner me-2"></i>Processing...</span>
+                  <span *ngIf="!processing"><i class="pi pi-check me-2"></i>Complete Order</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card order-summary-card sticky-top">
+            <div class="card-header"><h5 class="mb-0"><i class="pi pi-file me-2"></i>Order Summary</h5></div>
+            <div class="card-body">
+              <div class="summary-row"><span>Items:</span><strong>{{ cart.itemCount }}</strong></div>
+              <div class="summary-row"><span>Total Days:</span><strong>{{ cart.totalDays }}</strong></div>
+              <hr>
+              <div class="summary-row total-row"><span>Total Amount:</span><strong class="text-success fs-4">{{ cart.totalAmount | currency:'PLN':'symbol':'1.2-2' }}</strong></div>
+            </div>
+          </div>
+          <div class="card mt-3">
+            <div class="card-body">
+              <h6 class="card-title"><i class="pi pi-shield me-2"></i>Secure Checkout</h6>
+              <p class="small text-muted mb-0">Your payment information is encrypted and secure. We never store your payment details.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

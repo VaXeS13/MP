@@ -1,0 +1,21 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace MP.Items
+{
+    public class UpdateItemDto
+    {
+        [Required]
+        [StringLength(200)]
+        public string Name { get; set; } = null!;
+
+        [StringLength(100)]
+        public string? Category { get; set; }
+
+        [Required]
+        [Range(0.01, double.MaxValue)]
+        public decimal Price { get; set; }
+
+        [Required]
+        public string Currency { get; set; } = "PLN";
+    }
+}

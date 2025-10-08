@@ -1,0 +1,147 @@
+<div class="customer-dashboard">
+  <h1>Mój Dashboard</h1>
+
+  <!-- Overview Cards -->
+  <div class="grid">
+    <div class="col-12 md:col-6 lg:col-3">
+      <p-card>
+        <div class="stat-card">
+          <i class="pi pi-home stat-icon"></i>
+          <div class="stat-content">
+            <span class="stat-label">Aktywne wynajmy</span>
+            <span class="stat-value">{{ overview.totalActiveRentals }}</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 md:col-6 lg:col-3">
+      <p-card>
+        <div class="stat-card">
+          <i class="pi pi-shopping-bag stat-icon"></i>
+          <div class="stat-content">
+            <span class="stat-label">Przedmioty na sprzedaż</span>
+            <span class="stat-value">{{ overview.totalItemsForSale }}</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 md:col-6 lg:col-3">
+      <p-card>
+        <div class="stat-card">
+          <i class="pi pi-check-circle stat-icon text-success"></i>
+          <div class="stat-content">
+            <span class="stat-label">Sprzedane przedmioty</span>
+            <span class="stat-value">{{ overview.totalItemsSold }}</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-12 md:col-6 lg:col-3">
+      <p-card>
+        <div class="stat-card">
+          <i class="pi pi-money-bill stat-icon text-primary"></i>
+          <div class="stat-content">
+            <span class="stat-label">Całkowita sprzedaż</span>
+            <span class="stat-value">{{ formatCurrency(overview.totalSalesAmount) }}</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Active Rentals & Recent Sales -->
+  <div class="grid">
+    <div class="col-12 lg:col-8">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="card-header">
+            <h3>Aktywne Wynajmy</h3>
+            <button pButton label="Zobacz wszystkie" (click)="navigateToRentals()" class="p-button-text"></button>
+          </div>
+        </ng-template>
+
+        <p-table [value]="activeRentals" [loading]="loading" responsiveLayout="scroll">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Stoisko</th>
+              <th>Okres</th>
+              <th>Dni pozostało</th>
+              <th>Przedmioty</th>
+              <th>Sprzedaż</th>
+              <th>Status</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-rental>
+            <tr>
+              <td>{{ rental.boothNumber }}</td>
+              <td>{{ rental.startDate | date:'dd.MM.yyyy' }} - {{ rental.endDate | date:'dd.MM.yyyy' }}</td>
+              <td>
+                <p-tag [severity]="getStatusClass(rental)" [value]="rental.daysRemaining + ' dni'"></p-tag>
+              </td>
+              <td>{{ rental.soldItems }}/{{ rental.totalItems }}</td>
+              <td>{{ formatCurrency(rental.totalSales) }}</td>
+              <td>
+                <p-tag [severity]="rental.isExpiringSoon ? 'warning' : 'success'"
+                       [value]="rental.isExpiringSoon ? 'Wkrótce wygasa' : 'Aktywny'"></p-tag>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="6" class="text-center">Brak aktywnych wynajmów</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
+
+    <div class="col-12 lg:col-4">
+      <p-card>
+        <ng-template pTemplate="header">
+          <h3>Ostatnie Sprzedaże</h3>
+        </ng-template>
+
+        <div class="recent-sales">
+          <div *ngFor="let sale of recentSales" class="sale-item">
+            <div class="sale-info">
+              <span class="sale-name">{{ sale.itemName }}</span>
+              <span class="sale-booth text-muted">{{ sale.boothNumber }}</span>
+            </div>
+            <div class="sale-details">
+              <span class="sale-price">{{ formatCurrency(sale.salePrice) }}</span>
+              <span class="sale-date text-muted">{{ sale.soldAt | date:'dd.MM' }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="recentSales.length === 0" class="text-center text-muted">
+            Brak ostatnich sprzedaży
+          </div>
+        </div>
+
+        <button pButton label="Zobacz wszystkie przedmioty" (click)="navigateToItems()"
+                class="p-button-outlined w-full mt-3"></button>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="grid">
+    <div class="col-12">
+      <p-card>
+        <ng-template pTemplate="header">
+          <h3>Szybkie Akcje</h3>
+        </ng-template>
+
+        <div class="quick-actions">
+          <button pButton label="Dodaj przedmiot" icon="pi pi-plus" (click)="navigateToItems()"
+                  class="p-button-success"></button>
+          <button pButton label="Moje wynajmy" icon="pi pi-home" (click)="navigateToRentals()"></button>
+          <button pButton label="Rozliczenia" icon="pi pi-money-bill" (click)="navigateToSettlements()"></button>
+        </div>
+      </p-card>
+    </div>
+  </div>
+</div>

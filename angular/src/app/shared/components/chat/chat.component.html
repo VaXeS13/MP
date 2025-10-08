@@ -1,0 +1,187 @@
+<div class="chat-container">
+  <div class="chat-layout">
+    <!-- Conversations sidebar -->
+    <div class="conversations-sidebar">
+      <div class="sidebar-header">
+        <div class="d-flex align-items-center justify-content-between w-100">
+          <div class="d-flex align-items-center">
+            <h5 class="m-0">
+              <i class="pi pi-comments me-2"></i>
+              Wiadomości
+            </h5>
+            <p-badge
+              *ngIf="getTotalUnreadCount() > 0"
+              [value]="getTotalUnreadCount().toString()"
+              severity="danger"
+              class="ms-2">
+            </p-badge>
+          </div>
+          <button
+            *ngIf="isSupport"
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            class="p-button-sm p-button-rounded"
+            [pTooltip]="'Nowa wiadomość'"
+            tooltipPosition="left"
+            (click)="showNewMessageDialog()">
+          </button>
+        </div>
+      </div>
+
+      <div class="conversations-list">
+        <div
+          *ngFor="let conversation of conversations"
+          class="conversation-item"
+          [class.active]="selectedConversation?.userId === conversation.userId"
+          (click)="selectConversation(conversation)">
+          <div class="conversation-avatar">
+            <i class="pi pi-user"></i>
+          </div>
+          <div class="conversation-details">
+            <div class="conversation-header">
+              <span class="conversation-name">{{ conversation.userName }}</span>
+              <span class="conversation-time" *ngIf="conversation.lastMessage">
+                {{ conversation.lastMessage.sentAt | date:'HH:mm' }}
+              </span>
+            </div>
+            <div class="conversation-preview">
+              <span class="last-message" *ngIf="conversation.lastMessage">
+                {{ conversation.lastMessage.message | slice:0:50 }}{{ conversation.lastMessage.message.length > 50 ? '...' : '' }}
+              </span>
+              <p-badge
+                *ngIf="conversation.unreadCount > 0"
+                [value]="conversation.unreadCount.toString()"
+                severity="danger"
+                class="ms-2">
+              </p-badge>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="conversations.length === 0" class="empty-state">
+          <i class="pi pi-inbox text-4xl mb-3"></i>
+          <p>Brak konwersacji</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat area -->
+    <div class="chat-area" *ngIf="selectedConversation; else noConversationSelected">
+      <!-- Chat header -->
+      <div class="chat-header">
+        <div class="d-flex align-items-center">
+          <div class="chat-avatar me-3">
+            <i class="pi pi-user"></i>
+          </div>
+          <div>
+            <h6 class="m-0">{{ selectedConversation.userName }}</h6>
+            <small class="text-muted" *ngIf="otherUserTyping">
+              <i>pisze...</i>
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages container -->
+      <div class="messages-container" #messageContainer>
+        <div
+          *ngFor="let message of messages"
+          class="message"
+          [class.message-sent]="isSentByMe(message)"
+          [class.message-received]="!isSentByMe(message)">
+          <div class="message-bubble">
+            <div class="message-text">{{ message.message }}</div>
+            <div class="message-meta">
+              <span class="message-time">{{ message.sentAt | date:'HH:mm' }}</span>
+              <i
+                *ngIf="isSentByMe(message)"
+                [class]="message.isRead ? 'pi pi-check-double text-primary' : 'pi pi-check'"
+                class="ms-1">
+              </i>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="messages.length === 0" class="empty-messages">
+          <i class="pi pi-comments text-4xl mb-3"></i>
+          <p>Rozpocznij konwersację</p>
+        </div>
+      </div>
+
+      <!-- Message input -->
+      <div class="message-input-container">
+        <div class="input-group">
+          <textarea
+            #messageInput
+            class="form-control message-input"
+            [(ngModel)]="newMessage"
+            (input)="onMessageInput()"
+            (keydown)="handleKeyPress($event)"
+            placeholder="Napisz wiadomość..."
+            rows="1">
+          </textarea>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-send"
+            [disabled]="!newMessage.trim()"
+            (click)="sendMessage()"
+            class="p-button-primary">
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- No conversation selected placeholder -->
+    <ng-template #noConversationSelected>
+      <div class="no-conversation-selected">
+        <i class="pi pi-comments text-6xl mb-4 text-muted"></i>
+        <h5>Wybierz konwersację</h5>
+        <p class="text-muted">Wybierz konwersację z listy, aby rozpocząć czat</p>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<!-- New Message Dialog -->
+<p-dialog
+  [(visible)]="showUserSelectDialog"
+  [header]="'Wybierz użytkownika'"
+  [modal]="true"
+  [style]="{width: '500px'}"
+  [draggable]="false"
+  [resizable]="false">
+  <div class="user-select-container">
+    <div class="p-input-icon-left mb-3">
+      <i class="pi pi-search"></i>
+      <input
+        type="text"
+        pInputText
+        [(ngModel)]="userSearchQuery"
+        placeholder="Szukaj użytkownika..."
+        class="w-100" />
+    </div>
+
+    <div class="user-list">
+      <div
+        *ngFor="let user of filteredCustomers"
+        class="user-item"
+        (click)="startConversationWithUser(user)">
+        <div class="user-avatar">
+          <i class="pi pi-user"></i>
+        </div>
+        <div class="user-info">
+          <div class="user-name">{{ user.name }}</div>
+          <div class="user-email">{{ user.email }}</div>
+        </div>
+        <i class="pi pi-chevron-right"></i>
+      </div>
+
+      <div *ngIf="filteredCustomers.length === 0" class="empty-user-list">
+        <i class="pi pi-users text-4xl mb-3"></i>
+        <p>Nie znaleziono użytkowników</p>
+      </div>
+    </div>
+  </div>
+</p-dialog>

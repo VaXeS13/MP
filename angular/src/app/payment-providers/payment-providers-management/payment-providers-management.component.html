@@ -1,0 +1,237 @@
+<div class="payment-providers-management">
+  <div class="mb-4">
+    <h2>Payment Providers Configuration</h2>
+    <p>Configure payment providers for your tenant.</p>
+  </div>
+
+  <div *ngIf="loading" class="text-center">
+    <p-progressSpinner></p-progressSpinner>
+    <p>Loading settings...</p>
+  </div>
+
+  <form *ngIf="!loading" [formGroup]="settingsForm" (ngSubmit)="onSave()">
+
+    <!-- Przelewy24 Card -->
+    <p-card header="Przelewy24" subheader="Polish payment gateway" class="mb-4">
+      <div formGroupName="przelewy24">
+
+        <!-- Enable/Disable Switch -->
+        <div class="field mb-3">
+          <label for="przelewy24-enabled">Enable Przelewy24</label>
+          <div class="mt-2">
+            <p-inputSwitch
+              inputId="przelewy24-enabled"
+              formControlName="enabled">
+            </p-inputSwitch>
+          </div>
+          <small class="text-muted">Enable or disable Przelewy24 payment provider</small>
+        </div>
+
+        <!-- Configuration fields (only shown when enabled) -->
+        <div *ngIf="isPrzelewy24Enabled" class="grid">
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="przelewy24-merchantId">Merchant ID *</label>
+              <input
+                pInputText
+                id="przelewy24-merchantId"
+                formControlName="merchantId"
+                placeholder="Enter Merchant ID"
+                class="w-full"
+                [class.ng-invalid]="przelewy24Form.get('merchantId')?.invalid && przelewy24Form.get('merchantId')?.touched" />
+              <small class="p-error" *ngIf="przelewy24Form.get('merchantId')?.invalid && przelewy24Form.get('merchantId')?.touched">
+                Merchant ID is required
+              </small>
+            </div>
+          </div>
+
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="przelewy24-posId">POS ID *</label>
+              <input
+                pInputText
+                id="przelewy24-posId"
+                formControlName="posId"
+                placeholder="Enter POS ID"
+                class="w-full"
+                [class.ng-invalid]="przelewy24Form.get('posId')?.invalid && przelewy24Form.get('posId')?.touched" />
+              <small class="p-error" *ngIf="przelewy24Form.get('posId')?.invalid && przelewy24Form.get('posId')?.touched">
+                POS ID is required
+              </small>
+            </div>
+          </div>
+
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="przelewy24-apiKey">API Key *</label>
+              <input
+                pInputText
+                id="przelewy24-apiKey"
+                formControlName="apiKey"
+                type="password"
+                placeholder="Enter API Key"
+                class="w-full"
+                [class.ng-invalid]="przelewy24Form.get('apiKey')?.invalid && przelewy24Form.get('apiKey')?.touched" />
+              <small class="p-error" *ngIf="przelewy24Form.get('apiKey')?.invalid && przelewy24Form.get('apiKey')?.touched">
+                API Key is required
+              </small>
+            </div>
+          </div>
+
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="przelewy24-crcKey">CRC Key *</label>
+              <input
+                pInputText
+                id="przelewy24-crcKey"
+                formControlName="crcKey"
+                type="password"
+                placeholder="Enter CRC Key"
+                class="w-full"
+                [class.ng-invalid]="przelewy24Form.get('crcKey')?.invalid && przelewy24Form.get('crcKey')?.touched" />
+              <small class="p-error" *ngIf="przelewy24Form.get('crcKey')?.invalid && przelewy24Form.get('crcKey')?.touched">
+                CRC Key is required
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- PayPal Card -->
+    <p-card header="PayPal" subheader="Global digital payment platform" class="mb-4">
+      <div formGroupName="payPal">
+
+        <!-- Enable/Disable Switch -->
+        <div class="field mb-3">
+          <label for="paypal-enabled">Enable PayPal</label>
+          <div class="mt-2">
+            <p-inputSwitch
+              inputId="paypal-enabled"
+              formControlName="enabled">
+            </p-inputSwitch>
+          </div>
+          <small class="text-muted">Enable or disable PayPal payment provider</small>
+        </div>
+
+        <!-- Configuration fields (only shown when enabled) -->
+        <div *ngIf="isPayPalEnabled" class="grid">
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="paypal-clientId">Client ID *</label>
+              <input
+                pInputText
+                id="paypal-clientId"
+                formControlName="clientId"
+                placeholder="Enter PayPal Client ID"
+                class="w-full"
+                [class.ng-invalid]="payPalForm.get('clientId')?.invalid && payPalForm.get('clientId')?.touched" />
+              <small class="p-error" *ngIf="payPalForm.get('clientId')?.invalid && payPalForm.get('clientId')?.touched">
+                Client ID is required
+              </small>
+            </div>
+          </div>
+
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="paypal-clientSecret">Client Secret *</label>
+              <input
+                pInputText
+                id="paypal-clientSecret"
+                formControlName="clientSecret"
+                type="password"
+                placeholder="Enter PayPal Client Secret"
+                class="w-full"
+                [class.ng-invalid]="payPalForm.get('clientSecret')?.invalid && payPalForm.get('clientSecret')?.touched" />
+              <small class="p-error" *ngIf="payPalForm.get('clientSecret')?.invalid && payPalForm.get('clientSecret')?.touched">
+                Client Secret is required
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Stripe Card -->
+    <p-card header="Stripe" subheader="Online payment processing platform" class="mb-4">
+      <div formGroupName="stripe">
+
+        <!-- Enable/Disable Switch -->
+        <div class="field mb-3">
+          <label for="stripe-enabled">Enable Stripe</label>
+          <div class="mt-2">
+            <p-inputSwitch
+              inputId="stripe-enabled"
+              formControlName="enabled">
+            </p-inputSwitch>
+          </div>
+          <small class="text-muted">Enable or disable Stripe payment provider</small>
+        </div>
+
+        <!-- Configuration fields (only shown when enabled) -->
+        <div *ngIf="isStripeEnabled" class="grid">
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="stripe-publishableKey">Publishable Key *</label>
+              <input
+                pInputText
+                id="stripe-publishableKey"
+                formControlName="publishableKey"
+                placeholder="Enter Stripe Publishable Key"
+                class="w-full"
+                [class.ng-invalid]="stripeForm.get('publishableKey')?.invalid && stripeForm.get('publishableKey')?.touched" />
+              <small class="p-error" *ngIf="stripeForm.get('publishableKey')?.invalid && stripeForm.get('publishableKey')?.touched">
+                Publishable Key is required
+              </small>
+            </div>
+          </div>
+
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label for="stripe-secretKey">Secret Key *</label>
+              <input
+                pInputText
+                id="stripe-secretKey"
+                formControlName="secretKey"
+                type="password"
+                placeholder="Enter Stripe Secret Key"
+                class="w-full"
+                [class.ng-invalid]="stripeForm.get('secretKey')?.invalid && stripeForm.get('secretKey')?.touched" />
+              <small class="p-error" *ngIf="stripeForm.get('secretKey')?.invalid && stripeForm.get('secretKey')?.touched">
+                Secret Key is required
+              </small>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="field">
+              <label for="stripe-webhookSecret">Webhook Secret</label>
+              <input
+                pInputText
+                id="stripe-webhookSecret"
+                formControlName="webhookSecret"
+                type="password"
+                placeholder="Enter Stripe Webhook Secret (optional)"
+                class="w-full" />
+              <small class="text-muted">Optional - for webhook event verification</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Save Button -->
+    <div class="text-right">
+      <p-button
+        type="submit"
+        label="Save Settings"
+        icon="pi pi-save"
+        [loading]="saving"
+        [disabled]="saving || !settingsForm.valid">
+      </p-button>
+    </div>
+
+  </form>
+</div>
+
+<p-toast></p-toast>

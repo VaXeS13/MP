@@ -1,0 +1,270 @@
+
+// Import Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+:root {
+  --primary-color: var(--bs-primary);
+  --primary-color-text: var(--bs-white);
+  --surface-0: var(--bs-body-bg);
+  --surface-50: var(--bs-light);
+  --text-color: var(--bs-body-color);
+}
+
+// Global styles for the modern layout
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+// Smooth transitions for all elements (excluding dropdowns)
+* {
+  transition: all 0.3s ease;
+}
+
+// Fix dropdown positioning to prevent animation from top-left
+.dropdown {
+  &[data-popper-placement] {
+    transition: none !important;
+
+    .dropdown-menu {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
+
+// Ensure proper positioning for table action dropdowns
+.dropdown-menu {
+  &.show {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+// Fix for ABP table action dropdowns
+ngb-dropdown {
+  .dropdown {
+    transition: none !important;
+
+    .dropdown-menu {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
+
+// Fix main layout padding and spacing
+.abp-layout {
+  padding: 20px !important;
+  margin: 0 auto;
+  max-width: none;
+
+  // Add proper spacing for content
+  .container-fluid {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+
+// Fix page content padding
+abp-page {
+  .container,
+  .container-fluid {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+
+// General content padding fix
+.content,
+main,
+[role="main"] {
+  padding: 20px !important;
+}
+
+// Fix breadcrumb styling
+abp-breadcrumb {
+  margin-bottom: 20px !important;
+
+  .abp-breadcrumb-items {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 10px 0 !important;
+
+    .breadcrumb-item {
+      font-size: 14px !important;
+      color: #6c757d !important;
+
+      &:not(:last-child)::after {
+        content: "/" !important;
+        margin: 0 8px !important;
+        color: #dee2e6 !important;
+      }
+
+      a {
+        color: #007bff !important;
+        text-decoration: none !important;
+
+        &:hover {
+          text-decoration: underline !important;
+        }
+      }
+
+      &.active {
+        color: #495057 !important;
+        font-weight: 500 !important;
+      }
+    }
+  }
+}
+
+// Fix page headers to not interfere with breadcrumbs
+.page-header,
+h1, h2, h3 {
+  &:first-child {
+    margin-top: 0 !important;
+    margin-bottom: 20px !important;
+  }
+}
+
+// Ensure all ABP pages have proper spacing
+router-outlet ~ * {
+  padding: 20px !important;
+}
+
+// Fix specific ABP module layouts
+abp-identity-users,
+abp-identity-roles,
+abp-tenant-management-tenants,
+app-booth,
+app-my-booths {
+  display: block !important;
+  padding: 20px !important;
+}
+
+// Fix card and table spacing
+.card {
+  margin-bottom: 20px !important;
+
+  .card-body {
+    padding: 20px !important;
+  }
+}
+
+.table-responsive {
+  margin-bottom: 20px !important;
+}
+
+// Fix PrimeNG dropdown and tooltip positioning issues
+// PrimeNG dropdowns
+.p-dropdown-panel {
+  transition: none !important;
+  animation: none !important;
+}
+
+// PrimeNG tooltips
+.p-tooltip {
+  transition: none !important;
+  animation: none !important;
+
+  &.p-tooltip-active {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+// Fix for PrimeNG overlays in general
+.p-overlaypanel,
+.p-menu,
+.p-contextmenu {
+  transition: none !important;
+  animation: none !important;
+}
+
+// Fix for any Popper.js tooltips
+.tooltip {
+  transition: none !important;
+  animation: none !important;
+
+  &.show {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+// Fix tooltips with data-popper-placement
+[data-popper-placement] {
+  &.tooltip,
+  &.p-tooltip {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+// Specific fix for Booths section dropdowns and tooltips
+app-booth,
+app-my-booths {
+  .dropdown,
+  .p-dropdown,
+  .tooltip,
+  .p-tooltip {
+    transition: none !important;
+    animation: none !important;
+
+    &[data-popper-placement] {
+      transition: none !important;
+    }
+  }
+
+  // Fix for action buttons tooltips
+  .p-button-icon-only,
+  .btn {
+    .tooltip,
+    .p-tooltip {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
+
+// Global fix for all overlay elements
+.p-component {
+  &[data-popper-placement] {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+// Fix for Bootstrap tooltips with Popper
+.bs-tooltip-top,
+.bs-tooltip-bottom,
+.bs-tooltip-start,
+.bs-tooltip-end {
+  transition: none !important;
+  animation: none !important;
+
+  &.show {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

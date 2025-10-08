@@ -1,0 +1,48 @@
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-weight: 600;
+    color: #333;
+
+    &.required::after {
+      content: ' *';
+      color: #ef4444;
+    }
+  }
+
+  input,
+  ::ng-deep .p-inputnumber,
+  ::ng-deep .p-dropdown {
+    width: 100%;
+  }
+
+  small.p-error {
+    color: #ef4444;
+    font-size: 0.875rem;
+  }
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  .footer-left {
+    flex: 1;
+  }
+
+  .footer-right {
+    display: flex;
+    gap: 0.5rem;
+  }
+}

@@ -1,0 +1,59 @@
+<button
+  class="notification-bell-button"
+  (click)="togglePanel($event)"
+  [pTooltip]="'Powiadomienia'"
+  tooltipPosition="bottom">
+  <div class="notification-icon-content">
+    <i class="pi pi-bell"></i>
+    <span class="notification-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+  </div>
+</button>
+
+<p-overlayPanel #notificationPanel [style]="{width: '400px'}">
+  <ng-template pTemplate="content">
+    <div class="notification-panel">
+      <div class="notification-header flex justify-content-between align-items-center p-3 border-bottom-1 surface-border">
+        <h5 class="m-0">Powiadomienia</h5>
+        <p-button
+          *ngIf="notifications.length > 0"
+          label="Wyczyść wszystkie"
+          [text]="true"
+          size="small"
+          (onClick)="clearAll()">
+        </p-button>
+      </div>
+
+      <div class="notification-list" style="max-height: 400px; overflow-y: auto;">
+        <div *ngIf="notifications.length === 0" class="text-center p-4 text-color-secondary">
+          <i class="pi pi-bell-slash text-4xl mb-3"></i>
+          <p>Brak powiadomień</p>
+        </div>
+
+        <div
+          *ngFor="let notification of notifications"
+          class="notification-item p-3 border-bottom-1 surface-border cursor-pointer hover:surface-hover"
+          (click)="onNotificationClick(notification)">
+          <div class="flex align-items-start gap-3">
+            <i [class]="getIconClass(notification.severity)" class="text-xl"></i>
+            <div class="flex-1">
+              <div class="font-semibold">{{ notification.title }}</div>
+              <div class="text-sm text-color-secondary mt-1">{{ notification.message }}</div>
+              <div class="text-xs text-color-secondary mt-2">
+                {{ notification.createdAt | date:'dd.MM.yyyy HH:mm' }}
+              </div>
+            </div>
+            <button
+              pButton
+              icon="pi pi-times"
+              [text]="true"
+              [rounded]="true"
+              size="small"
+              (click)="dismissNotification(notification, $event)"
+              class="p-button-secondary">
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</p-overlayPanel>

@@ -1,0 +1,15 @@
+<button
+  class="chat-icon-button"
+  (click)="navigateToChat()"
+  [pTooltip]="'Wiadomości'"
+  tooltipPosition="bottom">
+  <div class="chat-icon-content">
+    <i class="pi pi-comment"></i>
+    <p-badge
+      *ngIf="unreadCount > 0"
+      [value]="unreadCount.toString()"
+      severity="danger"
+      styleClass="chat-badge">
+    </p-badge>
+  </div>
+</button>

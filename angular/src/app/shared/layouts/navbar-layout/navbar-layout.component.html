@@ -1,0 +1,190 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+  <div class="container-fluid">
+    <!-- Brand -->
+    <a class="navbar-brand fw-bold" [routerLink]="['/']">
+      <i class="fas fa-store me-2"></i>
+      {{ appName }}
+    </a>
+
+    <!-- Mobile menu toggle -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      [attr.aria-expanded]="isMobileMenuOpen"
+      aria-controls="navbarNav"
+      aria-label="Toggle navigation"
+      (click)="toggleMobileMenu()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navigation Items -->
+    <div class="collapse navbar-collapse" id="navbarNav" [class.show]="isMobileMenuOpen">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item" *ngFor="let route of navigationItems$ | async"
+            [ngClass]="{'dropdown': route.children && route.children.length > 0}">
+
+          <!-- Regular menu item (no children) -->
+          <ng-container *ngIf="!route.children || route.children.length === 0">
+            <a
+              class="nav-link px-3 py-2 rounded-pill mx-1 nav-link-hover"
+              [routerLink]="[route.path]"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: route.path === '/' }"
+              (click)="closeMobileMenu()">
+              <i [class]="route.iconClass + ' me-2'" *ngIf="route.iconClass"></i>
+              {{ route.name | abpLocalization }}
+            </a>
+          </ng-container>
+
+          <!-- Dropdown menu item (with children) -->
+          <ng-container *ngIf="route.children && route.children.length > 0">
+            <a
+              class="nav-link dropdown-toggle px-3 py-2 rounded-pill mx-1 nav-link-hover"
+              [class.active]="isParentActive(route)"
+              href="#"
+              [id]="'dropdown-' + route.name"
+              role="button"
+              [attr.aria-expanded]="isDropdownOpen(route.name)"
+              (click)="toggleDropdown(route.name, $event)">
+              <i [class]="route.iconClass + ' me-2'" *ngIf="route.iconClass"></i>
+              {{ route.name | abpLocalization }}
+            </a>
+            <ul
+              class="dropdown-menu shadow"
+              [class.show]="isDropdownOpen(route.name)"
+              [attr.aria-labelledby]="'dropdown-' + route.name">
+              <li *ngFor="let child of route.children">
+                <a
+                  class="dropdown-item"
+                  [routerLink]="[child.path]"
+                  routerLinkActive="active"
+                  (click)="closeAllDropdowns(); closeMobileMenu()">
+                  <i [class]="child.iconClass + ' me-2'" *ngIf="child.iconClass"></i>
+                  {{ child.name | abpLocalization }}
+                </a>
+              </li>
+            </ul>
+          </ng-container>
+        </li>
+      </ul>
+
+      <!-- Language Selector -->
+      <div class="navbar-nav">
+        <div class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle d-flex align-items-center px-3 py-2"
+            href="#"
+            id="languageDropdown"
+            role="button"
+            [attr.aria-expanded]="isDropdownOpen('languageMenu')"
+            (click)="toggleDropdown('languageMenu', $event)">
+            <span class="me-2">{{ getCurrentLanguageFlag() }}</span>
+            <span class="d-none d-md-inline">{{ getCurrentLanguageName() }}</span>
+          </a>
+          <ul
+            class="dropdown-menu shadow"
+            [class.show]="isDropdownOpen('languageMenu')"
+            aria-labelledby="languageDropdown">
+            <li *ngFor="let language of availableLanguages">
+              <a
+                class="dropdown-item d-flex align-items-center"
+                [class.active]="language.code === currentLanguage"
+                href="#"
+                (click)="changeLanguage(language.code); closeAllDropdowns(); closeMobileMenu(); $event.preventDefault()">
+                <span class="me-2">{{ language.flag }}</span>
+                <span>{{ language.name }}</span>
+                <i class="fas fa-check ms-auto text-success" *ngIf="language.code === currentLanguage"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Cart Icon -->
+      <div class="navbar-nav" *ngIf="isLoggedIn$ | async">
+        <app-cart-icon></app-cart-icon>
+      </div>
+
+      <!-- Notification Bell -->
+      <div class="navbar-nav" *ngIf="isLoggedIn$ | async">
+        <app-notification-bell></app-notification-bell>
+      </div>
+
+      <!-- Chat Icon -->
+      <div class="navbar-nav" *ngIf="isLoggedIn$ | async">
+        <app-chat-icon></app-chat-icon>
+      </div>
+
+      <!-- User Menu -->
+      <div class="navbar-nav ms-auto">
+        <!-- Logged in user menu -->
+        <div class="nav-item dropdown" *ngIf="isLoggedIn$ | async; else guestButtons">
+          <a
+            class="nav-link dropdown-toggle d-flex align-items-center px-3 py-2 user-menu"
+            href="#"
+            id="userDropdown"
+            role="button"
+            [attr.aria-expanded]="isDropdownOpen('userMenu')"
+            (click)="toggleDropdown('userMenu', $event)">
+            <i class="fas fa-user-circle me-2 fs-5"></i>
+            <span class="d-none d-md-inline">{{ (currentUser$ | async)?.userName }}</span>
+          </a>
+          <ul
+            class="dropdown-menu dropdown-menu-end shadow"
+            [class.show]="isDropdownOpen('userMenu')"
+            aria-labelledby="userDropdown">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="fas fa-user me-2"></i>
+                {{ '::Menu:MyAccount' | abpLocalization }}
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#" (click)="closeAllDropdowns(); closeMobileMenu(); $event.preventDefault()">
+                <i class="fas fa-user-edit me-2"></i>
+                {{ '::Menu:Profile' | abpLocalization }}
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#" (click)="closeAllDropdowns(); closeMobileMenu(); $event.preventDefault()">
+                <i class="fas fa-cog me-2"></i>
+                {{ '::Menu:Settings' | abpLocalization }}
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item text-danger" href="#" (click)="logout(); closeAllDropdowns(); closeMobileMenu(); $event.preventDefault()">
+                <i class="fas fa-sign-out-alt me-2"></i>
+                {{ '::Menu:Logout' | abpLocalization }}
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Guest buttons (Login/Register) -->
+        <ng-template #guestButtons>
+          <div class="d-flex gap-2">
+            <button
+              class="btn btn-outline-light btn-sm px-3 py-2 rounded-pill"
+              (click)="login(); closeMobileMenu()">
+              <i class="fas fa-sign-in-alt me-2"></i>
+              {{ '::Menu:Login' | abpLocalization }}
+            </button>
+            <button
+              class="btn btn-light btn-sm px-3 py-2 rounded-pill"
+              (click)="navigateToRegister(); closeMobileMenu()">
+              <i class="fas fa-user-plus me-2"></i>
+              {{ '::Menu:Register' | abpLocalization }}
+            </button>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content">
+  <abp-loader-bar></abp-loader-bar>
+  <router-outlet></router-outlet>
+</main>

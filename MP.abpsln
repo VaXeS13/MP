@@ -1,0 +1,75 @@
+{
+  "id": "3a6fa6ef-b956-4b74-afe7-13290012a481",
+  "template": "app",
+  "versions": {
+    "AbpFramework": "9.3.2",
+    "AbpStudio": "1.2.2",
+    "TargetDotnetFramework": "net9.0",
+    "AbpCommercial": "9.3.2"
+  },
+  "modules": {
+    "MP": {
+      "path": "MP.abpmdl"
+    }
+  },
+  "runProfiles": {
+    "Default": {
+      "path": "etc/abp-studio/run-profiles/Default.abprun.json"
+    }
+  },
+  "options": {
+    "httpRequests": {
+      "ignoredUrls": []
+    }
+  },
+  "creatingStudioConfiguration": {
+    "template": "app",
+    "createdAbpStudioVersion": "1.0.1",
+    "tiered": "false",
+    "runInstallLibs": "true",
+    "useLocalReferences": "false",
+    "multiTenancy": "true",
+    "includeTests": "true",
+    "kubernetesConfiguration": "false",
+    "uiFramework": "angular",
+    "mobileFramework": "none",
+    "distributedEventBus": "none",
+    "databaseProvider": "ef",
+    "runDbMigrator": "true",
+    "databaseManagementSystem": "sqlserver",
+    "separateTenantSchema": "false",
+    "createInitialMigration": "true",
+    "theme": "basic",
+    "themeStyle": "",
+    "themeMenuPlacement": "",
+    "progressiveWebApp": "false",
+    "runProgressiveWebAppSupport": "false",
+    "publicWebsite": "false",
+    "socialLogin": "false",
+    "selectedLanguages": [
+      "English",
+      "English (United Kingdom)",
+      "简体中文",
+      "Español",
+      "العربية",
+      "हिन्दी",
+      "Português (Brasil)",
+      "Français",
+      "Русский",
+      "Deutsch (Deuthschland)",
+      "Türkçe",
+      "Italiano",
+      "Čeština",
+      "Magyar",
+      "Română (România)",
+      "Svenska",
+      "Suomi",
+      "Slovenčina",
+      "Íslenska",
+      "繁體中文",
+      "polski (Polska)"
+    ],
+    "defaultLanguage": "English",
+    "createCommand": "abp new MP -t app --ui-framework angular --database-provider ef --database-management-system sqlserver --theme basic --without-cms-kit --dont-run-bundling --no-social-logins -no-gdpr -no-openiddict-admin-ui -no-audit-logging -no-file-management -no-language-management -no-text-template-management"
+  }
+}

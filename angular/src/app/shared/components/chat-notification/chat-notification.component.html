@@ -1,0 +1,23 @@
+<div class="chat-notifications-container">
+  <div
+    *ngFor="let notification of notifications"
+    class="chat-notification"
+    [@slideIn]
+    (click)="openChat(notification)">
+    <div class="notification-avatar">
+      <i class="pi pi-user"></i>
+    </div>
+    <div class="notification-content">
+      <div class="notification-header">
+        <span class="notification-sender">{{ notification.senderName }}</span>
+        <button
+          class="notification-close"
+          (click)="dismissNotification(notification.id); $event.stopPropagation()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <div class="notification-message">{{ notification.message }}</div>
+      <div class="notification-time">{{ notification.timestamp | date:'HH:mm' }}</div>
+    </div>
+  </div>
+</div>

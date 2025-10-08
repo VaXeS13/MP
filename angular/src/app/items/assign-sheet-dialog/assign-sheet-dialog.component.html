@@ -1,0 +1,67 @@
+<p-dialog
+  header="Assign Sheet to Rental"
+  [(visible)]="visible"
+  (onHide)="onHide()"
+  [modal]="true"
+  [style]="{width: '500px'}"
+  [draggable]="false"
+  [resizable]="false">
+
+  <div *ngIf="itemSheet" class="sheet-info">
+    <p><strong>Sheet Name:</strong> {{ itemSheet.name }}</p>
+    <p><strong>Items Count:</strong> {{ itemSheet.itemsCount }}</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-grid">
+      <!-- Rental Selection -->
+      <div class="form-field">
+        <label for="rentalId" class="required">Select Rental (Booth)</label>
+        <p-dropdown
+          inputId="rentalId"
+          formControlName="rentalId"
+          [options]="rentals"
+          optionLabel="boothNumber"
+          optionValue="id"
+          placeholder="Select a rental"
+          [loading]="loadingRentals"
+          appendTo="body"
+          [class.ng-invalid]="isFieldInvalid('rentalId')"
+          [class.ng-dirty]="isFieldInvalid('rentalId')">
+          <ng-template let-rental pTemplate="item">
+            <div class="rental-option">
+              <div>{{ getRentalLabel(rental) }}</div>
+              <div class="rental-status">{{ rental.statusDisplayName }}</div>
+            </div>
+          </ng-template>
+        </p-dropdown>
+        <small class="p-error" *ngIf="isFieldInvalid('rentalId')">
+          {{ getFieldError('rentalId') }}
+        </small>
+      </div>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="footer-content">
+      <button
+        pButton
+        type="button"
+        label="Cancel"
+        icon="pi pi-times"
+        (click)="onHide()"
+        class="p-button-text"
+        [disabled]="saving">
+      </button>
+      <button
+        pButton
+        type="button"
+        label="Assign"
+        icon="pi pi-check"
+        (click)="save()"
+        [loading]="saving"
+        [disabled]="saving || loadingRentals">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

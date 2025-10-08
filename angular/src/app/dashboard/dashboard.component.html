@@ -1,0 +1,428 @@
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="h3 mb-1">
+        <i class="fas fa-chart-line me-2"></i>
+        Dashboard
+      </h2>
+      <small class="text-muted">Business analytics and insights</small>
+    </div>
+
+    <!-- Period Filter -->
+    <div class="d-flex gap-2">
+      <select class="form-select" style="width: auto;"
+              [(ngModel)]="currentFilter.period"
+              (change)="onPeriodChange(currentFilter.period)">
+        <option [value]="PeriodType.Month">This Month</option>
+        <option [value]="PeriodType.Quarter">This Quarter</option>
+        <option [value]="PeriodType.Year">This Year</option>
+      </select>
+
+      <!-- Export buttons -->
+      <div class="btn-group" role="group">
+        <button class="btn btn-outline-primary btn-sm" title="Export Reports">
+          <i class="fas fa-download me-1"></i>
+          Export
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="d-flex justify-content-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading">
+
+    <!-- Key Metrics Cards -->
+    <div class="row g-4 mb-4">
+      <!-- Sales Today -->
+      <div class="col-lg-3 col-md-6">
+        <div class="card bg-primary text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title text-white-50">Sales Today</h6>
+                <h3 class="mb-0">{{ salesData ? formatCurrency(salesData.todaySales) : '$0.00' }}</h3>
+                <small>
+                  <i class="fas"
+                     [class.fa-arrow-up]="salesData && salesData.salesGrowthPercentage > 0"
+                     [class.fa-arrow-down]="salesData && salesData.salesGrowthPercentage < 0"></i>
+                  {{ salesData ? formatPercentage(salesData.salesGrowthPercentage) : '0%' }} vs last month
+                </small>
+              </div>
+              <div class="fs-1 opacity-50">
+                <i class="fas fa-dollar-sign"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items Sold -->
+      <div class="col-lg-3 col-md-6">
+        <div class="card bg-success text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title text-white-50">Items Sold Today</h6>
+                <h3 class="mb-0">{{ salesData?.totalItemsSoldToday || 0 }}</h3>
+                <small>{{ salesData?.totalItemsSoldMonth || 0 }} this month</small>
+              </div>
+              <div class="fs-1 opacity-50">
+                <i class="fas fa-shopping-cart"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Booth Occupancy -->
+      <div class="col-lg-3 col-md-6">
+        <div class="card bg-info text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title text-white-50">Booth Occupancy</h6>
+                <h3 class="mb-0">{{ boothData ? formatPercentage(boothData.occupancyRate) : '0%' }}</h3>
+                <small>{{ boothData?.occupiedBooths || 0 }}/{{ boothData?.totalBooths || 0 }} booths occupied</small>
+              </div>
+              <div class="fs-1 opacity-50">
+                <i class="fas fa-store"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Revenue -->
+      <div class="col-lg-3 col-md-6">
+        <div class="card bg-warning text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title text-white-50">Monthly Revenue</h6>
+                <h3 class="mb-0">{{ financialData ? formatCurrency(financialData.monthlyRevenue) : '$0.00' }}</h3>
+                <small>{{ financialData ? formatCurrency(financialData.pendingPayments) : '$0.00' }} pending</small>
+              </div>
+              <div class="fs-1 opacity-50">
+                <i class="fas fa-chart-bar"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row g-4 mb-4">
+      <!-- Revenue Breakdown -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-pie-chart me-2"></i>
+              Revenue Sources
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-6">
+                <div class="text-center">
+                  <h4 class="text-primary">{{ financialData ? formatCurrency(financialData.monthlyRentalIncome) : '$0' }}</h4>
+                  <p class="text-muted mb-0">Booth Rentals</p>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="text-center">
+                  <h4 class="text-success">{{ financialData ? formatCurrency(financialData.monthlyCommissionIncome) : '$0' }}</h4>
+                  <p class="text-muted mb-0">Commissions</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Booth Status -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-chart-bar me-2"></i>
+              Booth Status
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-3">
+                <div class="text-center">
+                  <h4 class="text-success">{{ boothData?.occupiedBooths || 0 }}</h4>
+                  <p class="text-muted mb-0">Occupied</p>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="text-center">
+                  <h4 class="text-primary">{{ boothData?.availableBooths || 0 }}</h4>
+                  <p class="text-muted mb-0">Available</p>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="text-center">
+                  <h4 class="text-warning">{{ boothData?.reservedBooths || 0 }}</h4>
+                  <p class="text-muted mb-0">Reserved</p>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="text-center">
+                  <h4 class="text-danger">{{ boothData?.maintenanceBooths || 0 }}</h4>
+                  <p class="text-muted mb-0">Maintenance</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Analytics Row -->
+    <div class="row g-4 mb-4">
+      <!-- Payment Success Rate -->
+      <div class="col-lg-3 col-md-6">
+        <div class="card border-primary">
+          <div class="card-body text-center">
+            <div class="text-primary mb-2">
+              <i class="fas fa-credit-card fa-2x"></i>
+            </div>
+            <h4 class="text-primary">{{ paymentData ? formatPercentage(paymentData.successRate) : '0%' }}</h4>
+            <p class="text-muted mb-0">Payment Success Rate</p>
+            <small class="text-muted">{{ paymentData?.completedTransactions || 0 }}/{{ paymentData?.totalTransactions || 0 }} successful</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Average Transaction Value -->
+      <div class="col-lg-3 col-md-6">
+        <div class="card border-success">
+          <div class="card-body text-center">
+            <div class="text-success mb-2">
+              <i class="fas fa-money-bill-wave fa-2x"></i>
+            </div>
+            <h4 class="text-success">{{ paymentData ? formatCurrency(paymentData.averageTransactionValue) : '$0' }}</h4>
+            <p class="text-muted mb-0">Avg Transaction</p>
+            <small class="text-muted">{{ paymentData ? formatCurrency(paymentData.totalProcessedAmount) : '$0' }} total processed</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Processing Time -->
+      <div class="col-lg-3 col-md-6">
+        <div class="card border-info">
+          <div class="card-body text-center">
+            <div class="text-info mb-2">
+              <i class="fas fa-clock fa-2x"></i>
+            </div>
+            <h4 class="text-info">{{ paymentData ? paymentData.averageProcessingTime.toFixed(1) : '0' }}min</h4>
+            <p class="text-muted mb-0">Avg Processing Time</p>
+            <small class="text-muted">{{ paymentData?.processingTransactions || 0 }} currently processing</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Failed Transactions -->
+      <div class="col-lg-3 col-md-6">
+        <div class="card border-danger">
+          <div class="card-body text-center">
+            <div class="text-danger mb-2">
+              <i class="fas fa-exclamation-triangle fa-2x"></i>
+            </div>
+            <h4 class="text-danger">{{ paymentData?.failedTransactions || 0 }}</h4>
+            <p class="text-muted mb-0">Failed Transactions</p>
+            <small class="text-muted">This month</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Methods & Recent Transactions -->
+    <div class="row g-4 mb-4">
+      <!-- Payment Methods Breakdown -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-chart-pie me-2"></i>
+              Payment Methods
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3" *ngIf="paymentData?.paymentMethodBreakdown?.length; else noPaymentMethods">
+              <div class="col-6" *ngFor="let method of paymentData.paymentMethodBreakdown.slice(0, 4)">
+                <div class="d-flex align-items-center">
+                  <div class="flex-shrink-0">
+                    <div class="rounded-circle"
+                         [style.background-color]="method.color"
+                         style="width: 12px; height: 12px;"></div>
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <div class="fw-bold">{{ method.methodName }}</div>
+                    <small class="text-muted">{{ method.transactionCount }} transactions • {{ formatPercentage(method.successRate) }} success</small>
+                  </div>
+                  <div class="text-end">
+                    <div class="fw-bold">{{ formatCurrency(method.totalAmount) }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noPaymentMethods>
+              <div class="text-center text-muted py-3">
+                <i class="fas fa-credit-card fa-2x mb-2"></i>
+                <p class="mb-0">No payment data available</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-receipt me-2"></i>
+              Recent Transactions
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush" *ngIf="paymentData?.recentTransactions?.length; else noTransactions">
+              <div class="list-group-item px-0 py-2" *ngFor="let transaction of paymentData.recentTransactions.slice(0, 5)">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-items-center">
+                      <span class="badge"
+                            [class]="getStatusBadgeClass(transaction.status)">{{ transaction.status }}</span>
+                      <div class="ms-2">
+                        <div class="fw-bold">{{ formatCurrency(transaction.amount) }} {{ transaction.currency }}</div>
+                        <small class="text-muted">{{ transaction.customerEmail }} • {{ transaction.boothNumber || 'N/A' }}</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <small class="text-muted">{{ transaction.creationTime | date:'short' }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noTransactions>
+              <div class="text-center text-muted py-3">
+                <i class="fas fa-receipt fa-2x mb-2"></i>
+                <p class="mb-0">No recent transactions</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Tables Row -->
+    <div class="row g-4">
+      <!-- Recent Rentals -->
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-clock me-2"></i>
+              Recent Rentals
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Booth</th>
+                    <th>Customer</th>
+                    <th>Period</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Days Left</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let rental of dashboardData?.recentRentals || []">
+                    <td><strong>{{ rental.boothNumber }}</strong></td>
+                    <td>
+                      <div>{{ rental.customerName }}</div>
+                      <small class="text-muted">{{ rental.customerEmail }}</small>
+                    </td>
+                    <td>
+                      <small>{{ rental.startDate | date:'short' }} - {{ rental.endDate | date:'short' }}</small>
+                    </td>
+                    <td>{{ formatCurrency(rental.totalCost) }}</td>
+                    <td>
+                      <span class="badge" [class]="getStatusBadgeClass(rental.status)">{{ rental.status }}</span>
+                    </td>
+                    <td [class]="rental.daysRemaining <= 2 ? 'text-warning' : 'text-success'">
+                      <strong>{{ rental.daysRemaining }} days</strong>
+                    </td>
+                  </tr>
+                  <tr *ngIf="!dashboardData?.recentRentals?.length">
+                    <td colspan="6" class="text-center text-muted py-3">
+                      <i class="fas fa-calendar fa-2x mb-2 d-block"></i>
+                      No recent rentals found
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Selling Items -->
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-trophy me-2"></i>
+              Top Selling Items
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush" *ngIf="dashboardData?.topSellingItems?.length; else noTopItems">
+              <div class="list-group-item px-0 py-2" *ngFor="let item of dashboardData.topSellingItems; let i = index">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-items-center">
+                      <span class="badge bg-primary rounded-pill me-2">{{ i + 1 }}</span>
+                      <div>
+                        <div class="fw-bold">{{ item.itemName }}</div>
+                        <small class="text-muted">{{ item.boothNumber }} • {{ item.boothTypeName }}</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <div class="fw-bold text-success">{{ formatCurrency(item.salePrice) }}</div>
+                    <small class="text-muted">Commission: {{ formatCurrency(item.commissionEarned) }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noTopItems>
+              <div class="text-center text-muted py-3">
+                <i class="fas fa-trophy fa-2x mb-2"></i>
+                <p class="mb-0">No items sold yet</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

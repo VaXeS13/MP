@@ -1,0 +1,58 @@
+<div class="card">
+  <div class="card-header">
+    <h3>Minimum Gap Between Rentals Settings</h3>
+  </div>
+
+  <div class="card-body">
+    <p-progressSpinner *ngIf="loading" styleClass="w-4rem h-4rem"></p-progressSpinner>
+
+    <form *ngIf="!loading" (ngSubmit)="saveSettings()">
+      <div class="grid">
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label for="minimumGapDays">Minimum Gap Between Rentals (days)</label>
+            <p-inputNumber
+              id="minimumGapDays"
+              [(ngModel)]="settings.minimumGapDays"
+              name="minimumGapDays"
+              [min]="0"
+              [max]="30"
+              [showButtons]="true"
+              buttonLayout="horizontal"
+              spinnerMode="horizontal"
+              decrementButtonClass="p-button-secondary"
+              incrementButtonClass="p-button-secondary"
+              incrementButtonIcon="pi pi-plus"
+              decrementButtonIcon="pi pi-minus"
+              class="w-full"
+            >
+            </p-inputNumber>
+            <small class="block mt-2">
+              If a booth is rented until day D, the next rental can start on day D+1 (adjacent)
+              or day D+1+MinimumGapDays (with minimum gap). This prevents unusable gaps that are too small to rent.
+              <br><br>
+              <strong>Examples with Minimum Gap = 3 days:</strong>
+              <ul class="mt-2">
+                <li>Previous rental ends on Oct 10 → Next can start on Oct 11 (adjacent) ✅</li>
+                <li>Previous rental ends on Oct 10 → Next can start on Oct 14+ (3+ days gap) ✅</li>
+                <li>Previous rental ends on Oct 10 → Next starts on Oct 12 or 13 (1-2 days gap) ❌</li>
+              </ul>
+              <br>
+              Set to <strong>0</strong> to disable gap validation (allow any gap size).
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <p-button
+          type="submit"
+          label="Save Settings"
+          icon="pi pi-save"
+          [loading]="saving"
+          [disabled]="saving"
+        ></p-button>
+      </div>
+    </form>
+  </div>
+</div>

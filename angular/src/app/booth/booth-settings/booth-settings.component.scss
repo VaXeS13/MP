@@ -1,0 +1,42 @@
+.card {
+  margin: 1rem;
+
+  .card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--surface-border);
+
+    h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+  }
+
+  .card-body {
+    padding: 1.5rem;
+
+    .field {
+      margin-bottom: 1rem;
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+
+      small {
+        color: var(--text-color-secondary);
+        line-height: 1.5;
+
+        ul {
+          margin: 0;
+          padding-left: 1.5rem;
+
+          li {
+            margin: 0.25rem 0;
+          }
+        }
+      }
+    }
+  }
+}

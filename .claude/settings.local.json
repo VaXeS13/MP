@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Where-Object { $_ullName -notmatch \"\\obj\"\" -and $_ullName -notmatch \"bin\"\" })",
+      "Bash(dotnet build:*)",
+      "Bash(ng build:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(ng generate component:*)",
+      "Bash(npm run generate-proxy:*)",
+      "Bash(abp generate-proxy:*)",
+      "Bash(ng serve:*)",
+      "Bash(findstr:*)",
+      "Bash(dir:*)",
+      "Bash(find:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(dotnet run:*)",
+      "Bash(netstat:*)",
+      "Bash(dotnet ef database update:*)",
+      "Bash(taskkill:*)",
+      "Bash(timeout:*)",
+      "Bash(if exist .angularcache rd /s /q .angularcache)",
+      "Bash(powershell:*)",
+      "Bash(del \"C:\\Users\\mhinc\\source\\repos\\MP\\MP\\src\\MP.Domain\\Rentals\\RentalItem.cs\")",
+      "Bash(del \"C:\\Users\\mhinc\\source\\repos\\MP\\MP\\src\\MP.Domain.Shared\\Rentals\\RentalItemStatus.cs\")",
+      "Bash(Remove-Item \"C:\\Users\\mhinc\\source\\repos\\MP\\MP\\src\\MP.Domain\\Rentals\\RentalItem.cs\" -Force)",
+      "Bash(Remove-Item \"C:\\Users\\mhinc\\source\\repos\\MP\\MP\\src\\MP.Domain.Shared\\Rentals\\RentalItemStatus.cs\" -Force)",
+      "Bash(Select-String -Pattern \"error|succeeded|failed\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,221 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Volo.Abp;
+using Volo.Abp.Domain.Services;
+using Volo.Abp.Guids;
+using Volo.Abp.Settings;
+using MP.Domain.Booths;
+using MP.Domain.Rentals;
+using MP.Domain.Settings;
+
+namespace MP.Domain.Carts
+{
+    public class CartManager : DomainService
+    {
+        private readonly ICartRepository _cartRepository;
+        private readonly IBoothRepository _boothRepository;
+        private readonly IRentalRepository _rentalRepository;
+        private readonly IGuidGenerator _guidGenerator;
+        private readonly ISettingProvider _settingProvider;
+
+        public CartManager(
+            ICartRepository cartRepository,
+            IBoothRepository boothRepository,
+            IRentalRepository rentalRepository,
+            IGuidGenerator guidGenerator,
+            ISettingProvider settingProvider)
+        {
+            _cartRepository = cartRepository;
+            _boothRepository = boothRepository;
+            _rentalRepository = rentalRepository;
+            _guidGenerator = guidGenerator;
+            _settingProvider = settingProvider;
+        }
+
+        /// <summary>
+        /// Gets or creates an active cart for a user
+        /// </summary>
+        public async Task<Cart> GetOrCreateActiveCartAsync(Guid userId, Guid? tenantId = null)
+        {
+            var cart = await _cartRepository.GetActiveCartByUserIdAsync(userId, includeItems: true);
+
+            if (cart == null)
+            {
+                cart = new Cart(_guidGenerator.Create(), userId, tenantId);
+                await _cartRepository.InsertAsync(cart);
+            }
+
+            return cart;
+        }
+
+        /// <summary>
+        /// Validates if a booth can be added to cart for the given period
+        /// </summary>
+        public async Task ValidateCartItemAsync(
+            Guid boothId,
+            DateTime startDate,
+            DateTime endDate,
+            Guid? excludeCartId = null)
+        {
+            // Check if booth exists
+            var booth = await _boothRepository.GetAsync(boothId);
+
+            // Check if start date is not in the past
+            var today = DateTime.Today;
+            if (startDate.Date < today)
+            {
+                throw new BusinessException("RENTAL_START_DATE_IN_PAST")
+                    .WithData("BoothId", boothId)
+                    .WithData("StartDate", startDate)
+                    .WithData("Today", today);
+            }
+
+            // Check if booth has any active rentals in this period
+            var hasActiveRental = await _rentalRepository.HasActiveRentalForBoothAsync(
+                boothId, startDate, endDate);
+
+            if (hasActiveRental)
+            {
+                throw new BusinessException("BOOTH_ALREADY_RENTED_IN_PERIOD")
+                    .WithData("BoothId", boothId)
+                    .WithData("StartDate", startDate)
+                    .WithData("EndDate", endDate);
+            }
+
+            // Note: We allow multiple users to have the same booth in their carts.
+            // First user to complete payment (create rental) wins.
+
+            // Validate minimum rental period (e.g., 7 days)
+            var days = (endDate - startDate).Days + 1;
+            if (days < 7)
+            {
+                throw new BusinessException("RENTAL_PERIOD_TOO_SHORT")
+                    .WithData("Days", days)
+                    .WithData("MinimumDays", 7);
+            }
+
+            // Validate minimum gap between rentals
+            await ValidateMinimumGapAsync(boothId, startDate, endDate);
+        }
+
+        /// <summary>
+        /// Validates that the rental doesn't create an unusable gap (too small to rent)
+        /// </summary>
+        private async Task ValidateMinimumGapAsync(Guid boothId, DateTime startDate, DateTime endDate)
+        {
+            var minimumGapDays = await GetMinimumGapDaysAsync();
+
+            if (minimumGapDays == 0)
+            {
+                return; // Gap validation disabled
+            }
+
+            // Check for rental before the requested period
+            var rentalBefore = await _rentalRepository.GetNearestRentalBeforeAsync(boothId, startDate);
+            if (rentalBefore != null)
+            {
+                var daysBefore = (startDate.Date - rentalBefore.Period.EndDate.Date).Days - 1;
+
+                // If there's a gap, it must be either 0 (adjacent) or >= minimumGapDays
+                if (daysBefore > 0 && daysBefore < minimumGapDays)
+                {
+                    throw new BusinessException("RENTAL_CREATES_UNUSABLE_GAP_BEFORE")
+                        .WithData("BoothId", boothId)
+                        .WithData("StartDate", startDate)
+                        .WithData("PreviousRentalEndDate", rentalBefore.Period.EndDate)
+                        .WithData("GapDays", daysBefore)
+                        .WithData("MinimumGapDays", minimumGapDays)
+                        .WithData("SuggestedStartDate", rentalBefore.Period.EndDate.AddDays(1))
+                        .WithData("AlternativeStartDate", rentalBefore.Period.EndDate.AddDays(minimumGapDays + 1));
+                }
+            }
+
+            // Check for rental after the requested period
+            var rentalAfter = await _rentalRepository.GetNearestRentalAfterAsync(boothId, endDate);
+            if (rentalAfter != null)
+            {
+                var daysAfter = (rentalAfter.Period.StartDate.Date - endDate.Date).Days - 1;
+
+                // If there's a gap, it must be either 0 (adjacent) or >= minimumGapDays
+                if (daysAfter > 0 && daysAfter < minimumGapDays)
+                {
+                    throw new BusinessException("RENTAL_CREATES_UNUSABLE_GAP_AFTER")
+                        .WithData("BoothId", boothId)
+                        .WithData("EndDate", endDate)
+                        .WithData("NextRentalStartDate", rentalAfter.Period.StartDate)
+                        .WithData("GapDays", daysAfter)
+                        .WithData("MinimumGapDays", minimumGapDays)
+                        .WithData("SuggestedEndDate", rentalAfter.Period.StartDate.AddDays(-1))
+                        .WithData("AlternativeEndDate", rentalAfter.Period.StartDate.AddDays(-minimumGapDays - 1));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the minimum gap days setting
+        /// </summary>
+        private async Task<int> GetMinimumGapDaysAsync()
+        {
+            var setting = await _settingProvider.GetOrNullAsync(MPSettings.Booths.MinimumGapDays);
+            return int.TryParse(setting, out var gap) ? gap : 7;
+        }
+
+        /// <summary>
+        /// Adds an item to the cart with validation
+        /// </summary>
+        public async Task<CartItem> AddItemToCartAsync(
+            Cart cart,
+            Guid boothId,
+            Guid boothTypeId,
+            DateTime startDate,
+            DateTime endDate,
+            string? notes = null)
+        {
+            // Validate the cart item
+            await ValidateCartItemAsync(boothId, startDate, endDate, cart.Id);
+
+            // Get booth for pricing
+            var booth = await _boothRepository.GetAsync(boothId);
+
+            // Add item to cart
+            var itemId = _guidGenerator.Create();
+            var item = cart.AddItem(
+                itemId,
+                boothId,
+                boothTypeId,
+                startDate,
+                endDate,
+                booth.PricePerDay,
+                notes
+            );
+
+            return item;
+        }
+
+        /// <summary>
+        /// Updates a cart item with validation
+        /// </summary>
+        public async Task UpdateCartItemAsync(
+            Cart cart,
+            Guid itemId,
+            Guid boothTypeId,
+            DateTime startDate,
+            DateTime endDate,
+            string? notes)
+        {
+            var item = cart.Items.FirstOrDefault(i => i.Id == itemId);
+            if (item == null)
+            {
+                throw new BusinessException("CART_ITEM_NOT_FOUND")
+                    .WithData("ItemId", itemId);
+            }
+
+            // Validate the updated period
+            await ValidateCartItemAsync(item.BoothId, startDate, endDate, cart.Id);
+
+            // Update the item
+            cart.UpdateItem(itemId, boothTypeId, startDate, endDate, notes);
+        }
+    }
+}

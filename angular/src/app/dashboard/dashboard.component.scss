@@ -1,0 +1,230 @@
+// Dashboard component styling - Bootstrap consistent
+
+.card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  transition: box-shadow 0.15s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+
+  .card-header {
+    background-color: var(--bs-gray-50);
+    border-bottom: 1px solid var(--bs-border-color);
+
+    .card-title {
+      color: var(--bs-gray-800);
+      font-weight: 600;
+    }
+  }
+}
+
+// Metric Cards
+.bg-primary {
+  background: linear-gradient(135deg, var(--bs-primary) 0%, color-mix(in srgb, var(--bs-primary) 90%, black) 100%);
+}
+
+.bg-success {
+  background: linear-gradient(135deg, var(--bs-success) 0%, color-mix(in srgb, var(--bs-success) 90%, black) 100%);
+}
+
+.bg-info {
+  background: linear-gradient(135deg, var(--bs-info) 0%, color-mix(in srgb, var(--bs-info) 90%, black) 100%);
+}
+
+.bg-warning {
+  background: linear-gradient(135deg, var(--bs-warning) 0%, color-mix(in srgb, var(--bs-warning) 90%, black) 100%);
+}
+
+// Chart containers
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+canvas {
+  max-height: 100%;
+}
+
+// Table styling enhancements
+.table {
+  tbody tr {
+    transition: background-color 0.15s ease-in-out;
+  }
+
+  .badge {
+    font-size: 0.75em;
+  }
+}
+
+// List group items
+.list-group-item {
+  border: none;
+  border-bottom: 1px solid var(--bs-border-color);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: var(--bs-gray-50);
+  }
+}
+
+// Badge customizations
+.badge {
+  &.bg-primary {
+    background-color: var(--bs-primary) !important;
+  }
+
+  &.bg-success {
+    background-color: var(--bs-success) !important;
+  }
+
+  &.bg-warning {
+    background-color: var(--bs-warning) !important;
+  }
+
+  &.bg-danger {
+    background-color: var(--bs-danger) !important;
+  }
+
+  &.bg-info {
+    background-color: var(--bs-info) !important;
+  }
+
+  &.bg-secondary {
+    background-color: var(--bs-secondary) !important;
+  }
+}
+
+// Loading state
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+// Status indicators
+.text-success {
+  color: var(--bs-success) !important;
+}
+
+.text-warning {
+  color: var(--bs-warning) !important;
+}
+
+.text-danger {
+  color: var(--bs-danger) !important;
+}
+
+.text-muted {
+  color: var(--bs-gray-600) !important;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .card {
+    margin-bottom: 1rem;
+  }
+
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+
+  .chart-container,
+  canvas {
+    height: 250px !important;
+  }
+
+  .fs-1 {
+    font-size: 2rem !important;
+  }
+
+  .list-group-item {
+    padding: 0.75rem 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .btn-group {
+    flex-direction: column;
+
+    .btn {
+      border-radius: var(--bs-border-radius) !important;
+      margin-bottom: 0.25rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .d-flex.gap-2 {
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+
+  .form-select {
+    width: 100% !important;
+  }
+}
+
+// Animation for cards appearing
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+// Custom metric card styling
+.metric-card {
+  border: none;
+  border-radius: 1rem;
+  overflow: hidden;
+
+  .card-body {
+    padding: 2rem;
+  }
+
+  h3 {
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .fs-1 {
+    font-size: 3rem !important;
+    opacity: 0.3;
+  }
+}
+
+// Chart legend positioning
+::ng-deep .chart-legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin: 0 1rem 0.5rem 0;
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      margin-right: 0.5rem;
+      border-radius: 2px;
+    }
+  }
+}

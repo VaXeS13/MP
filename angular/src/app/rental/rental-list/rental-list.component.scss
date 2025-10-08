@@ -1,0 +1,44 @@
+.table {
+  th {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-dark);
+    color: white;
+  }
+
+  td {
+    vertical-align: middle;
+  }
+}
+
+.btn-group-sm .btn {
+  --bs-btn-padding-x: 0.375rem;
+  --bs-btn-padding-y: 0.25rem;
+  --bs-btn-font-size: 0.875rem;
+}
+
+.badge {
+  font-size: 0.75em;
+}
+
+.pagination-sm .page-link {
+  --bs-pagination-padding-x: 0.5rem;
+  --bs-pagination-padding-y: 0.25rem;
+  --bs-pagination-font-size: 0.875rem;
+}
+
+.small {
+  font-size: 0.875em;
+  line-height: 1.25;
+}
+
+.text-success {
+  color: var(--bs-success) !important;
+}
+
+.text-warning {
+  color: var(--bs-warning) !important;
+}
+
+.text-muted {
+  color: var(--bs-gray-600) !important;
+}

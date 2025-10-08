@@ -1,0 +1,189 @@
+<div class="card">
+  <div class="header-section">
+    <button pButton type="button" icon="pi pi-arrow-left" (click)="goBack()" class="p-button-text"></button>
+    <h3>Item Sheet Details</h3>
+  </div>
+
+  <div *ngIf="sheet" class="sheet-info">
+    <div class="info-grid">
+      <div class="info-item">
+        <label>Status:</label>
+        <span>{{ sheet.status }}</span>
+      </div>
+      <div class="info-item">
+        <label>Total Items:</label>
+        <span>{{ sheet.totalItemsCount }}</span>
+      </div>
+      <div class="info-item">
+        <label>Sold:</label>
+        <span>{{ sheet.soldItemsCount }}</span>
+      </div>
+      <div class="info-item">
+        <label>Reclaimed:</label>
+        <span>{{ sheet.reclaimedItemsCount }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <button
+      pButton
+      type="button"
+      label="Add Item"
+      icon="pi pi-plus"
+      (click)="openAddItemDialog()"
+      [disabled]="sheet?.status !== 'Draft'"
+      class="mr-2"></button>
+    <button
+      pButton
+      type="button"
+      label="Assign to Rental"
+      icon="pi pi-link"
+      (click)="openAssignDialog()"
+      [disabled]="sheet?.status !== 'Draft'"
+      class="p-button-secondary"></button>
+  </div>
+
+  <p-table
+    *ngIf="sheet"
+    [value]="sheet.items || []"
+    [loading]="loading"
+    responsiveLayout="scroll">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Commission %</th>
+        <th>Commission Amount</th>
+        <th>Barcode</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-sheetItem>
+      <tr>
+        <td>{{ sheetItem.itemNumber }}</td>
+        <td>{{ sheetItem.item?.name }}</td>
+        <td>{{ sheetItem.item?.price | number:'1.2-2' }} {{ sheetItem.item?.currency }}</td>
+        <td>
+          <span *ngIf="sheetItem.status === 'Sold'">{{ sheetItem.commissionPercentage }}%</span>
+          <span *ngIf="sheetItem.status !== 'Sold'" class="text-muted">-</span>
+        </td>
+        <td>
+          <span *ngIf="sheetItem.status === 'Sold' && sheetItem.item?.price">
+            {{ getCommissionAmount(sheetItem) | number:'1.2-2' }} {{ sheetItem.item?.currency }}
+          </span>
+          <span *ngIf="sheetItem.status !== 'Sold'" class="text-muted">-</span>
+        </td>
+        <td>{{ sheetItem.barcode || '-' }}</td>
+        <td>{{ sheetItem.status }}</td>
+        <td>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            class="p-button-sm p-button-text p-button-danger"
+            (click)="removeItemFromSheet(sheetItem.itemId)"
+            [disabled]="sheet.status !== 'Draft'"></button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8" class="text-center">No items in this sheet</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  header="Add Item to Sheet"
+  [(visible)]="displayAddItemDialog"
+  [modal]="true"
+  [style]="{width: '500px'}">
+
+  <div class="form-grid">
+    <div class="form-field">
+      <label>Select Item</label>
+      <p-dropdown
+        [(ngModel)]="selectedItemId"
+        [options]="availableItems"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Select an item"
+        appendTo="body"
+        [style]="{'width':'100%'}">
+      </p-dropdown>
+    </div>
+    <small class="helper-text">Commission will be set from the booth type when assigned to rental</small>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      (click)="displayAddItemDialog = false"
+      class="p-button-text"></button>
+    <button
+      pButton
+      type="button"
+      label="Add"
+      (click)="addItemToSheet()"
+      [disabled]="!selectedItemId"></button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Assign Sheet to Rental"
+  [(visible)]="displayAssignDialog"
+  [modal]="true"
+  [style]="{width: '500px'}">
+
+  <div class="form-grid">
+    <div class="form-field">
+      <label>Select Active Rental</label>
+      <p-dropdown
+        [(ngModel)]="selectedRentalId"
+        [options]="availableRentals"
+        optionLabel="boothNumber"
+        optionValue="id"
+        placeholder="Select a rental"
+        appendTo="body"
+        [style]="{'width':'100%'}">
+        <ng-template pTemplate="selectedItem" let-rental>
+          <div *ngIf="rental">
+            Booth {{ rental.boothNumber }} ({{ rental.startDate | date:'shortDate' }} - {{ rental.endDate | date:'shortDate' }})
+          </div>
+        </ng-template>
+        <ng-template pTemplate="item" let-rental>
+          <div>
+            <strong>Booth {{ rental.boothNumber }}</strong><br>
+            <small>{{ rental.startDate | date:'shortDate' }} - {{ rental.endDate | date:'shortDate' }}</small>
+          </div>
+        </ng-template>
+      </p-dropdown>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      (click)="displayAssignDialog = false"
+      class="p-button-text"></button>
+    <button
+      pButton
+      type="button"
+      label="Assign"
+      (click)="assignToRental()"
+      [disabled]="!selectedRentalId"></button>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>

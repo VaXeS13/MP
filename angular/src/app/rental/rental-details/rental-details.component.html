@@ -1,0 +1,135 @@
+<div class="rental-details-container" *ngIf="!loading && rental">
+  <!-- Back Navigation -->
+  <div class="d-flex align-items-center mb-4">
+    <button type="button" class="btn btn-outline-secondary me-3" (click)="goBack()">
+      <i class="fas fa-arrow-left me-2"></i>Powrót do listy
+    </button>
+    <h2 class="mb-0">Szczegóły wynajmu - Stanowisko {{ rental.booth?.number }}</h2>
+  </div>
+
+  <!-- Rental Information Card -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="fas fa-store me-2"></i>Informacje o wynajmie
+        </h5>
+        <span [class]="getStatusClass(rental.status)">
+          <i [class]="getStatusIcon(rental.status)" class="me-1"></i>
+          {{ rental.status === RentalStatus.Draft ? 'Szkic' :
+             rental.status === RentalStatus.Active ? 'Aktywny' :
+             rental.status === RentalStatus.Extended ? 'Przedłużony' :
+             rental.status === RentalStatus.Expired ? 'Wygasły' :
+             rental.status === RentalStatus.Cancelled ? 'Anulowany' : 'Nieznany' }}
+        </span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="text-muted small">Stanowisko</label>
+            <div class="fw-bold">{{ rental.booth?.number }}</div>
+          </div>
+          <div class="mb-3">
+            <label class="text-muted small">Typ stanowiska</label>
+            <div class="fw-bold">{{ rental.boothType?.name }}</div>
+          </div>
+          <div class="mb-3">
+            <label class="text-muted small">Prowizja</label>
+            <div class="fw-bold">{{ rental.boothType?.commissionPercentage }}%</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="text-muted small">Data rozpoczęcia</label>
+            <div class="fw-bold">{{ rental.startDate | date:'dd.MM.yyyy' }}</div>
+          </div>
+          <div class="mb-3">
+            <label class="text-muted small">Data zakończenia</label>
+            <div class="fw-bold">{{ rental.endDate | date:'dd.MM.yyyy' }}</div>
+          </div>
+          <div class="mb-3">
+            <label class="text-muted small">Koszt całkowity</label>
+            <div class="fw-bold">{{ rental.totalCost | currency:'PLN':'symbol':'1.2-2':'pl' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dates information -->
+      <div class="row" *ngIf="rental.startedAt || rental.completedAt">
+        <div class="col-md-6" *ngIf="rental.startedAt">
+          <div class="mb-3">
+            <label class="text-muted small">Data rozpoczęcia sprzedaży</label>
+            <div class="fw-bold">{{ rental.startedAt | date:'dd.MM.yyyy HH:mm' }}</div>
+          </div>
+        </div>
+        <div class="col-md-6" *ngIf="rental.completedAt">
+          <div class="mb-3">
+            <label class="text-muted small">Data zakończenia sprzedaży</label>
+            <div class="fw-bold">{{ rental.completedAt | date:'dd.MM.yyyy HH:mm' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="row" *ngIf="rental.notes">
+        <div class="col-12">
+          <div class="mb-3">
+            <label class="text-muted small">Notatki</label>
+            <div class="fw-bold">{{ rental.notes }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex gap-2 mt-3">
+        <button
+          type="button"
+          class="btn btn-success"
+          (click)="startRental()"
+          *ngIf="canStartRental()">
+          <i class="fas fa-play me-2"></i>Rozpocznij sprzedaż
+        </button>
+        <button
+          type="button"
+          class="btn btn-warning"
+          (click)="completeRental()"
+          *ngIf="canCompleteRental()">
+          <i class="fas fa-stop me-2"></i>Zakończ sprzedaż
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items Management Section -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <i class="fas fa-box me-2"></i>Zarządzanie przedmiotami
+      </h5>
+    </div>
+    <div class="card-body">
+      <app-item-list
+        [rentalId]="rental.id"
+        [canManageItems]="canManageItems()">
+      </app-item-list>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div class="d-flex justify-content-center align-items-center" style="min-height: 400px;" *ngIf="loading">
+  <div class="text-center">
+    <div class="spinner-border text-primary mb-3" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted">Ładowanie szczegółów wynajmu...</p>
+  </div>
+</div>
+
+<!-- Toast for messages -->
+<p-toast></p-toast>
+
+<!-- Confirmation dialog -->
+<p-confirmDialog></p-confirmDialog>

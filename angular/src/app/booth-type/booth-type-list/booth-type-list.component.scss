@@ -1,0 +1,37 @@
+// Bootstrap-consistent styling following my-booths pattern
+
+// Action buttons styling
+.btn-group .btn {
+  border-radius: 0;
+
+  &:first-child {
+    border-top-left-radius: var(--bs-border-radius);
+    border-bottom-left-radius: var(--bs-border-radius);
+  }
+
+  &:last-child {
+    border-top-right-radius: var(--bs-border-radius);
+    border-bottom-right-radius: var(--bs-border-radius);
+  }
+}
+
+// Responsive improvements
+@media (max-width: 768px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+
+    .btn {
+      border-radius: var(--bs-border-radius) !important;
+      margin-bottom: 0.25rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}

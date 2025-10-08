@@ -1,0 +1,28 @@
+.booth-card {
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.price-tag {
+  text-align: right;
+}
+
+.search-input {
+  .input-group-text {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+  }
+}
+
+.empty-state {
+  padding: 3rem 1rem;
+
+  .fa-store {
+    opacity: 0.3;
+  }
+}

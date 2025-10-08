@@ -1,0 +1,16 @@
+<Project>
+  <!-- Override transitive package versions to fix security vulnerabilities -->
+  <ItemGroup>
+    <!-- Force upgrade vulnerable System.Net.Http from 4.3.0 to 4.3.4 (CVE-2018-8292) -->
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+
+    <!-- Force upgrade vulnerable System.Text.RegularExpressions from 4.3.0 to 4.3.1 (CVE-2019-0820) -->
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+
+    <!-- Force upgrade KubernetesClient from 15.0.1 to 17.0.14 -->
+    <PackageReference Include="KubernetesClient" Version="17.0.14" />
+
+    <!-- Force upgrade MessagePack from 2.2.85 to 3.1.4 -->
+    <PackageReference Include="MessagePack" Version="3.1.4" />
+  </ItemGroup>
+</Project>

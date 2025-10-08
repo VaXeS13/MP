@@ -1,0 +1,73 @@
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using MP.Middleware;
+using Serilog;
+using Serilog.Events;
+
+namespace MP;
+
+public class Program
+{
+    public async static Task<int> Main(string[] args)
+    {
+        // Fix for Hangfire SqlServer compatibility with .NET 9.0
+        AppContext.SetSwitch("Switch.Microsoft.Data.SqlClient.UseManagedNetworkingOnWindows", true);
+
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Async(c => c.File("Logs/logs.txt"))
+            .WriteTo.Async(c => c.Console())
+            .CreateBootstrapLogger();
+
+        try
+        {
+            Log.Information("Starting MP.HttpApi.Host.");
+            var builder = WebApplication.CreateBuilder(args);
+
+            builder.Host
+                .AddAppSettingsSecretsJson()
+                .UseAutofac()
+                .UseSerilog((context, services, loggerConfiguration) =>
+                {
+                    loggerConfiguration
+                    #if DEBUG
+                        .MinimumLevel.Debug()
+                    #else
+                        .MinimumLevel.Information()
+                    #endif
+                        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                        .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+                        .Enrich.FromLogContext()
+                        .WriteTo.Async(c => c.File("Logs/logs.txt"))
+                        .WriteTo.Async(c => c.Console())
+                        .WriteTo.Async(c => c.AbpStudio(services));
+                });
+
+            await builder.AddApplicationAsync<MPHttpApiHostModule>();
+            var app = builder.Build();
+
+            await app.InitializeApplicationAsync();
+            await app.RunAsync();
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            if (ex is HostAbortedException)
+            {
+                throw;
+            }
+
+            Log.Fatal(ex, "Host terminated unexpectedly!");
+            return 1;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+    }
+}

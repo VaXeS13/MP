@@ -1,0 +1,118 @@
+<form [formGroup]="boothForm" (ngSubmit)="onSave()">
+  <div class="p-fluid">
+    <div class="p-field">
+      <label for="number">{{ '::Common:Number' | abpLocalization }} *</label>
+      <input
+        id="number"
+        type="text"
+        pInputText
+        formControlName="number"
+        [placeholder]="'::Booth:NumberPlaceholder' | abpLocalization"
+        [class.ng-invalid]="isFieldInvalid('number')"
+        maxlength="10">
+      <small
+        *ngIf="isFieldInvalid('number')"
+        class="p-error">
+        {{ '::Booth:NumberRequired' | abpLocalization }}
+      </small>
+    </div>
+
+    <div class="p-field">
+      <label for="currency">{{ '::Booth:Currency' | abpLocalization }} *</label>
+      <p-dropdown
+        id="currency"
+        formControlName="currency"
+        [options]="currencyOptions"
+        [placeholder]="'::Currency:SelectCurrency' | abpLocalization"
+        [class.ng-invalid]="isFieldInvalid('currency')">
+        <ng-template pTemplate="selectedItem" let-selectedOption>
+          <div class="currency-option">
+            <span class="currency-code">{{ selectedOption?.label }}</span>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="item" let-option>
+          <div class="currency-option">
+            <span class="currency-code">{{ option.label }}</span>
+            <span class="currency-name">{{ getCurrencyName(option.value) }}</span>
+          </div>
+        </ng-template>
+      </p-dropdown>
+      <small
+        *ngIf="isFieldInvalid('currency')"
+        class="p-error">
+        {{ '::Booth:CurrencyRequired' | abpLocalization }}
+      </small>
+    </div>
+
+    <div class="p-field">
+      <label for="pricePerDay">{{ '::Booth:PricePerDay' | abpLocalization }} *</label>
+      <p-inputNumber
+        id="pricePerDay"
+        formControlName="pricePerDay"
+        mode="currency"
+        [currency]="getSelectedCurrencyCode()"
+        [locale]="getCurrentLocale()"
+        [minFractionDigits]="2"
+        [maxFractionDigits]="2"
+        [min]="0.01"
+        [max]="9999.99"
+        placeholder="0,00"
+        [class.ng-invalid]="isFieldInvalid('pricePerDay')">
+      </p-inputNumber>
+      <small
+        *ngIf="isFieldInvalid('pricePerDay')"
+        class="p-error">
+        {{ '::Validation:MustBeGreaterThanZero' | abpLocalization }}
+      </small>
+    </div>
+
+    <div class="p-field">
+      <label for="status">{{ '::Common:Status' | abpLocalization }} *</label>
+      <p-dropdown
+        id="status"
+        formControlName="status"
+        [options]="statusOptions"
+        [placeholder]="'::Booth:SelectStatus' | abpLocalization"
+        [class.ng-invalid]="isFieldInvalid('status')">
+      </p-dropdown>
+      <small
+        *ngIf="isFieldInvalid('status')"
+        class="p-error">
+        {{ '::Booth:StatusRequired' | abpLocalization }}
+      </small>
+    </div>
+
+
+    <!-- Informacja o statusie wynajętym -->
+    <div class="p-field" *ngIf="booth?.status === 2">
+      <div class="p-card" style="background: #fff3cd;">
+        <div class="p-card-body">
+          <div class="p-d-flex p-ai-center">
+            <i class="pi pi-exclamation-triangle p-mr-2"></i>
+            <span>
+              <strong>{{ '::Common:Warning' | abpLocalization }}:</strong>
+              {{ '::Booth:RentedStatusWarning' | abpLocalization }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-dialog-footer p-mt-4">
+    <p-button
+      [label]="'::Common:Cancel' | abpLocalization"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="onCancel()">
+    </p-button>
+    <p-button
+      [label]="'::Common:Save' | abpLocalization"
+      icon="pi pi-check"
+      class="p-button-success"
+      [disabled]="boothForm.invalid || saving"
+      [loading]="saving"
+      type="submit">
+    </p-button>
+  </div>
+</form>

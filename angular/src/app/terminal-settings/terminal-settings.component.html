@@ -1,0 +1,165 @@
+<div class="terminal-settings-container">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <div class="grid">
+    <div class="col-12">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="p-3">
+            <h2 class="m-0">Terminal Payment Settings</h2>
+            <p class="text-600 m-0">Configure payment terminal for card payments</p>
+          </div>
+        </ng-template>
+
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <div class="grid">
+            <!-- Provider Selection -->
+            <div class="col-12 md:col-6">
+              <div class="field">
+                <label for="providerId">Terminal Provider *</label>
+                <p-select
+                  id="providerId"
+                  formControlName="providerId"
+                  [options]="providers"
+                  optionLabel="displayName"
+                  optionValue="providerId"
+                  placeholder="Select a provider"
+                  [style]="{ width: '100%' }"
+                ></p-select>
+                <small
+                  *ngIf="form.get('providerId')?.touched && form.get('providerId')?.errors?.['required']"
+                  class="p-error"
+                >
+                  Provider is required
+                </small>
+              </div>
+            </div>
+
+            <!-- Currency -->
+            <div class="col-12 md:col-6">
+              <div class="field">
+                <label for="currency">Currency *</label>
+                <input
+                  id="currency"
+                  type="text"
+                  pInputText
+                  formControlName="currency"
+                  placeholder="PLN"
+                  [style]="{ width: '100%' }"
+                />
+                <small
+                  *ngIf="form.get('currency')?.touched && form.get('currency')?.errors"
+                  class="p-error"
+                >
+                  Currency is required (max 3 characters)
+                </small>
+              </div>
+            </div>
+
+            <!-- Region -->
+            <div class="col-12 md:col-6">
+              <div class="field">
+                <label for="region">Region</label>
+                <input
+                  id="region"
+                  type="text"
+                  pInputText
+                  formControlName="region"
+                  placeholder="PL"
+                  [style]="{ width: '100%' }"
+                />
+              </div>
+            </div>
+
+            <!-- Enabled Switch -->
+            <div class="col-12 md:col-3">
+              <div class="field">
+                <label for="isEnabled">Enabled</label>
+                <div>
+                  <p-inputSwitch id="isEnabled" formControlName="isEnabled"></p-inputSwitch>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sandbox Mode -->
+            <div class="col-12 md:col-3">
+              <div class="field">
+                <label for="isSandbox">Sandbox Mode</label>
+                <div>
+                  <p-inputSwitch id="isSandbox" formControlName="isSandbox"></p-inputSwitch>
+                </div>
+              </div>
+            </div>
+
+            <!-- Configuration JSON -->
+            <div class="col-12">
+              <div class="field">
+                <label for="configurationJson">Configuration JSON *</label>
+                <textarea
+                  id="configurationJson"
+                  pInputTextarea
+                  formControlName="configurationJson"
+                  rows="10"
+                  placeholder='{"apiKey": "your-key", "merchantId": "123"}'
+                  [style]="{ width: '100%' }"
+                  (blur)="validateJson()"
+                ></textarea>
+                <small class="text-500">
+                  Provider-specific configuration (API keys, merchant IDs, etc.) in JSON format
+                </small>
+                <br />
+                <small
+                  *ngIf="form.get('configurationJson')?.touched && form.get('configurationJson')?.errors?.['required']"
+                  class="p-error"
+                >
+                  Configuration is required
+                </small>
+                <small
+                  *ngIf="form.get('configurationJson')?.errors?.['invalidJson']"
+                  class="p-error"
+                >
+                  Invalid JSON format
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-2 justify-content-end mt-3">
+            <button
+              *ngIf="settings"
+              pButton
+              type="button"
+              label="Delete"
+              icon="pi pi-trash"
+              class="p-button-danger"
+              (click)="delete()"
+              [disabled]="isSaving"
+            ></button>
+            <button
+              pButton
+              type="submit"
+              [disabled]="isSaving"
+            >
+              <i class="pi pi-save" *ngIf="!isSaving"></i>
+              <i *ngIf="isSaving" class="pi pi-spin pi-spinner"></i>
+              <span class="ml-2">{{ settings ? 'Update' : 'Create' }}</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Provider Info -->
+        <div *ngIf="form.get('providerId')?.value" class="mt-4">
+          <h3>Selected Provider Information</h3>
+          <div *ngFor="let provider of providers">
+            <div *ngIf="provider.providerId === form.get('providerId')?.value" class="p-3 surface-100 border-round">
+              <h4 class="mt-0">{{ provider.displayName }}</h4>
+              <p class="mb-0">{{ provider.description }}</p>
+            </div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+</div>

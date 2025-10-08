@@ -1,0 +1,149 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '90vw', maxWidth: '900px' }"
+  header="Edit Booking"
+  (onHide)="close()">
+
+  <div *ngIf="loading" class="text-center py-5">
+    <p-progressSpinner></p-progressSpinner>
+    <p class="mt-3">Loading...</p>
+  </div>
+
+  <div *ngIf="!loading && booth">
+    <!-- Info Banner -->
+    <div class="alert alert-info mb-3">
+      <small>
+        <i class="fas fa-info-circle me-1"></i>
+        Select rental period (minimum 7 days)
+        <span *ngIf="minimumGapDays > 0"> | Minimum gap between rentals: {{ minimumGapDays }} days</span>
+      </small>
+    </div>
+
+    <!-- Booth Info -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">
+          <i class="fas fa-store me-2"></i>
+          Booth #{{ booth.number }}
+        </h5>
+        <p class="mb-0">
+          <strong>Price per day:</strong>
+          <span class="text-success fw-bold ms-2">
+            {{ booth.pricePerDay | currency:booth.currencyDisplayName:'symbol':'1.2-2' }}
+          </span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Booth Type Selection -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <h6 class="card-title">
+          <i class="fas fa-tags me-2"></i>
+          Select Booth Type
+        </h6>
+        <select
+          class="form-select"
+          [(ngModel)]="selectedBoothType"
+          (change)="onBoothTypeChange()">
+          <option [ngValue]="undefined">Select a booth type...</option>
+          <option *ngFor="let type of boothTypes" [ngValue]="type">
+            {{ type.name }} ({{ type.commissionPercentage }}% commission)
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <button class="btn btn-outline-secondary btn-sm" (click)="prevMonth()">
+            <i class="fas fa-chevron-left"></i> Previous
+          </button>
+          <h5 class="mb-0">
+            <i class="fas fa-calendar me-2"></i>
+            {{ getMonthYear() }}
+          </h5>
+          <button class="btn btn-outline-secondary btn-sm" (click)="nextMonth()">
+            Next <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <div class="calendar-grid">
+          <!-- Day Headers -->
+          <div class="day-header">Sun</div>
+          <div class="day-header">Mon</div>
+          <div class="day-header">Tue</div>
+          <div class="day-header">Wed</div>
+          <div class="day-header">Thu</div>
+          <div class="day-header">Fri</div>
+          <div class="day-header">Sat</div>
+
+          <!-- Calendar Days -->
+          <div
+            *ngFor="let day of calendarDays"
+            [class]="getDayClass(day)"
+            (click)="onDayClick(day)">
+            <span class="day-number">{{ day.date.getDate() }}</span>
+            <div class="day-indicators" *ngIf="day.status !== CalendarDateStatus.Available && day.status !== CalendarDateStatus.PastDate">
+              <small class="status-text">{{ day.statusDisplayName }}</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selection Info -->
+        <div class="alert alert-info mt-3" *ngIf="isValidDate(selectedStartDate) && isValidDate(selectedEndDate)">
+          <strong>Selected Period:</strong>
+          {{ selectedStartDate | date:'shortDate' }} - {{ selectedEndDate | date:'shortDate' }}
+          ({{ calculatedDays }} days)
+          <br>
+          <strong>Total Price:</strong>
+          {{ calculatedPrice | currency:booth.currencyDisplayName:'symbol':'1.2-2' }}
+        </div>
+
+        <div class="alert alert-warning mt-3" *ngIf="isValidDate(selectedStartDate) && isValidDate(selectedEndDate) && calculatedDays < 7">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Minimum rental period is 7 days
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes Section -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <h6 class="card-title">
+          <i class="fas fa-comment me-2"></i>
+          Notes (Optional)
+        </h6>
+        <textarea
+          class="form-control"
+          [(ngModel)]="notes"
+          rows="3"
+          placeholder="Add any additional notes or special requests..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="close()">
+      <i class="pi pi-times me-2"></i>
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="!canSave()"
+      (click)="save()">
+      <i class="pi pi-check me-2"></i>
+      Save Changes
+    </button>
+  </ng-template>
+</p-dialog>
