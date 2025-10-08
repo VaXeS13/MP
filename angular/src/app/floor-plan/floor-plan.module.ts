@@ -22,6 +22,7 @@ import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { TabViewModule } from 'primeng/tabview';
+import { ScrollerModule } from 'primeng/scroller';
 import { DialogService } from 'primeng/dynamicdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
@@ -105,7 +106,8 @@ const routes: Routes = [
     DynamicDialogModule,
     ConfirmDialogModule,
     ToastModule,
-    TabViewModule
+    TabViewModule,
+    ScrollerModule
   ],
   providers: [
     DialogService,
