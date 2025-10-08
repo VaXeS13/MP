@@ -20,11 +20,15 @@ namespace MP.EntityFrameworkCore.Items
 
         public async Task<List<Item>> GetListByUserIdAsync(
             Guid userId,
+            int skipCount,
+            int maxResultCount,
             ItemStatus? status = null,
             CancellationToken cancellationToken = default)
         {
             var dbSet = await GetDbSetAsync();
-            var query = dbSet.Where(x => x.UserId == userId);
+            var query = dbSet
+                .AsNoTracking()
+                .Where(x => x.UserId == userId);
 
             if (status.HasValue)
             {
@@ -33,6 +37,8 @@ namespace MP.EntityFrameworkCore.Items
 
             return await query
                 .OrderByDescending(x => x.CreationTime)
+                .Skip(skipCount)
+                .Take(maxResultCount)
                 .ToListAsync(cancellationToken);
         }
 

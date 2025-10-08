@@ -10,6 +10,8 @@ namespace MP.Domain.Items
     {
         Task<List<Item>> GetListByUserIdAsync(
             Guid userId,
+            int skipCount,
+            int maxResultCount,
             ItemStatus? status = null,
             CancellationToken cancellationToken = default);
 

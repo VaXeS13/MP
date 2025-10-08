@@ -50,16 +50,17 @@ namespace MP.Items
         public async Task<PagedResultDto<ItemDto>> GetMyItemsAsync(PagedAndSortedResultRequestDto input)
         {
             var userId = CurrentUser.Id.Value;
-            var items = await _itemRepository.GetListByUserIdAsync(userId);
 
-            var pagedItems = items
-                .Skip(input.SkipCount)
-                .Take(input.MaxResultCount)
-                .ToList();
+            var items = await _itemRepository.GetListByUserIdAsync(
+                userId,
+                input.SkipCount,
+                input.MaxResultCount);
+
+            var totalCount = await _itemRepository.GetCountByUserIdAsync(userId);
 
             return new PagedResultDto<ItemDto>(
-                items.Count,
-                ObjectMapper.Map<System.Collections.Generic.List<Item>, System.Collections.Generic.List<ItemDto>>(pagedItems)
+                totalCount,
+                ObjectMapper.Map<System.Collections.Generic.List<Item>, System.Collections.Generic.List<ItemDto>>(items)
             );
         }
 
