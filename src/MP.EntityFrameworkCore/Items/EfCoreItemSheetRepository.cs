@@ -25,6 +25,7 @@ namespace MP.EntityFrameworkCore.Items
         {
             var dbSet = await GetDbSetAsync();
             var query = dbSet
+                .AsNoTracking()
                 .Include(x => x.Items)
                 .Include(x => x.Rental)
                     .ThenInclude(x => x.Booth)
@@ -46,6 +47,7 @@ namespace MP.EntityFrameworkCore.Items
         {
             var dbSet = await GetDbSetAsync();
             return await dbSet
+                .AsNoTracking()
                 .Include(x => x.Items)
                 .Where(x => x.RentalId == rentalId)
                 .OrderByDescending(x => x.CreationTime)
@@ -58,6 +60,7 @@ namespace MP.EntityFrameworkCore.Items
         {
             var dbSet = await GetDbSetAsync();
             return await dbSet
+                .AsNoTracking()
                 .Include(x => x.Items)
                 .ThenInclude(x => x.Item)
                 .FirstOrDefaultAsync(
@@ -71,6 +74,7 @@ namespace MP.EntityFrameworkCore.Items
         {
             var dbSet = await GetDbSetAsync();
             return await dbSet
+                .AsNoTracking()
                 .Include(x => x.Items)
                     .ThenInclude(x => x.Item)
                 .Include(x => x.Rental)

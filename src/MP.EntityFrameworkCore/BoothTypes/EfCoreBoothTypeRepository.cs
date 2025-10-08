@@ -21,6 +21,7 @@ namespace MP.EntityFrameworkCore.BoothTypes
         {
             var dbSet = await GetDbSetAsync();
             return await dbSet
+                .AsNoTracking()
                 .Where(x => x.IsActive)
                 .OrderBy(x => x.Name)
                 .ToListAsync(cancellationToken);
@@ -30,13 +31,16 @@ namespace MP.EntityFrameworkCore.BoothTypes
         {
             var dbSet = await GetDbSetAsync();
             return await dbSet
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
         }
 
         public async Task<bool> IsNameUniqueAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)
         {
             var dbSet = await GetDbSetAsync();
-            var query = dbSet.Where(x => x.Name == name);
+            var query = dbSet
+                .AsNoTracking()
+                .Where(x => x.Name == name);
 
             if (excludeId.HasValue)
             {

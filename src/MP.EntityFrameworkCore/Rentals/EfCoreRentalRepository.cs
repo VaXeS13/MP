@@ -25,6 +25,7 @@ namespace MP.Rentals
         {
             var dbContext = await GetDbContextAsync();
             return await dbContext.Rentals
+                .AsNoTracking()
                 .Where(r => r.UserId == userId)
                 .Include(r => r.User)
                 .Include(r => r.Booth)
@@ -36,6 +37,7 @@ namespace MP.Rentals
         {
             var dbContext = await GetDbContextAsync();
             return await dbContext.Rentals
+                .AsNoTracking()
                 .Where(r => r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended)
                 .Include(r => r.User)
                 .Include(r => r.Booth)
@@ -49,6 +51,7 @@ namespace MP.Rentals
         {
             var dbContext = await GetDbContextAsync();
             return await dbContext.Rentals
+                .AsNoTracking()
                 .Where(r => (r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended) &&
                            r.Period.EndDate < beforeDate.Date)
                 .Include(r => r.User)
@@ -62,6 +65,7 @@ namespace MP.Rentals
         {
             var dbContext = await GetDbContextAsync();
             return await dbContext.Rentals
+                .AsNoTracking()
                 .Where(r => r.Id == rentalId)
                 .Include(r => r.User)
                 .Include(r => r.Booth)
@@ -77,6 +81,7 @@ namespace MP.Rentals
         {
             var dbContext = await GetDbContextAsync();
             var query = dbContext.Rentals
+                .AsNoTracking()
                 .Where(r => r.BoothId == boothId &&
                            (r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended) &&
                            r.Period.StartDate <= endDate.Date &&
@@ -96,6 +101,7 @@ namespace MP.Rentals
         {
             var dbContext = await GetDbContextAsync();
             return await dbContext.Rentals
+                .AsNoTracking()
                 .Where(r => r.BoothId == boothId)
                 .OrderBy(r => r.Period.StartDate)
                 .ToListAsync(cancellationToken);
@@ -110,6 +116,7 @@ namespace MP.Rentals
 
             // Przychody z wynajęcia stanowisk
             var rentalRevenue = await dbContext.Rentals
+                .AsNoTracking()
                 .Where(r => r.Status != RentalStatus.Cancelled &&
                            r.Payment.PaidDate != null &&
                            r.Payment.PaidDate >= fromDate &&
@@ -118,6 +125,7 @@ namespace MP.Rentals
 
             // Prowizje ze sprzedaży - using ItemSheetItems instead of RentalItems
             var commissionRevenue = await dbContext.ItemSheetItems
+                .AsNoTracking()
                 .Where(isi => isi.Status == MP.Domain.Items.ItemSheetItemStatus.Sold &&
                             isi.SoldAt != null &&
                             isi.SoldAt >= fromDate &&
@@ -135,6 +143,7 @@ namespace MP.Rentals
         {
             var dbContext = await GetDbContextAsync();
             return await dbContext.Rentals
+                .AsNoTracking()
                 .Where(r => r.BoothId == boothId &&
                            (r.Status == RentalStatus.Draft ||
                             r.Status == RentalStatus.Active ||
@@ -151,6 +160,7 @@ namespace MP.Rentals
         {
             var dbContext = await GetDbContextAsync();
             return await dbContext.Rentals
+                .AsNoTracking()
                 .Where(r => r.BoothId == boothId &&
                            (r.Status == RentalStatus.Draft ||
                             r.Status == RentalStatus.Active ||

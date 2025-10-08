@@ -25,6 +25,7 @@ namespace MP.EntityFrameworkCore.FloorPlans
             var dbContext = await GetDbContextAsync();
 
             return await dbContext.FloorPlanElements
+                .AsNoTracking()
                 .Where(x => x.FloorPlanId == floorPlanId)
                 .OrderBy(x => x.ElementType)
                 .ThenBy(x => x.X)
@@ -40,6 +41,7 @@ namespace MP.EntityFrameworkCore.FloorPlans
             var dbContext = await GetDbContextAsync();
 
             return await dbContext.FloorPlanElements
+                .AsNoTracking()
                 .Where(x => x.FloorPlanId == floorPlanId && x.ElementType == elementType)
                 .OrderBy(x => x.X)
                 .ThenBy(x => x.Y)

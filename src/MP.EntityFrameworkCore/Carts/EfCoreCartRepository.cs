@@ -25,6 +25,7 @@ namespace MP.EntityFrameworkCore.Carts
         {
             var dbContext = await GetDbContextAsync();
             var query = dbContext.Carts
+                .AsNoTracking()
                 .Where(c => c.UserId == userId && c.Status == CartStatus.Active);
 
             if (includeItems)
@@ -41,6 +42,7 @@ namespace MP.EntityFrameworkCore.Carts
         {
             var dbContext = await GetDbContextAsync();
             return await dbContext.Carts
+                .AsNoTracking()
                 .Include(c => c.Items)
                 .Include(c => c.User)
                 .FirstOrDefaultAsync(c => c.Id == cartId, cancellationToken);
@@ -56,6 +58,7 @@ namespace MP.EntityFrameworkCore.Carts
             var dbContext = await GetDbContextAsync();
 
             var query = dbContext.CartItems
+                .AsNoTracking()
                 .Include(ci => ci.Cart)
                 .Where(ci =>
                     ci.BoothId == boothId &&

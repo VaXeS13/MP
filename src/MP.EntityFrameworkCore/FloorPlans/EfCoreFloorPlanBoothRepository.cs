@@ -25,6 +25,7 @@ namespace MP.EntityFrameworkCore.FloorPlans
             var dbContext = await GetDbContextAsync();
 
             return await dbContext.FloorPlanBooths
+                .AsNoTracking()
                 .Include(x => x.Booth)
                 .Where(x => x.FloorPlanId == floorPlanId)
                 .OrderBy(x => x.X)
@@ -40,6 +41,7 @@ namespace MP.EntityFrameworkCore.FloorPlans
             var dbContext = await GetDbContextAsync();
 
             return await dbContext.FloorPlanBooths
+                .AsNoTracking()
                 .Include(x => x.Booth)
                 .Where(x => x.FloorPlanId == floorPlanId && x.BoothId == boothId)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -52,7 +54,9 @@ namespace MP.EntityFrameworkCore.FloorPlans
         {
             var queryable = await GetQueryableAsync();
 
-            queryable = queryable.Where(x => x.BoothId == boothId);
+            queryable = queryable
+                .AsNoTracking()
+                .Where(x => x.BoothId == boothId);
 
             if (excludeFloorPlanId.HasValue)
             {

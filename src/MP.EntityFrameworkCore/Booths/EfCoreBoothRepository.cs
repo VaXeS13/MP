@@ -24,6 +24,7 @@ namespace MP.Booths
         {
             var dbContext = await GetDbContextAsync();
             return await dbContext.Booths
+                .AsNoTracking()
                 .Where(b => b.Number == number.ToUpper())
                 .FirstOrDefaultAsync(cancellationToken);
         }
@@ -32,6 +33,7 @@ namespace MP.Booths
         {
             var dbContext = await GetDbContextAsync();
             return await dbContext.Booths
+                .AsNoTracking()
                 .Where(b => b.Status == BoothStatus.Available)
                 .OrderBy(b => b.Number)
                 .ToListAsync(cancellationToken);
@@ -40,7 +42,9 @@ namespace MP.Booths
         public async Task<bool> IsNumberUniqueAsync(string number, Guid? excludeId = null, CancellationToken cancellationToken = default)
         {
             var dbContext = await GetDbContextAsync();
-            var query = dbContext.Booths.Where(b => b.Number == number.ToUpper());
+            var query = dbContext.Booths
+                .AsNoTracking()
+                .Where(b => b.Number == number.ToUpper());
 
             if (excludeId.HasValue)
             {
@@ -61,6 +65,7 @@ namespace MP.Booths
             var today = DateTime.Today;
 
             var query = dbContext.Booths
+                .AsNoTracking()
                 .Include(b => b.Rentals.Where(r =>
                     (r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended) &&
                     r.Period.StartDate <= today &&
@@ -88,7 +93,9 @@ namespace MP.Booths
         public async Task<int> GetCountAsync(string? filter = null, BoothStatus? status = null, CancellationToken cancellationToken = default)
         {
             var dbContext = await GetDbContextAsync();
-            var query = dbContext.Booths.AsQueryable();
+            var query = dbContext.Booths
+                .AsNoTracking()
+                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(filter))
             {
