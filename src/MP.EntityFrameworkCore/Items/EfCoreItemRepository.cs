@@ -48,6 +48,7 @@ namespace MP.EntityFrameworkCore.Items
         {
             var dbSet = await GetDbSetAsync();
             return await dbSet
+                .AsNoTracking()
                 .Where(x => ids.Contains(x.Id))
                 .ToListAsync(cancellationToken);
         }
@@ -58,7 +59,9 @@ namespace MP.EntityFrameworkCore.Items
             CancellationToken cancellationToken = default)
         {
             var dbSet = await GetDbSetAsync();
-            var query = dbSet.Where(x => x.UserId == userId);
+            var query = dbSet
+                .AsNoTracking()
+                .Where(x => x.UserId == userId);
 
             if (status.HasValue)
             {

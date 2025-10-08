@@ -25,7 +25,9 @@ namespace MP.EntityFrameworkCore.FloorPlans
         {
             var queryable = await GetQueryableAsync();
 
-            queryable = queryable.Where(x => x.TenantId == tenantId);
+            queryable = queryable
+                .AsNoTracking()
+                .Where(x => x.TenantId == tenantId);
 
             if (isActive.HasValue)
             {
@@ -46,6 +48,7 @@ namespace MP.EntityFrameworkCore.FloorPlans
             var queryable = await GetQueryableAsync();
 
             return await queryable
+                .AsNoTracking()
                 .Where(x => x.TenantId == tenantId && x.Name == name)
                 .FirstOrDefaultAsync(cancellationToken);
         }
@@ -58,7 +61,9 @@ namespace MP.EntityFrameworkCore.FloorPlans
         {
             var queryable = await GetQueryableAsync();
 
-            queryable = queryable.Where(x => x.TenantId == tenantId && x.Name == name);
+            queryable = queryable
+                .AsNoTracking()
+                .Where(x => x.TenantId == tenantId && x.Name == name);
 
             if (excludeId.HasValue)
             {

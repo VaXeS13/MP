@@ -62,6 +62,7 @@ namespace MP.Rentals
 
             // Include navigation properties
             queryable = queryable
+                .AsNoTracking()
                 .Include(r => r.User)
                 .Include(r => r.Booth);
 
@@ -452,6 +453,7 @@ namespace MP.Rentals
             var queryable = await _rentalRepository.GetQueryableAsync();
             var rentals = await AsyncExecuter.ToListAsync(
                 queryable
+                    .AsNoTracking()
                     .Include(r => r.User)
                     .Where(r => r.BoothId == input.BoothId &&
                                r.Period.StartDate <= input.EndDate &&
