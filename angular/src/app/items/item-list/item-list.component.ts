@@ -68,10 +68,6 @@ export class ItemListComponent implements OnInit {
     return this.items.filter(item => item.status === 'Draft');
   }
 
-  isRowDisabled = (item: ItemDto): boolean => {
-    return item.status !== 'Draft';
-  };
-
   loadItems(): void {
     this.loading = true;
 
@@ -189,29 +185,31 @@ export class ItemListComponent implements OnInit {
     }
 
     this.assigning = true;
-    let completedCount = 0;
-    let errorCount = 0;
 
-    // Add each selected item to the sheet
-    this.selectedItems.forEach((item, index) => {
-      if (item.id) {
-        this.itemSheetService.addItemToSheet(this.selectedSheetId!, {
-          itemId: item.id,
-          commissionPercentage: 0 // Will be set from BoothType on backend
-        }).subscribe({
-          next: () => {
-            completedCount++;
-            if (completedCount + errorCount === this.selectedItems.length) {
-              this.finishAssignment(completedCount, errorCount);
-            }
-          },
-          error: (error) => {
-            errorCount++;
-            if (completedCount + errorCount === this.selectedItems.length) {
-              this.finishAssignment(completedCount, errorCount);
-            }
-          }
+    // Collect all item IDs
+    const itemIds = this.selectedItems
+      .filter(item => item.id)
+      .map(item => item.id!);
+
+    // Use batch endpoint to add all items at once
+    this.itemSheetService.batchAddItems({
+      sheetId: this.selectedSheetId,
+      itemIds: itemIds,
+      commissionPercentage: 0 // Will be set from BoothType on backend
+    }).subscribe({
+      next: (result) => {
+        const successCount = result.successCount || 0;
+        const errorCount = result.failureCount || 0;
+        this.finishAssignment(successCount, errorCount);
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: error.error?.error?.message || 'Failed to add items to sheet'
         });
+        this.assigning = false;
+        this.displayAssignDialog = false;
       }
     });
   }

@@ -9,6 +9,24 @@ export interface AssignSheetToRentalDto {
   rentalId: string;
 }
 
+export interface BatchAddItemsDto {
+  sheetId: string;
+  itemIds: string[];
+  commissionPercentage: number;
+}
+
+export interface BatchAddItemsResultDto {
+  results: BatchItemResultDto[];
+  successCount: number;
+  failureCount: number;
+}
+
+export interface BatchItemResultDto {
+  itemId?: string;
+  success: boolean;
+  errorMessage?: string;
+}
+
 export interface CreateItemDto {
   name: string;
   category?: string;

@@ -96,6 +96,55 @@ namespace MP.Items
             return MapToDto(sheet);
         }
 
+        public async Task<BatchAddItemsResultDto> BatchAddItemsAsync(BatchAddItemsDto input)
+        {
+            var result = new BatchAddItemsResultDto();
+
+            var sheet = await _itemSheetRepository.GetAsync(input.SheetId);
+
+            if (sheet.UserId != CurrentUser.Id.Value)
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("You can only modify your own sheets");
+
+            var items = await _itemRepository.GetListByIdsAsync(input.ItemIds);
+
+            foreach (var itemId in input.ItemIds)
+            {
+                try
+                {
+                    var item = items.FirstOrDefault(i => i.Id == itemId);
+                    if (item == null)
+                    {
+                        result.Results.Add(new BatchItemResultDto
+                        {
+                            ItemId = itemId,
+                            Success = false,
+                            ErrorMessage = "Item not found"
+                        });
+                        continue;
+                    }
+
+                    await _itemManager.AddItemToSheetAsync(sheet, item, input.CommissionPercentage);
+
+                    result.Results.Add(new BatchItemResultDto
+                    {
+                        ItemId = itemId,
+                        Success = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    result.Results.Add(new BatchItemResultDto
+                    {
+                        ItemId = itemId,
+                        Success = false,
+                        ErrorMessage = ex.Message
+                    });
+                }
+            }
+
+            return result;
+        }
+
         public async Task<ItemSheetDto> RemoveItemFromSheetAsync(Guid sheetId, Guid itemId)
         {
             var sheet = await _itemSheetRepository.GetAsync(sheetId);

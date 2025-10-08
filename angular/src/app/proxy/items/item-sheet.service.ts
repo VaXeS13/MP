@@ -1,4 +1,4 @@
-import type { AddItemToSheetDto, AssignSheetToRentalDto, CreateItemSheetDto, ItemSheetDto } from './models';
+import type { AddItemToSheetDto, AssignSheetToRentalDto, BatchAddItemsDto, BatchAddItemsResultDto, CreateItemSheetDto, ItemSheetDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -23,6 +23,15 @@ export class ItemSheetService {
     this.restService.request<any, ItemSheetDto>({
       method: 'POST',
       url: `/api/app/item-sheet/assign-to-rental/${sheetId}`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  batchAddItems = (input: BatchAddItemsDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, BatchAddItemsResultDto>({
+      method: 'POST',
+      url: '/api/app/item-sheet/batch-add-items',
       body: input,
     },
     { apiName: this.apiName,...config });
