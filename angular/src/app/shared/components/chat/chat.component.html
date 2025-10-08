@@ -31,7 +31,7 @@
 
       <div class="conversations-list">
         <div
-          *ngFor="let conversation of conversations"
+          *ngFor="let conversation of conversations; trackBy: trackByConversationUserId"
           class="conversation-item"
           [class.active]="selectedConversation?.userId === conversation.userId"
           (click)="selectConversation(conversation)">
@@ -86,7 +86,7 @@
       <!-- Messages container -->
       <div class="messages-container" #messageContainer>
         <div
-          *ngFor="let message of messages"
+          *ngFor="let message of messages; trackBy: trackByMessageId"
           class="message"
           [class.message-sent]="isSentByMe(message)"
           [class.message-received]="!isSentByMe(message)">
@@ -165,7 +165,7 @@
 
     <div class="user-list">
       <div
-        *ngFor="let user of filteredCustomers"
+        *ngFor="let user of filteredCustomers; trackBy: trackByCustomerId"
         class="user-item"
         (click)="startConversationWithUser(user)">
         <div class="user-avatar">

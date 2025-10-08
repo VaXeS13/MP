@@ -51,7 +51,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let rental of rentals">
+            <tr *ngFor="let rental of rentals; trackBy: trackByRentalId">
               <td>
                 <div>
                   <strong>{{ '::Common:Booth' | abpLocalization }} #{{ rental.boothNumber }}</strong>

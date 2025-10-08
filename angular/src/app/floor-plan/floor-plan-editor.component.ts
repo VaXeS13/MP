@@ -186,7 +186,7 @@ import { CreateFloorPlanElementDto } from '../proxy/floor-plans/models';
 
           <div class="available-booths">
             <div
-              *ngFor="let booth of filteredBooths"
+              *ngFor="let booth of filteredBooths; trackBy: trackByBoothId"
               class="booth-item p-2 mb-2 border-round cursor-pointer border"
               [class.selected]="selectedBoothId === booth.id"
               (click)="selectBooth(booth)"
@@ -283,7 +283,7 @@ import { CreateFloorPlanElementDto } from '../proxy/floor-plans/models';
 
               <div class="available-elements">
                 <div
-                  *ngFor="let elementType of elementTypes"
+                  *ngFor="let elementType of elementTypes; trackBy: trackByElementType"
                   class="element-item p-2 mb-2 border-round cursor-pointer border"
                   draggable="true"
                   (dragstart)="onElementDragStart($event, elementType)">
@@ -1323,5 +1323,13 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
         });
       }
     });
+  }
+
+  trackByBoothId(index: number, booth: BoothDto): string {
+    return booth.id;
+  }
+
+  trackByElementType(index: number, elementType: any): number {
+    return elementType.type;
   }
 }

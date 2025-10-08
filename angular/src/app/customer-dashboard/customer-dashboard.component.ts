@@ -109,4 +109,8 @@ export class CustomerDashboardComponent implements OnInit {
       currency: 'PLN'
     }).format(amount);
   }
+
+  trackBySaleIndex(index: number, sale: any): number {
+    return index;
+  }
 }

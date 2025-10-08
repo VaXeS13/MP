@@ -248,4 +248,16 @@ export class CheckoutComponent implements OnInit {
   formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString();
   }
+
+  trackByCartItemId(index: number, item: any): string {
+    return item.id || index.toString();
+  }
+
+  trackByProviderId(index: number, provider: PaymentProvider): string {
+    return provider.id;
+  }
+
+  trackByMethodId(index: number, method: PaymentMethod): string {
+    return method.id;
+  }
 }

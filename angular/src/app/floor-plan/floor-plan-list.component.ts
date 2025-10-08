@@ -91,7 +91,7 @@ import { FloorPlanDto, GetFloorPlanListDto } from '../shared/models/floor-plan.m
 
         <div class="grid" *ngIf="!loading && filteredFloorPlans.length > 0">
           <div
-            *ngFor="let floorPlan of filteredFloorPlans"
+            *ngFor="let floorPlan of filteredFloorPlans; trackBy: trackByFloorPlanId"
             class="col-12 md:col-6 lg:col-4">
             <div class="floor-plan-card p-4 border-round shadow-2 surface-card h-full">
               <!-- Card Header -->
@@ -479,5 +479,9 @@ export class FloorPlanListComponent implements OnInit {
         });
       }
     });
+  }
+
+  trackByFloorPlanId(index: number, floorPlan: FloorPlanDto): string {
+    return floorPlan.id;
   }
 }

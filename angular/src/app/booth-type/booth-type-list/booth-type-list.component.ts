@@ -207,4 +207,8 @@ export class BoothTypeListComponent implements OnInit {
       ? this.localizationService.instant('::Common:Active')
       : this.localizationService.instant('::Common:Inactive');
   }
+
+  trackByBoothTypeId(index: number, boothType: BoothTypeDto): string {
+    return boothType.id;
+  }
 }

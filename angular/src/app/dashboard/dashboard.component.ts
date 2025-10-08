@@ -144,4 +144,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  trackByMethodName(index: number, method: any): string {
+    return method.methodName || index.toString();
+  }
+
+  trackByTransactionId(index: number, transaction: any): string {
+    return transaction.id || index.toString();
+  }
+
+  trackByRentalId(index: number, rental: any): string {
+    return rental.id || index.toString();
+  }
+
+  trackByItemName(index: number, item: any): string {
+    return item.itemId || item.itemName || index.toString();
+  }
+
 }

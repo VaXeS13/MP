@@ -29,7 +29,7 @@
     <!-- Provider cards -->
     <div *ngIf="!loadingProviders" class="providers-grid">
       <div
-        *ngFor="let provider of providers"
+        *ngFor="let provider of providers; trackBy: trackByProviderId"
         class="provider-card"
         [class.selected]="selectedProvider?.id === provider.id"
         (click)="selectProvider(provider)">
@@ -89,7 +89,7 @@
     <!-- Payment methods -->
     <div *ngIf="!loadingMethods" class="methods-list">
       <div
-        *ngFor="let method of availableMethods"
+        *ngFor="let method of availableMethods; trackBy: trackByMethodId"
         class="method-card"
         [class.selected]="selectedMethod?.id === method.id"
         (click)="selectMethod(method)">

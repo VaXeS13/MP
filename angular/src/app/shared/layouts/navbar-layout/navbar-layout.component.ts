@@ -255,4 +255,16 @@ export class NavbarLayoutComponent implements OnInit {
   closeMobileMenu(): void {
     this.isMobileMenuOpen = false;
   }
+
+  trackByRouteName(index: number, route: any): string {
+    return route.name || index.toString();
+  }
+
+  trackByChildPath(index: number, child: any): string {
+    return child.path || index.toString();
+  }
+
+  trackByLanguageCode(index: number, language: any): string {
+    return language.code;
+  }
 }

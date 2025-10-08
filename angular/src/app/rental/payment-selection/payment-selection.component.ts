@@ -245,4 +245,12 @@ export class PaymentSelectionComponent implements OnInit, OnChanges {
         return 'Payment';
     }
   }
+
+  trackByProviderId(index: number, provider: PaymentProvider): string {
+    return provider.id;
+  }
+
+  trackByMethodId(index: number, method: PaymentMethod): string {
+    return method.id;
+  }
 }

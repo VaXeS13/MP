@@ -77,4 +77,8 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
         return 'pi pi-info-circle text-blue-500';
     }
   }
+
+  trackByNotificationId(index: number, notification: NotificationMessage): string {
+    return notification.id;
+  }
 }

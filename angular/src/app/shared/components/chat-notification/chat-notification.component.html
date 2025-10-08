@@ -1,6 +1,6 @@
 <div class="chat-notifications-container">
   <div
-    *ngFor="let notification of notifications"
+    *ngFor="let notification of notifications; trackBy: trackByNotificationId"
     class="chat-notification"
     [@slideIn]
     (click)="openChat(notification)">

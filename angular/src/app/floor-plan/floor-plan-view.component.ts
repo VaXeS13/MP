@@ -147,7 +147,7 @@ import { CartDto, CartItemDto } from '../shared/models/cart.model';
               Wybierz plan sali, który chcesz wyświetlić
             </p>
             <div class="grid">
-              <div *ngFor="let plan of floorPlans" [ngClass]="{'col-12': floorPlans.length === 1, 'col-12 md:col-6': floorPlans.length > 1}">
+              <div *ngFor="let plan of floorPlans; trackBy: trackByFloorPlanId" [ngClass]="{'col-12': floorPlans.length === 1, 'col-12 md:col-6': floorPlans.length > 1}">
                 <div
                   class="floor-plan-card p-3 border-round border-1 surface-border cursor-pointer"
                   (click)="selectFloorPlan(plan.id)"
@@ -1310,6 +1310,10 @@ export class FloorPlanViewComponent implements OnInit, AfterViewInit, OnDestroy 
     );
 
     return uniqueBoothsInCart.size;
+  }
+
+  trackByFloorPlanId(index: number, floorPlan: FloorPlanDto): string {
+    return floorPlan.id;
   }
 
 }

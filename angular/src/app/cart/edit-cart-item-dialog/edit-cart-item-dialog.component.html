@@ -51,7 +51,7 @@
           [(ngModel)]="selectedBoothType"
           (change)="onBoothTypeChange()">
           <option [ngValue]="undefined">Select a booth type...</option>
-          <option *ngFor="let type of boothTypes" [ngValue]="type">
+          <option *ngFor="let type of boothTypes; trackBy: trackByBoothTypeId" [ngValue]="type">
             {{ type.name }} ({{ type.commissionPercentage }}% commission)
           </option>
         </select>
@@ -86,7 +86,7 @@
 
           <!-- Calendar Days -->
           <div
-            *ngFor="let day of calendarDays"
+            *ngFor="let day of calendarDays; trackBy: trackByIndex"
             [class]="getDayClass(day)"
             (click)="onDayClick(day)">
             <span class="day-number">{{ day.date.getDate() }}</span>

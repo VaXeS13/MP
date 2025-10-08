@@ -384,4 +384,8 @@ export class CartComponent implements OnInit {
     const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     return `${days} day${days !== 1 ? 's' : ''}`;
   }
+
+  trackByCartItemId(index: number, item: CartItemDto): string {
+    return item.id;
+  }
 }

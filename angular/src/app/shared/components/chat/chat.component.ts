@@ -361,4 +361,16 @@ export class ChatComponent implements OnInit, OnDestroy {
     // Select the conversation
     await this.selectConversation(conversation);
   }
+
+  trackByConversationUserId(index: number, conversation: ChatConversation): string {
+    return conversation.userId;
+  }
+
+  trackByMessageId(index: number, message: ChatMessage): string {
+    return message.id;
+  }
+
+  trackByCustomerId(index: number, customer: CustomerUserDto): string {
+    return customer.id || index.toString();
+  }
 }

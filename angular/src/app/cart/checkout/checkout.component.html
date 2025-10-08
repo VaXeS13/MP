@@ -19,7 +19,7 @@
                   <tr><th>Booth</th><th>Period</th><th>Days</th><th class="text-end">Amount</th></tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let item of cart.items">
+                  <tr *ngFor="let item of cart.items; trackBy: trackByCartItemId">
                     <td><strong>{{ item.boothNumber }}</strong><br><small class="text-muted">{{ item.boothTypeName }}</small></td>
                     <td><small>{{ formatDate(item.startDate) }} - {{ formatDate(item.endDate) }}</small></td>
                     <td>{{ item.daysCount }}</td>
@@ -39,7 +39,7 @@
               <div class="card-header"><h5 class="mb-0"><i class="pi pi-wallet me-2"></i>Select Payment Method</h5></div>
               <div class="card-body">
                 <div class="row g-3">
-                  <div class="col-md-6" *ngFor="let provider of providers">
+                  <div class="col-md-6" *ngFor="let provider of providers; trackBy: trackByProviderId">
                     <div class="payment-provider-card" [class.selected]="selectedProvider?.id === provider.id" (click)="selectProvider(provider)">
                       <div class="d-flex align-items-center">
                         <div class="provider-logo me-3">
@@ -55,7 +55,7 @@
                 <div *ngIf="selectedProvider && availableMethods.length > 0" class="mt-4">
                   <h6 class="mb-3">Select Payment Option:</h6>
                   <div class="row g-3">
-                    <div class="col-md-4" *ngFor="let method of availableMethods">
+                    <div class="col-md-4" *ngFor="let method of availableMethods; trackBy: trackByMethodId">
                       <div class="payment-method-card" [class.selected]="selectedMethod?.id === method.id" (click)="selectMethod(method)">
                         <div class="text-center">
                           <div class="method-icon mb-2">

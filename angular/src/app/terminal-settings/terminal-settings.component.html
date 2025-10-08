@@ -152,7 +152,7 @@
         <!-- Provider Info -->
         <div *ngIf="form.get('providerId')?.value" class="mt-4">
           <h3>Selected Provider Information</h3>
-          <div *ngFor="let provider of providers">
+          <div *ngFor="let provider of providers; trackBy: trackByProviderId">
             <div *ngIf="provider.providerId === form.get('providerId')?.value" class="p-3 surface-100 border-round">
               <h4 class="mt-0">{{ provider.displayName }}</h4>
               <p class="mb-0">{{ provider.description }}</p>

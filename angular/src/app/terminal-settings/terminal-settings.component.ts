@@ -210,4 +210,8 @@ export class TerminalSettingsComponent implements OnInit, OnDestroy {
       control.setErrors({ invalidJson: true });
     }
   }
+
+  trackByProviderId(index: number, provider: TerminalProviderInfoDto): string {
+    return provider.providerId;
+  }
 }

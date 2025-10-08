@@ -140,4 +140,8 @@ export class RentalListComponent implements OnInit {
       }
     });
   }
+
+  trackByRentalId(index: number, rental: RentalListDto): string {
+    return rental.id;
+  }
 }

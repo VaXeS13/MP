@@ -30,7 +30,7 @@
         </div>
 
         <div
-          *ngFor="let notification of notifications"
+          *ngFor="let notification of notifications; trackBy: trackByNotificationId"
           class="notification-item p-3 border-bottom-1 surface-border cursor-pointer hover:surface-hover"
           (click)="onNotificationClick(notification)">
           <div class="flex align-items-start gap-3">

@@ -953,4 +953,16 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
         return '';
     }
   }
+
+  trackByBoothTypeId(index: number, boothType: BoothTypeDto): string {
+    return boothType.id;
+  }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
+
+  trackByStatusKey(index: number, statusKey: string): string {
+    return statusKey;
+  }
 }

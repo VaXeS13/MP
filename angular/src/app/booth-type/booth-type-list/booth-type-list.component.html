@@ -71,7 +71,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let boothType of boothTypes">
+            <tr *ngFor="let boothType of boothTypes; trackBy: trackByBoothTypeId">
               <td>
                 <div class="d-flex align-items-center">
                   <i class="fas fa-tag me-2 text-primary"></i>

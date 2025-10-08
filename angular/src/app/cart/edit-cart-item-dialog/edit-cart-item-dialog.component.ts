@@ -512,4 +512,12 @@ export class EditCartItemDialogComponent implements OnInit, OnChanges {
   isValidDate(date: Date | undefined): boolean {
     return date instanceof Date && !isNaN(date.getTime());
   }
+
+  trackByBoothTypeId(index: number, boothType: BoothTypeDto): string {
+    return boothType.id;
+  }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
 }

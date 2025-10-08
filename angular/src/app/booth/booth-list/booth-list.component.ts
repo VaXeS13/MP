@@ -319,4 +319,7 @@ this.boothService.getList(input).subscribe({
     });
   }
 
+  trackByBoothId(index: number, booth: BoothDto): string {
+    return booth.id;
+  }
 }

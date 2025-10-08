@@ -66,7 +66,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let item of cart.items" [class.table-danger]="hasItemError(item.id)">
+                <tr *ngFor="let item of cart.items; trackBy: trackByCartItemId" [class.table-danger]="hasItemError(item.id)">
                   <td>
                     <strong>{{ item.boothNumber }}</strong>
                     <br>

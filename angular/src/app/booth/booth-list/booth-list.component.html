@@ -74,7 +74,7 @@
 
     <!-- Grid View -->
     <div *ngIf="viewMode === 'grid'" class="booths-grid">
-      <div *ngFor="let booth of booths" class="booth-card">
+      <div *ngFor="let booth of booths; trackBy: trackByBoothId" class="booth-card">
         <div class="booth-card-header">
           <div class="booth-number">
             <i class="pi pi-box"></i>

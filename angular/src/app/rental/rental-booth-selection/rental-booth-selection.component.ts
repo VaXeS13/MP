@@ -118,4 +118,8 @@ export class RentalBoothSelectionComponent implements OnInit {
         return 'Unavailable';
     }
   }
+
+  trackByBoothId(index: number, booth: BoothDto): string {
+    return booth.id;
+  }
 }

@@ -105,7 +105,7 @@
         </ng-template>
 
         <div class="recent-sales">
-          <div *ngFor="let sale of recentSales" class="sale-item">
+          <div *ngFor="let sale of recentSales; trackBy: trackBySaleIndex" class="sale-item">
             <div class="sale-info">
               <span class="sale-name">{{ sale.itemName }}</span>
               <span class="sale-booth text-muted">{{ sale.boothNumber }}</span>

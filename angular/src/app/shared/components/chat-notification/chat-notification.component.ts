@@ -121,4 +121,8 @@ export class ChatNotificationComponent implements OnInit, OnDestroy {
     // Dismiss the notification
     this.dismissNotification(notification.id);
   }
+
+  trackByNotificationId(index: number, notification: ChatNotification): string {
+    return notification.id;
+  }
 }

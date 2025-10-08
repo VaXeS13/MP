@@ -20,7 +20,7 @@
     <!-- Navigation Items -->
     <div class="collapse navbar-collapse" id="navbarNav" [class.show]="isMobileMenuOpen">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item" *ngFor="let route of navigationItems$ | async"
+        <li class="nav-item" *ngFor="let route of navigationItems$ | async; trackBy: trackByRouteName"
             [ngClass]="{'dropdown': route.children && route.children.length > 0}">
 
           <!-- Regular menu item (no children) -->
@@ -53,7 +53,7 @@
               class="dropdown-menu shadow"
               [class.show]="isDropdownOpen(route.name)"
               [attr.aria-labelledby]="'dropdown-' + route.name">
-              <li *ngFor="let child of route.children">
+              <li *ngFor="let child of route.children; trackBy: trackByChildPath">
                 <a
                   class="dropdown-item"
                   [routerLink]="[child.path]"
@@ -85,7 +85,7 @@
             class="dropdown-menu shadow"
             [class.show]="isDropdownOpen('languageMenu')"
             aria-labelledby="languageDropdown">
-            <li *ngFor="let language of availableLanguages">
+            <li *ngFor="let language of availableLanguages; trackBy: trackByLanguageCode">
               <a
                 class="dropdown-item d-flex align-items-center"
                 [class.active]="language.code === currentLanguage"

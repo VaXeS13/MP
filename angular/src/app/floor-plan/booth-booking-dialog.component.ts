@@ -168,7 +168,7 @@ import { addDays, format, isAfter, isBefore, isEqual, startOfDay } from 'date-fn
       <!-- Validation Messages -->
       <div *ngIf="validationErrors.length > 0" class="validation-errors mt-3">
         <p-message
-          *ngFor="let error of validationErrors"
+          *ngFor="let error of validationErrors; trackBy: trackByErrorMessage"
           severity="error"
           [text]="error">
         </p-message>
@@ -398,5 +398,9 @@ export class BoothBookingDialogComponent implements OnInit {
 
   cancel() {
     this.ref.close({ success: false });
+  }
+
+  trackByErrorMessage(index: number, error: string): string {
+    return error;
   }
 }
