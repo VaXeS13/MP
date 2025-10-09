@@ -12,7 +12,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Canvas, Rect, Text, Group, Shadow, FabricImage } from 'fabric';
 import { v4 as uuidv4 } from 'uuid';
 import { MessageService } from 'primeng/api';
-import { LazyLoadEvent } from 'primeng/api';
 import { FloorPlanService } from '../services/floor-plan.service';
 import { BoothService } from '../services/booth.service';
 import {
@@ -191,9 +190,7 @@ import { CreateFloorPlanElementDto } from '../proxy/floor-plans/models';
             <p-scroller
               [items]="filteredBooths"
               [itemSize]="60"
-              scrollHeight="400px"
-              [lazy]="true"
-              (onLazyLoad)="loadBoothsLazy($event)">
+              scrollHeight="400px">
 
               <ng-template pTemplate="item" let-booth>
                 <div class="booth-item p-2 mb-2 border-round cursor-pointer border"
@@ -601,7 +598,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
   private loadAvailableBooths() {
     const listInput = {
       skipCount: 0,
-      maxResultCount: 50, // Load first page only
+      maxResultCount: 500, // Load more booths for better UX
       filter: this.boothFilterText,
       status: this.boothFilterStatus
     };
@@ -637,22 +634,6 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
   onBoothFilterChange() {
     this.applyBoothFilters();
     this.cdr.markForCheck();
-  }
-
-  loadBoothsLazy(event: LazyLoadEvent) {
-    const listInput = {
-      skipCount: event.first || 0,
-      maxResultCount: event.rows || 50,
-      filter: this.boothFilterText,
-      status: this.boothFilterStatus
-    };
-
-    this.boothService.getList(listInput).subscribe({
-      next: (result) => {
-        this.filteredBooths = [...this.filteredBooths, ...result.items];
-        this.cdr.markForCheck();
-      }
-    });
   }
 
   private initializeNewFloorPlan() {

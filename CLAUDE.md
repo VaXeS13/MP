@@ -39,6 +39,11 @@ including **interactive floor-plan mapping**, multi-floor support, and flexible 
 - **Generate ABP service proxy**: `abp generate-proxy -t ng` (run in angular directory after creating new backend services)
 - **Update ABP packages**: `abp update` (run in solution root)
 
+### Entity Framework Migrations
+- **Add new migration**: `dotnet ef migrations add MigrationName --project src/MP.EntityFrameworkCore/MP.EntityFrameworkCore.csproj`
+- **Remove last migration**: `dotnet ef migrations remove --project src/MP.EntityFrameworkCore/MP.EntityFrameworkCore.csproj`
+- **Apply migrations**: Run `MP.DbMigrator` project or use `dotnet ef database update --project src/MP.EntityFrameworkCore/MP.EntityFrameworkCore.csproj`
+
 ## Architecture
 
 ## Multitenancy and Hostnames
@@ -77,6 +82,26 @@ The solution follows ABP Framework's layered architecture:
 - **MP.EntityFrameworkCore.Tests**: Data access tests
 - **MP.HttpApi.Client.ConsoleTestApp**: Console app for testing API client
 
+### Key Business Domains
+
+The application is built around these core domain concepts:
+
+- **Rentals**: Booth rental management with periods, status tracking (Active, Extended, Completed, Cancelled), and payment integration
+- **Booths**: Physical booth management with location tracking, types, currency support, and floor plan integration
+- **Items**: Item management system with barcode generation (format: `{ItemSheetId}-{SequenceNumber}`), status tracking, and item sheets
+- **Payments**: Multi-provider payment integration (Przelewy24, Stripe, PayPal) with transaction tracking
+- **FloorPlans**: Interactive floor plan mapping with Fabric.js, supporting multiple floors and booth positioning via FloorPlanBooth and FloorPlanElement entities
+- **Settlements**: Financial settlement management for booth rentals
+- **Carts**: Shopping cart functionality with CartItem management
+- **Notifications**: User notification system for real-time updates
+- **Chat**: Real-time chat messaging via SignalR
+- **Fiscal Printers & Terminals**: Integration with fiscal printing devices and payment terminals
+
+#### Barcode System
+- Items use UUID v4 for unique identification
+- Barcodes are generated using `BarcodeHelper` with format: `{ItemSheetId}-{SequenceNumber}`
+- Supports JsBarcode library for barcode rendering on frontend
+
 ## Development Setup
 
 ### Prerequisites
@@ -112,6 +137,14 @@ For production environments, generate signing certificate:
 dotnet dev-certs https -v -ep openiddict.pfx -p cd8a1828-5d08-495a-8c62-b5b37b27378c
 ```
 
+### Important Configuration Files
+- **Connection strings**: `src/MP.HttpApi.Host/appsettings.json` and `src/MP.DbMigrator/appsettings.json`
+- **CORS settings**: `src/MP.HttpApi.Host/appsettings.json` (CorsOrigins section)
+- **OpenIddict configuration**: `src/MP.Domain/OpenIddict/OpenIddictDataSeedContributor.cs`
+- **Multi-tenancy settings**: `src/MP.Domain/MultiTenancy/SubdomainTenantResolveContributor.cs`
+- **Angular environment**: `angular/src/environments/environment.ts` and `environment.prod.ts`
+- **ABP settings**: Defined in `src/MP.Domain/Settings/MPSettingDefinitionProvider.cs`
+
 ## Development Workflow
 
 1. Start the API: `dotnet run --project src/MP.HttpApi.Host/MP.HttpApi.Host.csproj`
@@ -122,17 +155,31 @@ dotnet dev-certs https -v -ep openiddict.pfx -p cd8a1828-5d08-495a-8c62-b5b37b27
 ## Testing
 
 ### Backend Tests
+All test projects are located in the `test/` directory:
+- `test/MP.TestBase/` - Base test infrastructure and helpers
+- `test/MP.Domain.Tests/` - Domain layer unit tests
+- `test/MP.Application.Tests/` - Application service tests
+- `test/MP.EntityFrameworkCore.Tests/` - Data access layer tests
+- `test/MP.HttpApi.Client.ConsoleTestApp/` - Console app for API testing
+
+#### Running Backend Tests
 - **Run all tests**: `dotnet test MP.sln`
 - **Run tests with verbose output**: `dotnet test MP.sln --verbosity detailed`
+- **Run specific test project**: `dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj`
 - **Run specific test class**: `dotnet test --filter "FullyQualifiedName~ClassName"`
-- **Run tests with coverage**: `dotnet test /p:CollectCoverage=true`
+- **Run single test method**: `dotnet test --filter "FullyQualifiedName~ClassName.TestMethodName"`
+- **Run tests with coverage**: `dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover`
+- **Run tests with detailed coverage**: `dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/`
 
 ### Frontend Tests
+Located in `angular/` directory, using Jasmine and Karma:
+
 ```bash
 cd angular
 ng test                    # Run tests with watch mode
 ng test --code-coverage   # Run tests with coverage report
 ng test --no-watch        # Run tests once without watch
+ng test --browsers=ChromeHeadless  # Run in headless mode for CI/CD
 ```
 
 ## Important Notes
@@ -156,8 +203,15 @@ ng test --no-watch        # Run tests once without watch
 - Canvas operations are handled via Fabric.js integration for floor-plan mapping
 - PrimeNG components with Lepton-X theme for UI
 - Chart.js and ng2-charts for data visualization
+- PDF generation via jsPDF library (v3.0.3)
+- Barcode rendering with JsBarcode library
 
 ### Backend
 - Health checks available at `/health-status`
 - API documentation at https://localhost:44377/swagger
-- SignalR support via @microsoft/signalr package
+
+### SignalR Real-time Communication
+- Backend provides SignalR hubs for real-time features (chat, notifications)
+- Frontend uses @microsoft/signalr package (v9.0.6) for connection
+- SignalR endpoints available at API host URL
+- Used for live updates in chat messaging and user notifications
