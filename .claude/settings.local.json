@@ -41,7 +41,8 @@
       "Bash(dotnet ef migrations remove:*)",
       "mcp__linear-server__create_comment",
       "Bash(git branch:*)",
-      "Bash(Remove-Item \"C:\\Users\\mhinc\\source\\repos\\MP\\MP\\src\\MP.Domain.Shared\\Rentals\\PaymentMethod.cs\" -Force)"
+      "Bash(Remove-Item \"C:\\Users\\mhinc\\source\\repos\\MP\\MP\\src\\MP.Domain.Shared\\Rentals\\PaymentMethod.cs\" -Force)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
