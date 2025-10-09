@@ -113,6 +113,24 @@
       </div>
     </div>
 
+    <!-- Calendar Legend -->
+    <div class="card mb-3" *ngIf="calendarLegend && getCalendarStatuses().length > 0">
+      <div class="card-body">
+        <h6 class="card-title">
+          <i class="fas fa-info-circle me-2"></i>
+          Calendar Legend
+        </h6>
+        <div class="row g-2">
+          <div class="col-md-6" *ngFor="let statusKey of getCalendarStatuses(); trackBy: trackByStatusKey">
+            <div class="d-flex align-items-center">
+              <div class="legend-color-box" [ngClass]="getLegendClass(statusKey)"></div>
+              <span class="ms-2">{{ calendarLegend[statusKey] }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Notes Section -->
     <div class="card mb-3">
       <div class="card-body">

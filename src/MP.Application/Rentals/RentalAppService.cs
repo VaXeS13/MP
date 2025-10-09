@@ -486,6 +486,7 @@ namespace MP.Rentals
                 throw new EntityNotFoundException(typeof(Booth), input.BoothId);
 
             // Get all rentals for this booth that overlap with the requested date range
+            // Include historical rentals (Completed, Cancelled) to show them in greyed out state
             // Use projection to load only required fields instead of full User entity
             var queryable = await _rentalRepository.GetQueryableAsync();
             var rentals = await AsyncExecuter.ToListAsync(
@@ -493,10 +494,7 @@ namespace MP.Rentals
                     .AsNoTracking()
                     .Where(r => r.BoothId == input.BoothId &&
                                r.Period.StartDate <= input.EndDate &&
-                               r.Period.EndDate >= input.StartDate &&
-                               (r.Status == RentalStatus.Draft ||
-                                r.Status == RentalStatus.Active ||
-                                r.Status == RentalStatus.Extended))
+                               r.Period.EndDate >= input.StartDate)
                     .Select(r => new RentalCalendarProjection
                     {
                         Id = r.Id,
@@ -508,6 +506,14 @@ namespace MP.Rentals
                         Notes = r.Notes
                     })
             );
+
+            Logger.LogInformation("GetBoothCalendar: Found {RentalCount} rentals for booth {BoothId} between {StartDate:yyyy-MM-dd} and {EndDate:yyyy-MM-dd}",
+                rentals.Count, input.BoothId, input.StartDate, input.EndDate);
+            foreach (var rental in rentals)
+            {
+                Logger.LogInformation("  Rental {RentalId}: {StartDate:yyyy-MM-dd} to {EndDate:yyyy-MM-dd}, Status: {Status}",
+                    rental.Id, rental.StartDate, rental.EndDate, rental.Status);
+            }
 
             // Generate calendar dates
             var calendarDates = new List<CalendarDateDto>();
@@ -542,7 +548,8 @@ namespace MP.Rentals
                 { ((int)CalendarDateStatus.Reserved).ToString(), "Reserved (pending payment)" },
                 { ((int)CalendarDateStatus.Occupied).ToString(), "Occupied (active rental)" },
                 { ((int)CalendarDateStatus.Unavailable).ToString(), "Unavailable" },
-                { ((int)CalendarDateStatus.PastDate).ToString(), "Past date" }
+                { ((int)CalendarDateStatus.PastDate).ToString(), "Past date" },
+                { ((int)CalendarDateStatus.Historical).ToString(), "Historical rental (past)" }
             };
 
             return new BoothCalendarResponseDto
@@ -560,10 +567,6 @@ namespace MP.Rentals
         {
             var today = DateTime.Today;
 
-            // Past dates
-            if (date < today)
-                return CalendarDateStatus.PastDate;
-
             // Check if there's a rental for this date
             var rental = GetRentalForDate(date, rentals);
             if (rental != null)
@@ -574,11 +577,21 @@ namespace MP.Rentals
                         return CalendarDateStatus.Reserved;
                     case RentalStatus.Active:
                     case RentalStatus.Extended:
+                        // If rental ended in the past, show as historical
+                        if (rental.EndDate < today)
+                            return CalendarDateStatus.Historical;
                         return CalendarDateStatus.Occupied;
+                    case RentalStatus.Expired:
+                    case RentalStatus.Cancelled:
+                        return CalendarDateStatus.Historical;
                     default:
                         return CalendarDateStatus.Available;
                 }
             }
+
+            // Past dates without rentals
+            if (date < today)
+                return CalendarDateStatus.PastDate;
 
             return CalendarDateStatus.Available;
         }
@@ -611,6 +624,7 @@ namespace MP.Rentals
                 CalendarDateStatus.Occupied => "Occupied",
                 CalendarDateStatus.Unavailable => "Unavailable",
                 CalendarDateStatus.PastDate => "Past Date",
+                CalendarDateStatus.Historical => "Historical Rental",
                 _ => "Unknown"
             };
         }

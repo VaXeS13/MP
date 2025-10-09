@@ -47,6 +47,7 @@ export class EditCartItemDialogComponent implements OnInit, OnChanges {
   currentDate = new Date();
   calendarDays: CalendarDay[] = [];
   calendarData: CalendarDateDto[] = [];
+  calendarLegend: { [key: string]: string } = {};
   minimumGapDays = 7; // Default value, will be loaded from settings
 
   selectedStartDate?: Date;
@@ -60,6 +61,7 @@ export class EditCartItemDialogComponent implements OnInit, OnChanges {
   hasGapError = false;
 
   CalendarDateStatus = CalendarDateStatus;
+  Object = Object; // Expose Object for template
 
   constructor(
     private boothService: BoothService,
@@ -200,6 +202,7 @@ export class EditCartItemDialogComponent implements OnInit, OnChanges {
     this.rentalService.getBoothCalendar(request).subscribe({
       next: (response) => {
         this.calendarData = response.dates;
+        this.calendarLegend = response.legend;
         this.generateCalendar();
         this.loading = false;
       },
@@ -368,6 +371,9 @@ export class EditCartItemDialogComponent implements OnInit, OnChanges {
       case CalendarDateStatus.PastDate:
         classes.push('status-past');
         break;
+      case CalendarDateStatus.Historical:
+        classes.push('status-historical');
+        break;
     }
 
     // Add selection classes LAST so they have higher priority
@@ -428,6 +434,9 @@ export class EditCartItemDialogComponent implements OnInit, OnChanges {
   }
 
   validateGaps(startDate: Date, endDate: Date, calendarDates: CalendarDateDto[]): { title: string, message: string } | null {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     // Find nearest rental before start date
     const rentalsBefore = calendarDates
       .filter(d => {
@@ -438,18 +447,24 @@ export class EditCartItemDialogComponent implements OnInit, OnChanges {
 
     if (rentalsBefore.length > 0) {
       const lastRentalEndDate = new Date(rentalsBefore[0].date);
-      const gapDays = Math.round((startDate.getTime() - lastRentalEndDate.getTime()) / (1000 * 60 * 60 * 24)) - 1;
+      lastRentalEndDate.setHours(0, 0, 0, 0);
 
-      if (gapDays > 0 && gapDays < this.minimumGapDays) {
-        const suggestedDate = new Date(lastRentalEndDate);
-        suggestedDate.setDate(suggestedDate.getDate() + 1);
-        const alternativeDate = new Date(lastRentalEndDate);
-        alternativeDate.setDate(alternativeDate.getDate() + this.minimumGapDays + 1);
+      // If the previous rental ended in the past, don't enforce gap validation
+      // The gap has already been "wasted" by the passage of time
+      if (lastRentalEndDate >= today) {
+        const gapDays = Math.round((startDate.getTime() - lastRentalEndDate.getTime()) / (1000 * 60 * 60 * 24)) - 1;
 
-        return {
-          title: this.localization.instant('MP::UnusableGapBeforeRental', 'Unusable Gap Before Rental'),
-          message: `Your rental would leave a ${gapDays}-day gap before another rental. Minimum gap is ${this.minimumGapDays} days. Please start on ${suggestedDate.toLocaleDateString()} (adjacent) or ${alternativeDate.toLocaleDateString()} (with minimum gap).`
-        };
+        if (gapDays > 0 && gapDays < this.minimumGapDays) {
+          const suggestedDate = new Date(lastRentalEndDate);
+          suggestedDate.setDate(suggestedDate.getDate() + 1);
+          const alternativeDate = new Date(lastRentalEndDate);
+          alternativeDate.setDate(alternativeDate.getDate() + this.minimumGapDays + 1);
+
+          return {
+            title: this.localization.instant('MP::UnusableGapBeforeRental', 'Unusable Gap Before Rental'),
+            message: `Your rental would leave a ${gapDays}-day gap before another rental. Minimum gap is ${this.minimumGapDays} days. Please start on ${suggestedDate.toLocaleDateString()} (adjacent) or ${alternativeDate.toLocaleDateString()} (with minimum gap).`
+          };
+        }
       }
     }
 
@@ -519,5 +534,33 @@ export class EditCartItemDialogComponent implements OnInit, OnChanges {
 
   trackByIndex(index: number, item: any): number {
     return index;
+  }
+
+  getCalendarStatuses(): string[] {
+    return Object.keys(this.calendarLegend);
+  }
+
+  getLegendClass(statusKey: string): string {
+    const status = Number(statusKey) as CalendarDateStatus;
+    switch (status) {
+      case CalendarDateStatus.Available:
+        return 'legend-available';
+      case CalendarDateStatus.Reserved:
+        return 'legend-reserved';
+      case CalendarDateStatus.Occupied:
+        return 'legend-occupied';
+      case CalendarDateStatus.Unavailable:
+        return 'legend-unavailable';
+      case CalendarDateStatus.PastDate:
+        return 'legend-past-date';
+      case CalendarDateStatus.Historical:
+        return 'legend-historical';
+      default:
+        return '';
+    }
+  }
+
+  trackByStatusKey(index: number, statusKey: string): string {
+    return statusKey;
   }
 }

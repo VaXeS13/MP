@@ -529,6 +529,9 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
   }
 
   validateGaps(startDate: Date, endDate: Date, calendarDates: CalendarDateDto[]): { title: string, message: string } | null {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     // Find nearest rental before start date
     const rentalsBefore = calendarDates
       .filter(d => {
@@ -539,18 +542,24 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
 
     if (rentalsBefore.length > 0) {
       const lastRentalEndDate = new Date(rentalsBefore[0].date);
-      const gapDays = Math.round((startDate.getTime() - lastRentalEndDate.getTime()) / (1000 * 60 * 60 * 24)) - 1;
+      lastRentalEndDate.setHours(0, 0, 0, 0);
 
-      if (gapDays > 0 && gapDays < this.minimumGapDays) {
-        const suggestedDate = new Date(lastRentalEndDate);
-        suggestedDate.setDate(suggestedDate.getDate() + 1);
-        const alternativeDate = new Date(lastRentalEndDate);
-        alternativeDate.setDate(alternativeDate.getDate() + this.minimumGapDays + 1);
+      // If the previous rental ended in the past, don't enforce gap validation
+      // The gap has already been "wasted" by the passage of time
+      if (lastRentalEndDate >= today) {
+        const gapDays = Math.round((startDate.getTime() - lastRentalEndDate.getTime()) / (1000 * 60 * 60 * 24)) - 1;
 
-        return {
-          title: this.localization.instant('MP::UnusableGapBeforeRental', 'Unusable Gap Before Rental'),
-          message: `Your rental would leave a ${gapDays}-day gap before another rental. Minimum gap is ${this.minimumGapDays} days. Please start on ${suggestedDate.toLocaleDateString()} (adjacent) or ${alternativeDate.toLocaleDateString()} (with minimum gap).`
-        };
+        if (gapDays > 0 && gapDays < this.minimumGapDays) {
+          const suggestedDate = new Date(lastRentalEndDate);
+          suggestedDate.setDate(suggestedDate.getDate() + 1);
+          const alternativeDate = new Date(lastRentalEndDate);
+          alternativeDate.setDate(alternativeDate.getDate() + this.minimumGapDays + 1);
+
+          return {
+            title: this.localization.instant('MP::UnusableGapBeforeRental', 'Unusable Gap Before Rental'),
+            message: `Your rental would leave a ${gapDays}-day gap before another rental. Minimum gap is ${this.minimumGapDays} days. Please start on ${suggestedDate.toLocaleDateString()} (adjacent) or ${alternativeDate.toLocaleDateString()} (with minimum gap).`
+          };
+        }
       }
     }
 
@@ -897,6 +906,9 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
       case CalendarDateStatus.PastDate:
         classes.push('past-date');
         break;
+      case CalendarDateStatus.Historical:
+        classes.push('historical');
+        break;
     }
 
     // Selection-related classes LAST (only for available dates) - higher priority
@@ -949,6 +961,8 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
         return 'legend-unavailable';
       case CalendarDateStatus.PastDate:
         return 'legend-past-date';
+      case CalendarDateStatus.Historical:
+        return 'legend-historical';
       default:
         return '';
     }

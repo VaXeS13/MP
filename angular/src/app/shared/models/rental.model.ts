@@ -133,5 +133,6 @@ export enum CalendarDateStatus {
   Reserved = 1,
   Occupied = 2,
   Unavailable = 3,
-  PastDate = 4
+  PastDate = 4,
+  Historical = 5
 }

@@ -115,19 +115,25 @@ namespace MP.Domain.Carts
             var rentalBefore = await _rentalRepository.GetNearestRentalBeforeAsync(boothId, startDate);
             if (rentalBefore != null)
             {
+                var today = DateTime.Today;
                 var daysBefore = (startDate.Date - rentalBefore.Period.EndDate.Date).Days - 1;
 
-                // If there's a gap, it must be either 0 (adjacent) or >= minimumGapDays
-                if (daysBefore > 0 && daysBefore < minimumGapDays)
+                // If the previous rental ended in the past, don't enforce gap validation
+                // The gap has already been "wasted" by the passage of time
+                if (rentalBefore.Period.EndDate.Date >= today)
                 {
-                    throw new BusinessException("RENTAL_CREATES_UNUSABLE_GAP_BEFORE")
-                        .WithData("BoothId", boothId)
-                        .WithData("StartDate", startDate)
-                        .WithData("PreviousRentalEndDate", rentalBefore.Period.EndDate)
-                        .WithData("GapDays", daysBefore)
-                        .WithData("MinimumGapDays", minimumGapDays)
-                        .WithData("SuggestedStartDate", rentalBefore.Period.EndDate.AddDays(1))
-                        .WithData("AlternativeStartDate", rentalBefore.Period.EndDate.AddDays(minimumGapDays + 1));
+                    // If there's a gap, it must be either 0 (adjacent) or >= minimumGapDays
+                    if (daysBefore > 0 && daysBefore < minimumGapDays)
+                    {
+                        throw new BusinessException("RENTAL_CREATES_UNUSABLE_GAP_BEFORE")
+                            .WithData("BoothId", boothId)
+                            .WithData("StartDate", startDate)
+                            .WithData("PreviousRentalEndDate", rentalBefore.Period.EndDate)
+                            .WithData("GapDays", daysBefore)
+                            .WithData("MinimumGapDays", minimumGapDays)
+                            .WithData("SuggestedStartDate", rentalBefore.Period.EndDate.AddDays(1))
+                            .WithData("AlternativeStartDate", rentalBefore.Period.EndDate.AddDays(minimumGapDays + 1));
+                    }
                 }
             }
 
