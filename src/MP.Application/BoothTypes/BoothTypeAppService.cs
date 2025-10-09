@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Distributed;
 using MP.Application.Contracts.BoothTypes;
 using MP.Domain.BoothTypes;
 using MP.Permissions;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Caching;
 using Volo.Abp.Domain.Repositories;
 
 namespace MP.Application.BoothTypes
@@ -22,14 +24,17 @@ namespace MP.Application.BoothTypes
     {
         private readonly BoothTypeManager _boothTypeManager;
         private readonly IBoothTypeRepository _boothTypeRepository;
+        private readonly IDistributedCache<List<BoothTypeDto>> _cache;
 
         public BoothTypeAppService(
             IRepository<BoothType, Guid> repository,
             BoothTypeManager boothTypeManager,
-            IBoothTypeRepository boothTypeRepository) : base(repository)
+            IBoothTypeRepository boothTypeRepository,
+            IDistributedCache<List<BoothTypeDto>> cache) : base(repository)
         {
             _boothTypeManager = boothTypeManager;
             _boothTypeRepository = boothTypeRepository;
+            _cache = cache;
 
             GetPolicyName = MPPermissions.BoothTypes.Default;
             GetListPolicyName = MPPermissions.BoothTypes.Default;
@@ -40,8 +45,22 @@ namespace MP.Application.BoothTypes
 
         public async Task<List<BoothTypeDto>> GetActiveTypesAsync()
         {
-            var activeTypes = await _boothTypeRepository.GetActiveTypesAsync();
-            return ObjectMapper.Map<List<BoothType>, List<BoothTypeDto>>(activeTypes);
+            var cacheKey = $"BoothTypes_Active_Tenant_{CurrentTenant?.Id}";
+
+            var cachedData = await _cache.GetOrAddAsync(
+                cacheKey,
+                async () =>
+                {
+                    var activeTypes = await _boothTypeRepository.GetActiveTypesAsync();
+                    return ObjectMapper.Map<List<BoothType>, List<BoothTypeDto>>(activeTypes);
+                },
+                () => new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+                }
+            );
+
+            return cachedData;
         }
 
         [Authorize(MPPermissions.BoothTypes.ManageTypes)]
@@ -54,6 +73,9 @@ namespace MP.Application.BoothTypes
                 CurrentTenant.Id);
 
             var savedBoothType = await Repository.InsertAsync(boothType);
+
+            await InvalidateCacheAsync();
+
             return ObjectMapper.Map<BoothType, BoothTypeDto>(savedBoothType);
         }
 
@@ -69,6 +91,9 @@ namespace MP.Application.BoothTypes
                 input.CommissionPercentage);
 
             var updatedBoothType = await Repository.UpdateAsync(boothType);
+
+            await InvalidateCacheAsync();
+
             return ObjectMapper.Map<BoothType, BoothTypeDto>(updatedBoothType);
         }
 
@@ -78,6 +103,9 @@ namespace MP.Application.BoothTypes
             var boothType = await Repository.GetAsync(id);
             boothType.Activate();
             var updatedBoothType = await Repository.UpdateAsync(boothType);
+
+            await InvalidateCacheAsync();
+
             return ObjectMapper.Map<BoothType, BoothTypeDto>(updatedBoothType);
         }
 
@@ -87,7 +115,16 @@ namespace MP.Application.BoothTypes
             var boothType = await Repository.GetAsync(id);
             boothType.Deactivate();
             var updatedBoothType = await Repository.UpdateAsync(boothType);
+
+            await InvalidateCacheAsync();
+
             return ObjectMapper.Map<BoothType, BoothTypeDto>(updatedBoothType);
+        }
+
+        private async Task InvalidateCacheAsync()
+        {
+            var cacheKey = $"BoothTypes_Active_Tenant_{CurrentTenant?.Id}";
+            await _cache.RemoveAsync(cacheKey);
         }
     }
 }

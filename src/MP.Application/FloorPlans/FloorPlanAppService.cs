@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using MP.Domain.FloorPlans;
 using MP.Domain.Rentals;
 using MP.Permissions;
@@ -11,6 +12,7 @@ using MP.Rentals;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Caching;
 using Volo.Abp.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,32 +27,52 @@ namespace MP.FloorPlans
         private readonly IFloorPlanElementRepository _floorPlanElementRepository;
         private readonly IRepository<Domain.Booths.Booth, Guid> _boothRepository;
         private readonly IRepository<Rental, Guid> _rentalRepository;
+        private readonly IDistributedCache<FloorPlanDto> _floorPlanCache;
+        private readonly IDistributedCache<List<FloorPlanDto>> _floorPlanListCache;
 
         public FloorPlanAppService(
             IFloorPlanRepository floorPlanRepository,
             IFloorPlanBoothRepository floorPlanBoothRepository,
             IFloorPlanElementRepository floorPlanElementRepository,
             IRepository<Domain.Booths.Booth, Guid> boothRepository,
-            IRepository<Rental, Guid> rentalRepository)
+            IRepository<Rental, Guid> rentalRepository,
+            IDistributedCache<FloorPlanDto> floorPlanCache,
+            IDistributedCache<List<FloorPlanDto>> floorPlanListCache)
         {
             _floorPlanRepository = floorPlanRepository;
             _floorPlanBoothRepository = floorPlanBoothRepository;
             _floorPlanElementRepository = floorPlanElementRepository;
             _boothRepository = boothRepository;
             _rentalRepository = rentalRepository;
+            _floorPlanCache = floorPlanCache;
+            _floorPlanListCache = floorPlanListCache;
         }
 
         public async Task<FloorPlanDto> GetAsync(Guid id)
         {
-            var floorPlan = await _floorPlanRepository.GetAsync(id);
-            var booths = await _floorPlanBoothRepository.GetListByFloorPlanAsync(id);
-            var elements = await _floorPlanElementRepository.GetListByFloorPlanAsync(id);
+            var cacheKey = $"FloorPlan_{id}";
 
-            var dto = ObjectMapper.Map<FloorPlan, FloorPlanDto>(floorPlan);
-            dto.Booths = ObjectMapper.Map<List<FloorPlanBooth>, List<FloorPlanBoothDto>>(booths);
-            dto.Elements = ObjectMapper.Map<List<FloorPlanElement>, List<FloorPlanElementDto>>(elements);
+            var cachedData = await _floorPlanCache.GetOrAddAsync(
+                cacheKey,
+                async () =>
+                {
+                    var floorPlan = await _floorPlanRepository.GetAsync(id);
+                    var booths = await _floorPlanBoothRepository.GetListByFloorPlanAsync(id);
+                    var elements = await _floorPlanElementRepository.GetListByFloorPlanAsync(id);
 
-            return dto;
+                    var dto = ObjectMapper.Map<FloorPlan, FloorPlanDto>(floorPlan);
+                    dto.Booths = ObjectMapper.Map<List<FloorPlanBooth>, List<FloorPlanBoothDto>>(booths);
+                    dto.Elements = ObjectMapper.Map<List<FloorPlanElement>, List<FloorPlanElementDto>>(elements);
+
+                    return dto;
+                },
+                () => new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
+                }
+            );
+
+            return cachedData;
         }
 
         public async Task<PagedResultDto<FloorPlanDto>> GetListAsync(GetFloorPlanListDto input)
@@ -101,8 +123,30 @@ namespace MP.FloorPlans
         {
             var resolvedTenantId = tenantId ?? CurrentTenant.Id;
 
+            // Only cache published (isActive = true) floor plans
+            if (isActive == true)
+            {
+                var cacheKey = $"FloorPlans_Published_Tenant_{resolvedTenantId}";
+
+                var cachedData = await _floorPlanListCache.GetOrAddAsync(
+                    cacheKey,
+                    async () => await LoadFloorPlansAsync(resolvedTenantId, isActive),
+                    () => new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
+                    }
+                );
+
+                return cachedData;
+            }
+
+            return await LoadFloorPlansAsync(resolvedTenantId, isActive);
+        }
+
+        private async Task<List<FloorPlanDto>> LoadFloorPlansAsync(Guid? tenantId, bool? isActive)
+        {
             // Handle case where tenantId is null (development scenario)
-            if (resolvedTenantId == null)
+            if (tenantId == null)
             {
                 var allFloorPlans = await _floorPlanRepository.GetListAsync();
                 var filteredPlans = isActive.HasValue
@@ -122,7 +166,7 @@ namespace MP.FloorPlans
                 return resultDtos;
             }
 
-            var floorPlans = await _floorPlanRepository.GetListByTenantAsync(resolvedTenantId, isActive);
+            var floorPlans = await _floorPlanRepository.GetListByTenantAsync(tenantId, isActive);
 
             var dtos = new List<FloorPlanDto>();
 
@@ -211,6 +255,9 @@ namespace MP.FloorPlans
             // Save changes to ensure the floor plan is persisted
             await CurrentUnitOfWork.SaveChangesAsync();
 
+            // Invalidate cache
+            await InvalidateCacheAsync(floorPlan.Id, tenantId);
+
             // Return the created floor plan DTO
             var dto = ObjectMapper.Map<FloorPlan, FloorPlanDto>(floorPlan);
             dto.Booths = ObjectMapper.Map<List<FloorPlanBooth>, List<FloorPlanBoothDto>>(floorPlanBooths);
@@ -286,6 +333,9 @@ namespace MP.FloorPlans
                 }
             }
 
+            // Invalidate cache
+            await InvalidateCacheAsync(id, floorPlan.TenantId);
+
             // Return the updated floor plan DTO
             var dto = ObjectMapper.Map<FloorPlan, FloorPlanDto>(floorPlan);
             dto.Booths = ObjectMapper.Map<List<FloorPlanBooth>, List<FloorPlanBoothDto>>(floorPlanBooths);
@@ -297,9 +347,14 @@ namespace MP.FloorPlans
         [Authorize(MPPermissions.FloorPlans.Delete)]
         public async Task DeleteAsync(Guid id)
         {
+            var floorPlan = await _floorPlanRepository.GetAsync(id);
+            var tenantId = floorPlan.TenantId;
+
             await _floorPlanBoothRepository.DeleteByFloorPlanAsync(id);
             await _floorPlanElementRepository.DeleteByFloorPlanAsync(id);
             await _floorPlanRepository.DeleteAsync(id);
+
+            await InvalidateCacheAsync(id, tenantId);
         }
 
         [Authorize(MPPermissions.FloorPlans.Publish)]
@@ -309,6 +364,8 @@ namespace MP.FloorPlans
             var floorPlan = await _floorPlanRepository.GetAsync(id);
             floorPlan.Publish();
             await _floorPlanRepository.UpdateAsync(floorPlan);
+
+            await InvalidateCacheAsync(id, floorPlan.TenantId);
 
             return await GetAsync(id);
         }
@@ -320,6 +377,8 @@ namespace MP.FloorPlans
             var floorPlan = await _floorPlanRepository.GetAsync(id);
             floorPlan.Deactivate();
             await _floorPlanRepository.UpdateAsync(floorPlan);
+
+            await InvalidateCacheAsync(id, floorPlan.TenantId);
 
             return await GetAsync(id);
         }
@@ -555,6 +614,15 @@ namespace MP.FloorPlans
 
             // No gaps found - available after the last rental
             return currentEnd.AddDays(1);
+        }
+
+        private async Task InvalidateCacheAsync(Guid floorPlanId, Guid? tenantId)
+        {
+            // Invalidate specific floor plan cache
+            await _floorPlanCache.RemoveAsync($"FloorPlan_{floorPlanId}");
+
+            // Invalidate published floor plans list cache for tenant
+            await _floorPlanListCache.RemoveAsync($"FloorPlans_Published_Tenant_{tenantId}");
         }
     }
 }

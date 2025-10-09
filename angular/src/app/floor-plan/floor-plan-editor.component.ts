@@ -5,7 +5,8 @@ import {
   ViewChild,
   ElementRef,
   AfterViewInit,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Canvas, Rect, Text, Group, Shadow, FabricImage } from 'fabric';
@@ -30,6 +31,7 @@ import { CreateFloorPlanElementDto } from '../proxy/floor-plans/models';
 @Component({
   selector: 'app-floor-plan-editor',
   standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="floor-plan-editor">
       <!-- Toolbar -->
@@ -608,6 +610,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
       next: (result) => {
         this.availableBooths = result.items;
         this.applyBoothFilters();
+        this.cdr.markForCheck();
       },
       error: (error) => {
         this.messageService.add({
@@ -615,6 +618,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
           summary: 'Błąd',
           detail: 'Nie udało się pobrać stanowisk'
         });
+        this.cdr.markForCheck();
       }
     });
   }
@@ -632,6 +636,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
 
   onBoothFilterChange() {
     this.applyBoothFilters();
+    this.cdr.markForCheck();
   }
 
   loadBoothsLazy(event: LazyLoadEvent) {
@@ -645,6 +650,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
     this.boothService.getList(listInput).subscribe({
       next: (result) => {
         this.filteredBooths = [...this.filteredBooths, ...result.items];
+        this.cdr.markForCheck();
       }
     });
   }
@@ -713,6 +719,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
         setTimeout(() => {
           this.renderExistingBooths();
           this.renderExistingElements();
+          this.cdr.markForCheck();
         }, 100);
       },
       error: (error) => {
@@ -745,6 +752,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
 
   selectBooth(booth: BoothDto) {
     this.selectedBoothId = booth.id;
+    this.cdr.markForCheck();
   }
 
   onBoothDragStart(event: DragEvent, booth: BoothDto) {
@@ -759,10 +767,12 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
   onCanvasDragOver(event: DragEvent) {
     event.preventDefault();
     this.isDragOver = true;
+    this.cdr.markForCheck();
   }
 
   onCanvasDragLeave(event: DragEvent) {
     this.isDragOver = false;
+    this.cdr.markForCheck();
   }
 
   onCanvasDrop(event: DragEvent) {
@@ -813,6 +823,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
 
     this.boothsOnCanvas.push(boothPosition);
     this.renderBoothOnCanvas(boothPosition);
+    this.cdr.markForCheck();
   }
 
   private renderBoothOnCanvas(boothPosition: BoothPosition) {
@@ -957,6 +968,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
     this.selectedBoothOnCanvas = undefined;
     this.canvas.discardActiveObject();
     this.canvas.renderAll();
+    this.cdr.markForCheck();
   }
 
   onLevelChange() {
@@ -970,6 +982,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
         ? 'Plan Parteru'
         : `Plan Piętra ${this.currentLevel}`;
     }
+    this.cdr.markForCheck();
   }
 
   onCanvasSizeChange() {
@@ -985,11 +998,13 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
   zoomIn() {
     this.currentZoom = Math.min(this.currentZoom * 1.1, 3);
     this.canvas.setZoom(this.currentZoom);
+    this.cdr.markForCheck();
   }
 
   zoomOut() {
     this.currentZoom = Math.max(this.currentZoom * 0.9, 0.1);
     this.canvas.setZoom(this.currentZoom);
+    this.cdr.markForCheck();
   }
 
   resetZoom() {
@@ -997,6 +1012,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
     this.canvas.setZoom(1);
     this.canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
     this.canvas.renderAll();
+    this.cdr.markForCheck();
   }
 
   // Element methods
@@ -1020,6 +1036,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
     };
     this.elementsOnCanvas.push(element);
     this.renderElementOnCanvas(element);
+    this.cdr.markForCheck();
   }
 
   private async renderElementOnCanvas(element: ElementPosition) {
@@ -1213,6 +1230,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
     this.selectedElement = undefined;
     this.canvas.discardActiveObject();
     this.canvas.renderAll();
+    this.cdr.markForCheck();
   }
 
   getElementTypeName(): string {
@@ -1303,6 +1321,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
         if (wasNewPlan) {
           this.router.navigate(['/floor-plans/editor', floorPlan.id], { replaceUrl: true });
         }
+        this.cdr.markForCheck();
       },
       error: (error) => {
         this.saving = false;
@@ -1311,6 +1330,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
           summary: 'Błąd',
           detail: 'Nie udało się zapisać planu sali'
         });
+        this.cdr.markForCheck();
       }
     });
   }
@@ -1337,6 +1357,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
           summary: 'Sukces',
           detail: 'Plan sali został opublikowany'
         });
+        this.cdr.markForCheck();
       },
       error: (error) => {
         this.publishing = false;
@@ -1345,6 +1366,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
           summary: 'Błąd',
           detail: 'Nie udało się opublikować planu sali'
         });
+        this.cdr.markForCheck();
       }
     });
   }

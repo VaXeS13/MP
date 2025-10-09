@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { RentalService } from '../../services/rental.service';
 import { RentalListDto, GetRentalListDto, RentalStatus } from '../../shared/models/rental.model';
@@ -9,7 +9,8 @@ import { PagedResultDto, LocalizationService } from '@abp/ng.core';
   selector: 'app-rental-list',
   templateUrl: './rental-list.component.html',
   styleUrls: ['./rental-list.component.scss'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RentalListComponent implements OnInit {
   rentals: RentalListDto[] = [];
@@ -22,7 +23,8 @@ export class RentalListComponent implements OnInit {
     private rentalService: RentalService,
     private router: Router,
     private messageService: MessageService,
-    private localization: LocalizationService
+    private localization: LocalizationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -42,6 +44,7 @@ export class RentalListComponent implements OnInit {
         this.rentals = result.items;
         this.totalCount = result.totalCount;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Error loading rentals:', error);
@@ -51,6 +54,7 @@ export class RentalListComponent implements OnInit {
           detail: this.localization.instant('::Rental:LoadError')
         });
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -116,6 +120,7 @@ export class RentalListComponent implements OnInit {
           summary: this.localization.instant('::Messages:Error'),
           detail: this.localization.instant('::Rental:StartError')
         });
+        this.cdr.markForCheck();
       }
     });
   }
@@ -137,6 +142,7 @@ export class RentalListComponent implements OnInit {
           summary: this.localization.instant('::Messages:Error'),
           detail: this.localization.instant('::Rental:CompleteError')
         });
+        this.cdr.markForCheck();
       }
     });
   }

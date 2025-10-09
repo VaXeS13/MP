@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -20,6 +20,7 @@ import { AssignSheetDialogComponent } from '../assign-sheet-dialog/assign-sheet-
   selector: 'app-item-sheet-list',
   templateUrl: './item-sheet-list.component.html',
   styleUrls: ['./item-sheet-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     FormsModule,
@@ -53,7 +54,8 @@ export class ItemSheetListComponent implements OnInit {
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private router: Router,
-    private barcodeLabelGenerator: BarcodeLabelGeneratorService
+    private barcodeLabelGenerator: BarcodeLabelGeneratorService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -71,9 +73,11 @@ export class ItemSheetListComponent implements OnInit {
         this.sheets = result.items || [];
         this.totalCount = result.totalCount || 0;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -111,6 +115,7 @@ export class ItemSheetListComponent implements OnInit {
           summary: 'Error',
           detail: error.error?.error?.message || 'Failed to create sheet'
         });
+        this.cdr.markForCheck();
       }
     });
   }
@@ -171,6 +176,7 @@ export class ItemSheetListComponent implements OnInit {
             summary: 'Error',
             detail: error.error?.error?.message || 'Failed to generate barcodes'
           });
+          this.cdr.markForCheck();
         }
       });
     }

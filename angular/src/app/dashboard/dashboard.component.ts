@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Observable, forkJoin, Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { DashboardService } from '../services/dashboard.service';
@@ -17,7 +17,8 @@ import {
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   loading = false;
@@ -40,7 +41,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private dashboardService: DashboardService,
-    private signalRService: SignalRService
+    private signalRService: SignalRService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -65,12 +67,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     dashboardHub.on('DashboardRefreshNeeded', () => {
       console.log('Dashboard: Refresh triggered by SignalR');
       this.loadDashboardData();
+      this.cdr.markForCheck();
     });
 
     // Listen for specific dashboard updates
     dashboardHub.on('DashboardUpdated', (data: any) => {
       console.log('Dashboard: Live update received', data);
       this.updateDashboardData(data);
+      this.cdr.markForCheck();
     });
   }
 
@@ -87,6 +91,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onPeriodChange(period: PeriodType): void {
     this.currentFilter.period = period;
     this.loadDashboardData();
+    this.cdr.markForCheck();
   }
 
   private loadDashboardData(): void {
@@ -108,9 +113,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.boothData = data.booth;
         this.financialData = data.financial;
         this.paymentData = data.payment;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Error loading dashboard data:', error);
+        this.cdr.markForCheck();
         // TODO: Show user-friendly error message
       }
     });

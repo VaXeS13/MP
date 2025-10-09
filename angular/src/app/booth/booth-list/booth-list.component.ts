@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { BoothService } from '../../services/booth.service';
 import { BoothSignalRService } from '../../services/booth-signalr.service';
@@ -13,6 +13,7 @@ import { IdentityUserService } from '@abp/ng.identity/proxy';
   selector: 'app-booth-list',
   templateUrl: './booth-list.component.html',
   styleUrls: ['./booth-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [ // Dodaj blok animacji
     trigger('slideInOut', [
       state('in', style({
@@ -84,7 +85,8 @@ export class BoothListComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private localizationService: LocalizationService,
-    private identityUserService: IdentityUserService
+    private identityUserService: IdentityUserService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -98,6 +100,7 @@ export class BoothListComponent implements OnInit, OnDestroy {
       // Refresh booth list to reflect changes
       console.log('BoothList: Reloading booth list due to status update...');
       this.loadBooths();
+      this.cdr.markForCheck();
     });
     console.log('BoothList: ✅ Booth updates subscription active');
   }
@@ -128,6 +131,7 @@ this.boothService.getList(input).subscribe({
     }));
     this.totalCount = result.totalCount;
     this.loading = false;
+    this.cdr.markForCheck();
   },
   error: (error) => {
     this.messageService.add({
@@ -136,6 +140,7 @@ this.boothService.getList(input).subscribe({
       detail: this.localizationService.instant('::Booth:LoadError')
     });
     this.loading = false;
+    this.cdr.markForCheck();
   }
 });
 
@@ -269,6 +274,7 @@ this.boothService.getList(input).subscribe({
           email: user.email,
           displayName: `${user.name} ${user.surname} (${user.email})`
         }));
+        this.cdr.markForCheck();
       },
       error: () => {
         this.messageService.add({
@@ -276,6 +282,7 @@ this.boothService.getList(input).subscribe({
           summary: this.localizationService.instant('::Messages:Error'),
           detail: 'Failed to load users'
         });
+        this.cdr.markForCheck();
       }
     });
   }

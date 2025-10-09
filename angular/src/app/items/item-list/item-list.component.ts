@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -18,6 +18,7 @@ import { ItemFormComponent } from '../item-form/item-form.component';
   selector: 'app-item-list',
   templateUrl: './item-list.component.html',
   styleUrls: ['./item-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     FormsModule,
@@ -57,7 +58,8 @@ export class ItemListComponent implements OnInit {
     private itemService: ItemService,
     private itemSheetService: ItemSheetService,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -79,9 +81,11 @@ export class ItemListComponent implements OnInit {
         this.items = result.items || [];
         this.totalCount = result.totalCount || 0;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -162,6 +166,7 @@ export class ItemListComponent implements OnInit {
           sheet => sheet.status === 'Draft' || sheet.status === 'Ready'
         );
         this.loadingSheets = false;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         this.messageService.add({
@@ -170,6 +175,7 @@ export class ItemListComponent implements OnInit {
           detail: 'Failed to load sheets'
         });
         this.loadingSheets = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -237,5 +243,6 @@ export class ItemListComponent implements OnInit {
     }
 
     this.loadItems();
+    this.cdr.markForCheck();
   }
 }
