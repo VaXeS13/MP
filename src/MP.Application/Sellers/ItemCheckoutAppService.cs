@@ -57,38 +57,38 @@ namespace MP.Application.Sellers
                 throw new UserFriendlyException("Barcode cannot be empty");
             }
 
+            // Use projection to load only required fields instead of full User entity
             var queryable = await _itemSheetItemRepository.GetQueryableAsync();
-            var itemSheetItem = await queryable
-                .Include(x => x.Item)
-                .Include(x => x.ItemSheet)
-                    .ThenInclude(sheet => sheet.Rental)
-                    .ThenInclude(r => r.User)
+            var itemDto = await queryable
+                .AsNoTracking()
                 .Where(x => x.Barcode == input.Barcode.Trim())
+                .Select(x => new ItemForCheckoutDto
+                {
+                    Id = x.Id,
+                    RentalId = x.ItemSheet.RentalId ?? Guid.Empty,
+                    Name = x.Item.Name,
+                    Description = null,
+                    Category = x.Item.Category,
+                    PhotoUrl = null,
+                    Barcode = x.Barcode,
+                    ActualPrice = x.Item.Price,
+                    CommissionPercentage = x.CommissionPercentage,
+                    Status = x.Status.ToString(),
+                    CustomerName = x.ItemSheet.Rental != null && x.ItemSheet.Rental.User != null
+                        ? (x.ItemSheet.Rental.User.Name ?? x.ItemSheet.Rental.User.UserName ?? "Unknown")
+                        : "Unknown",
+                    CustomerEmail = x.ItemSheet.Rental != null ? x.ItemSheet.Rental.User.Email : null,
+                    CustomerPhone = x.ItemSheet.Rental != null ? x.ItemSheet.Rental.User.PhoneNumber : null
+                })
                 .FirstOrDefaultAsync();
 
-            if (itemSheetItem == null)
+            if (itemDto == null)
             {
                 _logger.LogWarning("Item with barcode {Barcode} not found", input.Barcode);
                 return null;
             }
 
-            return new ItemForCheckoutDto
-            {
-                Id = itemSheetItem.Id,
-                RentalId = itemSheetItem.ItemSheet.RentalId ?? Guid.Empty,
-                Name = itemSheetItem.Item.Name,
-                Description = null, // Not available in new Item model
-                Category = itemSheetItem.Item.Category,
-                PhotoUrl = null, // Not available in new Item model
-                Barcode = itemSheetItem.Barcode,
-                ActualPrice = itemSheetItem.Item.Price,
-                CommissionPercentage = itemSheetItem.CommissionPercentage,
-                Status = itemSheetItem.Status.ToString(),
-                CustomerName = itemSheetItem.ItemSheet.Rental?.User?.Name ??
-                              itemSheetItem.ItemSheet.Rental?.User?.UserName ?? "Unknown",
-                CustomerEmail = itemSheetItem.ItemSheet.Rental?.User?.Email,
-                CustomerPhone = itemSheetItem.ItemSheet.Rental?.User?.PhoneNumber
-            };
+            return itemDto;
         }
 
         public async Task<AvailablePaymentMethodsDto> GetAvailablePaymentMethodsAsync()

@@ -1,7 +1,9 @@
 ﻿using AutoMapper.Internal.Mappers;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using MP.Domain.Booths;
 using MP.Domain.Rentals;
+using MP.Rentals;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -57,13 +59,29 @@ namespace MP.Booths
                 input.Status
             );
 
-            // Get all active rentals
-            var activeRentals = await _rentalRepository.GetActiveRentalsAsync();
+            // Use projection to load only required rental fields instead of full User entity
+            var queryable = await _rentalRepository.GetQueryableAsync();
             var today = DateTime.Today;
 
-            // Filter to only rentals active today and create a lookup by BoothId
-            var activeRentalsByBoothId = activeRentals
-                .Where(r => r.Period.StartDate <= today && r.Period.EndDate >= today)
+            var activeRentalsProjection = await AsyncExecuter.ToListAsync(
+                queryable
+                    .AsNoTracking()
+                    .Where(r => (r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended) &&
+                               r.Period.StartDate <= today && r.Period.EndDate >= today)
+                    .Select(r => new ActiveRentalProjection
+                    {
+                        Id = r.Id,
+                        BoothId = r.BoothId,
+                        UserName = r.User.Name,
+                        UserSurname = r.User.Surname,
+                        UserEmail = r.User.Email,
+                        StartDate = r.Period.StartDate,
+                        EndDate = r.Period.EndDate
+                    })
+            );
+
+            // Create a lookup by BoothId
+            var activeRentalsByBoothId = activeRentalsProjection
                 .GroupBy(r => r.BoothId)
                 .ToDictionary(g => g.Key, g => g.First());
 
@@ -76,10 +94,10 @@ namespace MP.Booths
                 if (activeRentalsByBoothId.TryGetValue(dto.Id, out var rental))
                 {
                     dto.CurrentRentalId = rental.Id;
-                    dto.CurrentRentalUserName = $"{rental.User.Name} {rental.User.Surname}";
-                    dto.CurrentRentalUserEmail = rental.User.Email;
-                    dto.CurrentRentalStartDate = rental.Period.StartDate;
-                    dto.CurrentRentalEndDate = rental.Period.EndDate;
+                    dto.CurrentRentalUserName = $"{rental.UserName} {rental.UserSurname}";
+                    dto.CurrentRentalUserEmail = rental.UserEmail;
+                    dto.CurrentRentalStartDate = rental.StartDate;
+                    dto.CurrentRentalEndDate = rental.EndDate;
                 }
             }
 
@@ -184,13 +202,29 @@ namespace MP.Booths
                 input.Status
             );
 
-            // Get all active rentals
-            var activeRentals = await _rentalRepository.GetActiveRentalsAsync();
+            // Use projection to load only required rental fields instead of full User entity
+            var queryable = await _rentalRepository.GetQueryableAsync();
             var today = DateTime.Today;
 
-            // Filter to only rentals active today and create a lookup by BoothId
-            var activeRentalsByBoothId = activeRentals
-                .Where(r => r.Period.StartDate <= today && r.Period.EndDate >= today)
+            var activeRentalsProjection = await AsyncExecuter.ToListAsync(
+                queryable
+                    .AsNoTracking()
+                    .Where(r => (r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended) &&
+                               r.Period.StartDate <= today && r.Period.EndDate >= today)
+                    .Select(r => new ActiveRentalProjection
+                    {
+                        Id = r.Id,
+                        BoothId = r.BoothId,
+                        UserName = r.User.Name,
+                        UserSurname = r.User.Surname,
+                        UserEmail = r.User.Email,
+                        StartDate = r.Period.StartDate,
+                        EndDate = r.Period.EndDate
+                    })
+            );
+
+            // Create a lookup by BoothId
+            var activeRentalsByBoothId = activeRentalsProjection
                 .GroupBy(r => r.BoothId)
                 .ToDictionary(g => g.Key, g => g.First());
 
@@ -203,14 +237,26 @@ namespace MP.Booths
                 if (activeRentalsByBoothId.TryGetValue(dto.Id, out var rental))
                 {
                     dto.CurrentRentalId = rental.Id;
-                    dto.CurrentRentalUserName = $"{rental.User.Name} {rental.User.Surname}";
-                    dto.CurrentRentalUserEmail = rental.User.Email;
-                    dto.CurrentRentalStartDate = rental.Period.StartDate;
-                    dto.CurrentRentalEndDate = rental.Period.EndDate;
+                    dto.CurrentRentalUserName = $"{rental.UserName} {rental.UserSurname}";
+                    dto.CurrentRentalUserEmail = rental.UserEmail;
+                    dto.CurrentRentalStartDate = rental.StartDate;
+                    dto.CurrentRentalEndDate = rental.EndDate;
                 }
             }
 
             return new PagedResultDto<BoothListDto>(totalCount, dtos);
+        }
+
+        // Projection class for active rental queries - loads only required fields
+        private class ActiveRentalProjection
+        {
+            public Guid Id { get; set; }
+            public Guid BoothId { get; set; }
+            public string UserName { get; set; } = null!;
+            public string UserSurname { get; set; } = null!;
+            public string? UserEmail { get; set; }
+            public DateTime StartDate { get; set; }
+            public DateTime EndDate { get; set; }
         }
 
         // Helper method do wyświetlania nazw enum

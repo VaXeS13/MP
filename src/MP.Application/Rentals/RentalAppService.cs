@@ -59,12 +59,7 @@ namespace MP.Rentals
         public async Task<PagedResultDto<RentalListDto>> GetListAsync(GetRentalListDto input)
         {
             var queryable = await _rentalRepository.GetQueryableAsync();
-
-            // Include navigation properties
-            queryable = queryable
-                .AsNoTracking()
-                .Include(r => r.User)
-                .Include(r => r.Booth);
+            queryable = queryable.AsNoTracking();
 
             // Filtering
             if (!string.IsNullOrWhiteSpace(input.Filter))
@@ -103,12 +98,53 @@ namespace MP.Rentals
 
             var totalCount = await AsyncExecuter.CountAsync(queryable);
 
-            var items = await AsyncExecuter.ToListAsync(
-                queryable.Skip(input.SkipCount).Take(input.MaxResultCount));
+            // Use projection to load only required fields instead of full User and Booth entities
+            var dtos = await AsyncExecuter.ToListAsync(
+                queryable
+                    .Skip(input.SkipCount)
+                    .Take(input.MaxResultCount)
+                    .Select(r => new RentalListDto
+                    {
+                        Id = r.Id,
+                        UserId = r.UserId,
+                        UserName = r.User.Name + " " + r.User.Surname,
+                        UserEmail = r.User.Email,
+                        BoothId = r.BoothId,
+                        BoothNumber = r.Booth.Number,
+                        StartDate = r.Period.StartDate,
+                        EndDate = r.Period.EndDate,
+                        DaysCount = (r.Period.EndDate - r.Period.StartDate).Days + 1,
+                        Status = r.Status,
+                        StatusDisplayName = "",
+                        TotalAmount = r.Payment.TotalAmount,
+                        PaidAmount = r.Payment.PaidAmount,
+                        IsPaid = r.Payment.IsPaid,
+                        CreationTime = r.CreationTime,
+                        StartedAt = r.StartedAt,
+                        ItemsCount = r.ItemSheets.Sum(sheet => sheet.Items.Count),
+                        SoldItemsCount = r.ItemSheets.Sum(sheet => sheet.Items.Count(item => item.Status == MP.Domain.Items.ItemSheetItemStatus.Sold))
+                    }));
 
-            var dtos = ObjectMapper.Map<List<Rental>, List<RentalListDto>>(items);
+            // Set display names in memory after loading from database
+            foreach (var dto in dtos)
+            {
+                dto.StatusDisplayName = GetRentalStatusDisplayName(dto.Status);
+            }
 
             return new PagedResultDto<RentalListDto>(totalCount, dtos);
+        }
+
+        private static string GetRentalStatusDisplayName(RentalStatus status)
+        {
+            return status switch
+            {
+                RentalStatus.Draft => "Projekt",
+                RentalStatus.Active => "Aktywne",
+                RentalStatus.Extended => "Przedłużone",
+                RentalStatus.Expired => "Wygasłe",
+                RentalStatus.Cancelled => "Anulowane",
+                _ => status.ToString()
+            };
         }
 
         [Authorize(MPPermissions.Rentals.Create)]
@@ -450,17 +486,27 @@ namespace MP.Rentals
                 throw new EntityNotFoundException(typeof(Booth), input.BoothId);
 
             // Get all rentals for this booth that overlap with the requested date range
+            // Use projection to load only required fields instead of full User entity
             var queryable = await _rentalRepository.GetQueryableAsync();
             var rentals = await AsyncExecuter.ToListAsync(
                 queryable
                     .AsNoTracking()
-                    .Include(r => r.User)
                     .Where(r => r.BoothId == input.BoothId &&
                                r.Period.StartDate <= input.EndDate &&
                                r.Period.EndDate >= input.StartDate &&
                                (r.Status == RentalStatus.Draft ||
                                 r.Status == RentalStatus.Active ||
                                 r.Status == RentalStatus.Extended))
+                    .Select(r => new RentalCalendarProjection
+                    {
+                        Id = r.Id,
+                        StartDate = r.Period.StartDate,
+                        EndDate = r.Period.EndDate,
+                        Status = r.Status,
+                        UserName = r.User.Name,
+                        UserEmail = r.User.Email,
+                        Notes = r.Notes
+                    })
             );
 
             // Generate calendar dates
@@ -478,10 +524,10 @@ namespace MP.Rentals
                     Status = dateStatus,
                     StatusDisplayName = GetStatusDisplayName(dateStatus),
                     RentalId = rentalForDate?.Id,
-                    UserName = rentalForDate?.User?.Name,
-                    UserEmail = rentalForDate?.User?.Email,
-                    RentalStartDate = rentalForDate?.Period.StartDate,
-                    RentalEndDate = rentalForDate?.Period.EndDate,
+                    UserName = rentalForDate?.UserName,
+                    UserEmail = rentalForDate?.UserEmail,
+                    RentalStartDate = rentalForDate?.StartDate,
+                    RentalEndDate = rentalForDate?.EndDate,
                     Notes = rentalForDate?.Notes
                 };
 
@@ -510,7 +556,7 @@ namespace MP.Rentals
             };
         }
 
-        private CalendarDateStatus GetDateStatus(DateTime date, List<Rental> rentals)
+        private CalendarDateStatus GetDateStatus(DateTime date, List<RentalCalendarProjection> rentals)
         {
             var today = DateTime.Today;
 
@@ -537,11 +583,23 @@ namespace MP.Rentals
             return CalendarDateStatus.Available;
         }
 
-        private Rental? GetRentalForDate(DateTime date, List<Rental> rentals)
+        private RentalCalendarProjection? GetRentalForDate(DateTime date, List<RentalCalendarProjection> rentals)
         {
             return rentals.FirstOrDefault(r =>
-                date >= r.Period.StartDate.Date &&
-                date <= r.Period.EndDate.Date);
+                date >= r.StartDate.Date &&
+                date <= r.EndDate.Date);
+        }
+
+        // Projection class for calendar queries - loads only required fields
+        private class RentalCalendarProjection
+        {
+            public Guid Id { get; set; }
+            public DateTime StartDate { get; set; }
+            public DateTime EndDate { get; set; }
+            public RentalStatus Status { get; set; }
+            public string? UserName { get; set; }
+            public string? UserEmail { get; set; }
+            public string? Notes { get; set; }
         }
 
         private string GetStatusDisplayName(CalendarDateStatus status)
