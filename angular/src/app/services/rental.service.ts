@@ -87,6 +87,10 @@ export class RentalService {
     return this.http.get<RentalListDto[]>(`${this.apiUrl}/overdue`);
   }
 
+  getActiveRentalForBooth(boothId: string): Observable<RentalDto | null> {
+    return this.http.get<RentalDto | null>(`${this.apiUrl}/active-for-booth/${boothId}`);
+  }
+
   // Payment related methods
   initiatePayment(rentalId: string): Observable<string> {
     return this.http.post(`${this.apiUrl}/${rentalId}/initiate-payment`, {}, { responseType: 'text' });

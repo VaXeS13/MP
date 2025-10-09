@@ -1,0 +1,205 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{width: '600px'}"
+  header="Extend Rental Period"
+  (onShow)="onShow()"
+  (onHide)="onHide()">
+
+  <!-- Loading State -->
+  <div *ngIf="loadingRental" class="loading-state text-center py-5">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <p class="mt-3">Loading rental information...</p>
+  </div>
+
+  <!-- No Active Rental Error -->
+  <div *ngIf="noActiveRentalError && !loadingRental" class="error-state text-center py-5">
+    <i class="pi pi-exclamation-triangle text-warning" style="font-size: 2rem"></i>
+    <p class="mt-3">This booth currently has no active rental to extend.</p>
+  </div>
+
+  <!-- Extension Form -->
+  <div *ngIf="rental && !loadingRental && !noActiveRentalError" class="extension-dialog-content">
+    <!-- Current Rental Info -->
+    <div class="rental-info-card mb-4">
+      <h5 class="mb-3">Current Rental Information</h5>
+      <div class="info-grid">
+        <div class="info-item">
+          <label>Booth:</label>
+          <span>{{ rental.booth?.number || 'N/A' }}</span>
+        </div>
+        <div class="info-item">
+          <label>Current Period:</label>
+          <span>{{ rental.startDate | date: 'dd/MM/yyyy' }} - {{ rental.endDate | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="info-item">
+          <label>Price per Day:</label>
+          <span>{{ rental.booth?.price || 0 | number: '1.2-2' }} {{ rental.booth?.currency || 'PLN' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Extension Form -->
+    <form [formGroup]="extensionForm" (ngSubmit)="onSubmit()">
+
+      <!-- New End Date -->
+      <div class="field mb-4">
+        <label for="newEndDate" class="block mb-2">New End Date <span class="text-danger">*</span></label>
+        <p-calendar
+          id="newEndDate"
+          formControlName="newEndDate"
+          [minDate]="minDate"
+          [maxDate]="maxDate"
+          [showIcon]="true"
+          dateFormat="dd/mm/yy"
+          placeholder="Select new end date"
+          styleClass="w-full"
+          [disabled]="loading || validatingDates">
+        </p-calendar>
+
+        <!-- Validation Messages -->
+        <small *ngIf="extensionForm.get('newEndDate')?.invalid && extensionForm.get('newEndDate')?.touched"
+               class="p-error block mt-1">
+          New end date is required
+        </small>
+        <small *ngIf="dateValidationError" class="p-error block mt-1">
+          <i class="pi pi-exclamation-triangle mr-1"></i>{{ dateValidationError }}
+        </small>
+        <small *ngIf="validatingDates" class="text-muted block mt-1">
+          <i class="pi pi-spin pi-spinner mr-1"></i>Checking availability...
+        </small>
+      </div>
+
+      <!-- Extension Summary -->
+      <div *ngIf="additionalDays > 0 && !dateValidationError" class="extension-summary mb-4">
+        <div class="summary-row">
+          <span>Additional Days:</span>
+          <strong>{{ additionalDays }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Extension Cost:</span>
+          <strong *ngIf="!calculating">{{ extensionCost | number: '1.2-2' }} {{ rental.booth?.currency || 'PLN' }}</strong>
+          <i *ngIf="calculating" class="pi pi-spin pi-spinner"></i>
+        </div>
+      </div>
+
+      <!-- Payment Type Selection -->
+      <div class="field mb-4">
+        <label class="block mb-3">Payment Type <span class="text-danger">*</span></label>
+        <div class="payment-type-options">
+          <div *ngFor="let option of paymentTypes"
+               class="payment-option"
+               [class.selected]="selectedPaymentType === option.value">
+            <p-radioButton
+              [name]="'paymentType'"
+              [value]="option.value"
+              formControlName="paymentType"
+              [inputId]="'paymentType_' + option.value">
+            </p-radioButton>
+            <label [for]="'paymentType_' + option.value" class="payment-label">
+              <div class="payment-header">
+                <i [class]="option.icon" class="payment-icon"></i>
+                <span class="payment-title">{{ option.label }}</span>
+              </div>
+              <small class="payment-desc">{{ option.description }}</small>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Terminal Payment Fields -->
+      <div *ngIf="selectedPaymentType === ExtensionPaymentType.Terminal" class="terminal-fields mb-4">
+        <div class="field mb-3">
+          <label for="terminalTransactionId" class="block mb-2">
+            Transaction ID <span class="text-danger">*</span>
+          </label>
+          <input
+            id="terminalTransactionId"
+            type="text"
+            pInputText
+            formControlName="terminalTransactionId"
+            placeholder="Enter terminal transaction ID"
+            class="w-full"
+            [disabled]="loading" />
+          <small *ngIf="extensionForm.get('terminalTransactionId')?.invalid && extensionForm.get('terminalTransactionId')?.touched"
+                 class="p-error block mt-1">
+            Transaction ID is required for terminal payments
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="terminalReceiptNumber" class="block mb-2">Receipt Number (Optional)</label>
+          <input
+            id="terminalReceiptNumber"
+            type="text"
+            pInputText
+            formControlName="terminalReceiptNumber"
+            placeholder="Enter receipt number"
+            class="w-full"
+            [disabled]="loading" />
+        </div>
+      </div>
+
+      <!-- Online Payment Fields -->
+      <div *ngIf="selectedPaymentType === ExtensionPaymentType.Online" class="online-fields mb-4">
+        <div class="field">
+          <label for="onlineTimeoutMinutes" class="block mb-2">
+            Payment Timeout (minutes) <span class="text-danger">*</span>
+          </label>
+          <p-inputNumber
+            id="onlineTimeoutMinutes"
+            formControlName="onlineTimeoutMinutes"
+            [min]="1"
+            [max]="120"
+            [showButtons]="true"
+            [step]="5"
+            placeholder="30"
+            styleClass="w-full"
+            [disabled]="loading">
+          </p-inputNumber>
+          <small class="text-muted block mt-1">
+            Time allowed to complete online payment (default: 30 minutes)
+          </small>
+        </div>
+      </div>
+
+      <!-- Cost Warning for Free -->
+      <div *ngIf="selectedPaymentType === ExtensionPaymentType.Free && extensionCost > 0" class="mb-4">
+        <p-message
+          severity="warn"
+          text="Warning: Extension has a cost but will be marked as free. Please confirm this is correct."
+          styleClass="w-full">
+        </p-message>
+      </div>
+
+    </form>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="dialog-footer">
+      <button
+        pButton
+        type="button"
+        label="Cancel"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="hide()"
+        [disabled]="loading">
+      </button>
+      <button
+        pButton
+        type="button"
+        label="Extend Rental"
+        icon="pi pi-check"
+        class="p-button-primary"
+        (click)="onSubmit()"
+        [disabled]="!isFormValid || loading || validatingDates || calculating || loadingRental || noActiveRentalError || !rental"
+        [loading]="loading">
+      </button>
+    </div>
+  </ng-template>
+
+</p-dialog>

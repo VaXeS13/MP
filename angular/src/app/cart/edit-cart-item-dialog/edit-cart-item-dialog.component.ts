@@ -297,6 +297,52 @@ export class EditCartItemDialogComponent implements OnInit, OnChanges {
            date1.getDate() === date2.getDate();
   }
 
+  /**
+   * Get all unavailable dates in the specified range
+   * @param startDate Start date of range (inclusive)
+   * @param endDate End date of range (inclusive)
+   * @returns Array of unavailable dates with their status information
+   */
+  getUnavailableDatesInRange(startDate: Date, endDate: Date): Array<{ date: Date; status: CalendarDateStatus; statusDisplayName: string }> {
+    const unavailableDates: Array<{ date: Date; status: CalendarDateStatus; statusDisplayName: string }> = [];
+    const currentDate = new Date(startDate);
+    currentDate.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(0, 0, 0, 0);
+
+    while (currentDate <= end) {
+      // Find the calendar day for this date
+      const calendarDay = this.calendarDays.find(day => this.isSameDay(day.date, currentDate));
+
+      if (calendarDay) {
+        // Check if this date is not available
+        if (calendarDay.status !== CalendarDateStatus.Available) {
+          unavailableDates.push({
+            date: new Date(currentDate),
+            status: calendarDay.status,
+            statusDisplayName: calendarDay.statusDisplayName
+          });
+        }
+      } else {
+        // If date is not in current calendar view, we need to check against backend data
+        const dateKey = this.formatDateToLocal(currentDate);
+        const backendDate = this.calendarData.find(d => d.date === dateKey);
+
+        if (backendDate && backendDate.status !== CalendarDateStatus.Available) {
+          unavailableDates.push({
+            date: new Date(currentDate),
+            status: backendDate.status,
+            statusDisplayName: backendDate.statusDisplayName
+          });
+        }
+      }
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return unavailableDates;
+  }
+
   onDayClick(day: CalendarDay): void {
     if (!day.isSelectable) {
       // Show message if trying to click unavailable day
@@ -327,13 +373,33 @@ export class EditCartItemDialogComponent implements OnInit, OnChanges {
         tempEndDate = swap;
       }
 
-      // Only validate minimum days here - GAP validation will happen in updateCalculations
+      // Validate minimum days
       const days = Math.ceil((tempEndDate.getTime() - tempStartDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
       if (days < 7) {
         this.messageService.add({
           severity: 'warn',
           summary: this.localization.instant('MP::InvalidSelection', 'Invalid Selection'),
           detail: this.localization.instant('MP::MinimumRentalPeriod', 'Minimum rental period is 7 days')
+        });
+        return;
+      }
+
+      // Validate that all dates in range are available
+      const unavailableDates = this.getUnavailableDatesInRange(tempStartDate, tempEndDate);
+      if (unavailableDates.length > 0) {
+        const dateList = unavailableDates
+          .slice(0, 5) // Show max 5 dates
+          .map(d => d.date.toLocaleDateString())
+          .join(', ');
+        const moreCount = unavailableDates.length - 5;
+        const dateListText = moreCount > 0 ? `${dateList} (+${moreCount} more)` : dateList;
+
+        this.messageService.add({
+          severity: 'error',
+          summary: this.localization.instant('MP::RangeContainsUnavailableDates', 'Range Contains Unavailable Dates'),
+          detail: this.localization.instant('MP::RangeContainsUnavailableDatesDetail',
+            `The selected date range contains ${unavailableDates.length} unavailable day(s): ${dateListText}. Please select a different period.`),
+          life: 8000
         });
         return;
       }

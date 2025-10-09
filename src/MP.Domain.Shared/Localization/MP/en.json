@@ -13,6 +13,7 @@
     "Menu:CustomerDashboard": "Customer Dashboard",
     "Menu:Rentals": "Rentals",
     "Menu:MyRentals": "My Rentals",
+    "Menu:NewRental": "New Rental",
     "Menu:BoothTypes": "Booth Types",
     "Menu:FloorPlans": "Floor Plans",
     "Menu:FloorPlanList": "Floor Plan List",
@@ -56,6 +57,7 @@
     "Permission:Rentals.Edit": "Edit Rentals",
     "Permission:Rentals.Delete": "Delete Rentals",
     "Permission:Rentals.Manage": "Manage Rentals",
+    "Permission:Rentals.Extend": "Extend Rentals",
     "Permission:RentalItems": "Rental Items",
     "Permission:RentalItems.Create": "Create Rental Items",
     "Permission:RentalItems.Edit": "Edit Rental Items",
@@ -471,6 +473,9 @@
     "ItemSheetStatus:Draft": "Draft",
     "ItemSheetStatus:Assigned": "Assigned",
     "ItemSheetStatus:Active": "Active",
-    "ItemSheetStatus:Completed": "Completed"
+    "ItemSheetStatus:Completed": "Completed",
+
+    "MP::RangeContainsUnavailableDates": "Range Contains Unavailable Dates",
+    "MP::RangeContainsUnavailableDatesDetail": "The selected date range contains {0} unavailable day(s): {1}. Please select a different period."
   }
 }

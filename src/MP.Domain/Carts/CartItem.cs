@@ -1,6 +1,7 @@
 using System;
 using Volo.Abp;
 using Volo.Abp.Domain.Entities.Auditing;
+using MP.Carts;
 
 namespace MP.Domain.Carts
 {
@@ -16,6 +17,9 @@ namespace MP.Domain.Carts
         public decimal PricePerDay { get; private set; }
         public string? Notes { get; private set; }
 
+        public CartItemType ItemType { get; private set; }
+        public Guid? ExtendedRentalId { get; private set; }
+
         // Navigation property
         public Cart Cart { get; set; } = null!;
 
@@ -29,6 +33,8 @@ namespace MP.Domain.Carts
             DateTime startDate,
             DateTime endDate,
             decimal pricePerDay,
+            CartItemType itemType = CartItemType.Rental,
+            Guid? extendedRentalId = null,
             string? notes = null) : base(id)
         {
             CartId = cartId;
@@ -36,6 +42,8 @@ namespace MP.Domain.Carts
             BoothTypeId = boothTypeId;
             SetPeriod(startDate, endDate);
             SetPricePerDay(pricePerDay);
+            ItemType = itemType;
+            ExtendedRentalId = extendedRentalId;
             Notes = notes?.Trim();
         }
 

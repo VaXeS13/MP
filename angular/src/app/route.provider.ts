@@ -21,7 +21,7 @@ function configureRoutes() {
         name: '::Menu:BoothsManagement',
         iconClass: 'fas fa-cogs',
         order: 2,
-        requiredPolicy: 'MP.Booths.Management',
+        requiredPolicy: 'MP.Booths',
       },
       {
         path: '/booths',
@@ -45,6 +45,14 @@ function configureRoutes() {
         iconClass: 'fas fa-store',
         order: 3,
         requiredPolicy: 'MP.Booths',
+        invisible: true,
+      },
+      {
+        path: '/rentals/my-rentals',
+        name: '::Menu:Rentals',
+        iconClass: 'fas fa-calendar-check',
+        order: 3.2,
+        requiredPolicy: 'MP.Rentals',
       },
       {
         path: '/my-booths/items',
@@ -53,6 +61,7 @@ function configureRoutes() {
         iconClass: 'fas fa-box',
         order: 1,
         requiredPolicy: 'MP.Rentals',
+        invisible: true,
       },
       {
         path: '/items',

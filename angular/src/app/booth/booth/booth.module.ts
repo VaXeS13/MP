@@ -18,16 +18,22 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { CalendarModule } from 'primeng/calendar';
 import { BoothListComponent } from '../booth-list/booth-list.component';
 import { BoothCreateComponent } from '../booth-create/booth-create.component';
 import { BoothEditComponent } from '../booth-edit/booth-edit.component';
 import { BoothSettingsComponent } from '../booth-settings/booth-settings.component';
+import { RentalSharedModule } from '../../rental/rental-shared.module';
 // Components
 
 
 const routes: Routes = [
   {
     path: '',
+    component: BoothListComponent
+  },
+  {
+    path: 'list',
     component: BoothListComponent
   },
   {
@@ -63,7 +69,11 @@ const routes: Routes = [
     ConfirmDialogModule,
     ToastModule,
     TooltipModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    CalendarModule,
+
+    // Rental Shared Module (for ExtendRentalDialogComponent)
+    RentalSharedModule
   ]
 })
 export class BoothModule { }

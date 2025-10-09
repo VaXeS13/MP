@@ -121,6 +121,20 @@ namespace MP.Domain.Rentals
             AddLocalEvent(new RentalCancelledEvent(this));
         }
 
+        public void AutoExpire()
+        {
+            if (Status != RentalStatus.Active && Status != RentalStatus.Extended)
+                throw new BusinessException("CAN_ONLY_EXPIRE_ACTIVE_OR_EXTENDED_RENTAL");
+
+            if (DateTime.Today <= Period.EndDate)
+                throw new BusinessException("RENTAL_PERIOD_NOT_ENDED_YET");
+
+            CompletedAt = DateTime.Now;
+            Status = RentalStatus.Expired;
+
+            AddLocalEvent(new RentalCompletedEvent(this));
+        }
+
         public void MarkAsPaid(decimal amount, DateTime paidDate, string? transactionId = null)
         {
             Payment.MarkAsPaid(amount, paidDate, transactionId);

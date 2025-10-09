@@ -38,7 +38,8 @@ public static class MPPermissions
         public const string Create = Default + ".Create";
         public const string Edit = Default + ".Edit";
         public const string Delete = Default + ".Delete";
-        public const string Manage = Default + ".Manage"; // Pay, Start, Complete, Cancel, Extend
+        public const string Manage = Default + ".Manage"; // Pay, Start, Complete, Cancel
+        public const string Extend = Default + ".Extend"; // Extend rental period (admin/seller only)
     }
 
 

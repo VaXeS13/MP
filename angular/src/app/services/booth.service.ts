@@ -12,8 +12,8 @@ export class BoothService {
       console.log('BoothService działa');
   }
 
-  getList(input: GetBoothListDto): Observable<PagedResultDto<BoothDto>> {
-    return this.rest.request<any, PagedResultDto<BoothDto>>({
+  getList(input: GetBoothListDto): Observable<PagedResultDto<BoothListDto>> {
+    return this.rest.request<any, PagedResultDto<BoothListDto>>({
       method: 'GET',
       url: '/api/app/booths',
       params: input

@@ -10,6 +10,12 @@ export interface BoothDto {
   lastModificationTime?: Date;
   rentalStartDate?: Date;
   rentalEndDate?: Date;
+  // Current active rental information
+  currentRentalId?: string;
+  currentRentalUserName?: string;
+  currentRentalUserEmail?: string;
+  currentRentalStartDate?: Date;
+  currentRentalEndDate?: Date;
 }
 
 export interface BoothListDto {
@@ -23,6 +29,12 @@ export interface BoothListDto {
   creationTime: Date;
   rentalStartDate?: Date;
   rentalEndDate?: Date;
+  // Current active rental information
+  currentRentalId?: string;
+  currentRentalUserName?: string;
+  currentRentalUserEmail?: string;
+  currentRentalStartDate?: Date;
+  currentRentalEndDate?: Date;
 }
 
 export interface CreateBoothDto {

@@ -95,6 +95,14 @@
               [pTooltip]="'::Booth:ManualReservationTooltip' | abpLocalization">
             </p-button>
             <p-button
+              *ngIf="hasActiveRental(booth)"
+              [abpPermission]="'MP.Rentals.Extend'"
+              icon="pi pi-clock"
+              class="p-button-text p-button-primary p-button-sm"
+              (click)="openExtendDialog(booth)"
+              pTooltip="Extend Rental">
+            </p-button>
+            <p-button
               *ngIf="booth.status === 1"
               icon="pi pi-wrench"
               class="p-button-text p-button-warning p-button-sm"
@@ -228,6 +236,15 @@
                   class="p-button-text p-button-info p-button-sm"
                   (click)="openManualReservationDialog(booth)"
                   [pTooltip]="'::Booth:ManualReservationTooltip' | abpLocalization">
+                </p-button>
+
+                <p-button
+                  *ngIf="hasActiveRental(booth)"
+                  [abpPermission]="'MP.Rentals.Extend'"
+                  icon="pi pi-clock"
+                  class="p-button-text p-button-primary p-button-sm"
+                  (click)="openExtendDialog(booth)"
+                  pTooltip="Extend Rental">
                 </p-button>
 
                 <p-button
@@ -408,6 +425,13 @@
     </p-button>
   </ng-template>
 </p-dialog>
+
+<!-- Extend Rental Dialog -->
+<app-extend-rental-dialog
+  [(visible)]="displayExtendDialog"
+  [boothId]="selectedBoothIdForExtension"
+  (rentalExtended)="onRentalExtended()">
+</app-extend-rental-dialog>
 
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>

@@ -38,6 +38,7 @@ public class MPPermissionDefinitionProvider : PermissionDefinitionProvider
         rentalsPermission.AddChild(MPPermissions.Rentals.Edit, L("Permission:Rentals.Edit"));
         rentalsPermission.AddChild(MPPermissions.Rentals.Delete, L("Permission:Rentals.Delete"));
         rentalsPermission.AddChild(MPPermissions.Rentals.Manage, L("Permission:Rentals.Manage"));
+        rentalsPermission.AddChild(MPPermissions.Rentals.Extend, L("Permission:Rentals.Extend"));
 
         // Dashboard permissions
         var dashboardPermission = myGroup.AddPermission(MPPermissions.Dashboard.Default, L("Permission:Dashboard"));

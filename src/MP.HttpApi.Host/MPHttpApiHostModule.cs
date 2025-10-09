@@ -373,6 +373,13 @@ public class MPHttpApiHostModule : AbpModule
             "daily-booth-status-sync",
             job => job.ExecuteAsync(),
             "5 0 * * *"); // Every day at 00:05 AM
+
+        // Register daily rental status synchronization job
+        // Runs every day at 00:01 AM to automatically expire rentals that have passed their end date
+        RecurringJob.AddOrUpdate<DailyRentalStatusSyncJob>(
+            "daily-rental-status-sync",
+            job => job.ExecuteAsync(),
+            "1 0 * * *"); // Every day at 00:01 AM
     }
 
     private void ConfigureUrls(IConfiguration configuration)

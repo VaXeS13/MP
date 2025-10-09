@@ -15,18 +15,22 @@ namespace MP.Domain.Rentals
         public DateTime? PaidDate { get; private set; }
         public string? Przelewy24TransactionId { get; private set; }
         public PaymentStatus PaymentStatus { get; private set; }
+        public RentalPaymentMethod PaymentMethod { get; private set; }
+        public string? TerminalTransactionId { get; private set; }
+        public string? TerminalReceiptNumber { get; private set; }
         public bool IsPaid => PaidAmount >= TotalAmount && PaidDate.HasValue && PaymentStatus == PaymentStatus.Completed;
 
         private Payment() { } // Dla EF Core
 
-        public Payment(decimal totalAmount)
+        public Payment(decimal totalAmount, RentalPaymentMethod paymentMethod = RentalPaymentMethod.Online)
         {
-            if (totalAmount <= 0)
-                throw new BusinessException("PAYMENT_AMOUNT_MUST_BE_POSITIVE");
+            if (totalAmount < 0)
+                throw new BusinessException("PAYMENT_AMOUNT_MUST_BE_NON_NEGATIVE");
 
             TotalAmount = totalAmount;
             PaidAmount = 0;
             PaymentStatus = PaymentStatus.Pending;
+            PaymentMethod = paymentMethod;
         }
 
         public void MarkAsPaid(decimal amount, DateTime paidDate, string? transactionId = null)
@@ -63,6 +67,12 @@ namespace MP.Domain.Rentals
             PaymentStatus = PaymentStatus.Cancelled;
         }
 
+        public void SetTerminalDetails(string? transactionId, string? receiptNumber)
+        {
+            TerminalTransactionId = transactionId;
+            TerminalReceiptNumber = receiptNumber;
+        }
+
         public decimal GetRemainingAmount()
         {
             return Math.Max(0, TotalAmount - PaidAmount);
@@ -75,6 +85,9 @@ namespace MP.Domain.Rentals
             yield return PaidDate;
             yield return Przelewy24TransactionId ?? string.Empty;
             yield return PaymentStatus;
+            yield return PaymentMethod;
+            yield return TerminalTransactionId ?? string.Empty;
+            yield return TerminalReceiptNumber ?? string.Empty;
         }
     }
 }

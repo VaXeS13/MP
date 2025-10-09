@@ -13,6 +13,7 @@
     "Menu:CustomerDashboard": "Panel Klienta",
     "Menu:Rentals": "Wynajmy",
     "Menu:MyRentals": "Moje Wynajmy",
+    "Menu:NewRental": "Nowy Wynajem",
     "Menu:BoothTypes": "Typy Stoisk",
     "Menu:FloorPlans": "Plany Sal",
     "Menu:FloorPlanList": "Lista Planów Sal",
@@ -56,6 +57,7 @@
     "Permission:Rentals.Edit": "Edycja Wynajmów",
     "Permission:Rentals.Delete": "Usuwanie Wynajmów",
     "Permission:Rentals.Manage": "Zarządzanie Wynajmami",
+    "Permission:Rentals.Extend": "Przedłużanie Wynajmów",
     "Permission:RentalItems": "Przedmioty do Wynajmu",
     "Permission:RentalItems.Create": "Tworzenie Przedmiotów",
     "Permission:RentalItems.Edit": "Edycja Przedmiotów",
@@ -469,6 +471,9 @@
     "ItemSheetStatus:Draft": "Roboczy",
     "ItemSheetStatus:Assigned": "Przypisany",
     "ItemSheetStatus:Active": "Aktywny",
-    "ItemSheetStatus:Completed": "Zakończony"
+    "ItemSheetStatus:Completed": "Zakończony",
+
+    "MP::RangeContainsUnavailableDates": "Zakres Zawiera Niedostępne Daty",
+    "MP::RangeContainsUnavailableDatesDetail": "Wybrany zakres dat zawiera {0} niedostępnych dni: {1}. Proszę wybrać inny okres."
   }
 }

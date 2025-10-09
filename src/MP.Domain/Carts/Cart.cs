@@ -14,6 +14,7 @@ namespace MP.Domain.Carts
         public Guid? TenantId { get; private set; }
         public Guid UserId { get; private set; }
         public CartStatus Status { get; private set; }
+        public DateTime? ExtensionTimeoutAt { get; private set; }
 
         // Navigation properties
         public IdentityUser User { get; set; } = null!;
@@ -65,6 +66,8 @@ namespace MP.Domain.Carts
                 startDate,
                 endDate,
                 pricePerDay,
+                CartItemType.Rental,
+                null,
                 notes
             );
 
@@ -142,6 +145,19 @@ namespace MP.Domain.Carts
                 throw new BusinessException("CANNOT_ABANDON_CHECKED_OUT_CART");
 
             Status = CartStatus.Abandoned;
+        }
+
+        public void AddItem(CartItem item)
+        {
+            if (Status != CartStatus.Active)
+                throw new BusinessException("CART_NOT_ACTIVE");
+
+            _items.Add(item);
+        }
+
+        public void SetExtensionTimeout(DateTime? timeoutAt)
+        {
+            ExtensionTimeoutAt = timeoutAt;
         }
 
         // Query Methods

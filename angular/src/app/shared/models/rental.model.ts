@@ -38,7 +38,19 @@ export interface UpdateRentalDto {
 }
 
 export interface ExtendRentalDto {
+  rentalId: string;
   newEndDate: string; // YYYY-MM-DD format
+  paymentType: ExtensionPaymentType;
+  terminalTransactionId?: string;
+  terminalReceiptNumber?: string;
+  onlineTimeoutMinutes?: number;
+}
+
+export enum ExtensionPaymentType {
+  Free = 0,      // Gratis - free of charge, instant
+  Cash = 1,      // Cash payment on-site, instant
+  Terminal = 2,  // Card payment via terminal with transaction ID and receipt
+  Online = 3     // Add to cart with timeout, skip gap validation
 }
 
 export interface GetRentalListDto {

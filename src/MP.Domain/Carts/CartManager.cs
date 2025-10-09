@@ -50,6 +50,14 @@ namespace MP.Domain.Carts
         }
 
         /// <summary>
+        /// Alias for GetOrCreateActiveCartAsync
+        /// </summary>
+        public async Task<Cart> GetOrCreateCartAsync(Guid userId, Guid? tenantId = null)
+        {
+            return await GetOrCreateActiveCartAsync(userId, tenantId);
+        }
+
+        /// <summary>
         /// Validates if a booth can be added to cart for the given period
         /// </summary>
         public async Task ValidateCartItemAsync(

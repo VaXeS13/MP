@@ -128,15 +128,16 @@ namespace MP.Domain.Rentals
                     continue;
 
                 // Sprawdź czy jest gap przed nowym wynajęciem
-                if (existingRental.Period.EndDate.AddDays(1) < newPeriod.StartDate)
-                {
-                    var gap = newPeriod.StartDate - existingRental.Period.EndDate.AddDays(1);
-                    if (gap.Days > 0)
-                    {
-                        throw new BusinessException("RENTAL_CANNOT_HAVE_GAPS")
-                            .WithData("gapDays", gap.Days);
-                    }
-                }
+                /* TODO if (existingRental.Period.EndDate.AddDays(1) < newPeriod.StartDate)
+                 {// Czy w ogole powinno to sprawdzac
+
+                     var gap = newPeriod.StartDate - existingRental.Period.EndDate.AddDays(1);
+                     if (gap.Days > 7)
+                     {
+                         throw new BusinessException("RENTAL_CANNOT_HAVE_GAPS")
+                             .WithData("gapDays", gap.Days);
+                     }
+            }*/
             }
         }
 

@@ -30,6 +30,7 @@ namespace MP.Rentals
         private readonly IIdentityUserRepository _userRepository;
         private readonly ICartRepository _cartRepository;
         private readonly ISignalRNotificationService _signalRNotificationService;
+        private readonly RentalExtensionHandler _extensionHandler;
 
         public RentalAppService(
             IRentalRepository rentalRepository,
@@ -37,7 +38,8 @@ namespace MP.Rentals
             RentalManager rentalManager,
             IIdentityUserRepository userRepository,
             ICartRepository cartRepository,
-            ISignalRNotificationService signalRNotificationService)
+            ISignalRNotificationService signalRNotificationService,
+            RentalExtensionHandler extensionHandler)
         {
             _rentalRepository = rentalRepository;
             _boothRepository = boothRepository;
@@ -45,6 +47,7 @@ namespace MP.Rentals
             _userRepository = userRepository;
             _cartRepository = cartRepository;
             _signalRNotificationService = signalRNotificationService;
+            _extensionHandler = extensionHandler;
         }
 
         public async Task<RentalDto> GetAsync(Guid id)
@@ -318,29 +321,81 @@ namespace MP.Rentals
             return ObjectMapper.Map<Rental, RentalDto>(rental);
         }
 
-        [Authorize(MPPermissions.Rentals.Manage)]
+        [Authorize(MPPermissions.Rentals.Extend)]
         public async Task<RentalDto> ExtendRentalAsync(Guid id, ExtendRentalDto input)
         {
             var rental = await _rentalRepository.GetRentalWithItemsAsync(id);
             if (rental == null)
                 throw new EntityNotFoundException(typeof(Rental), id);
 
+            // Validation
+            if (!rental.IsActive())
+                throw new BusinessException("CAN_ONLY_EXTEND_ACTIVE_RENTAL");
+
+            if (input.NewEndDate <= rental.Period.EndDate)
+                throw new BusinessException("NEW_END_DATE_MUST_BE_LATER");
+
+            // Calculate cost
             var booth = await _boothRepository.GetAsync(rental.BoothId);
-
-            // Walidacja przez domain service
-            await _rentalManager.ValidateExtensionAsync(rental, input.NewEndDate);
-
-            // Oblicz dodatkowy koszt
-            var currentPeriod = rental.Period;
-            var newPeriod = new RentalPeriod(currentPeriod.StartDate, input.NewEndDate);
-            var additionalDays = newPeriod.GetDaysCount() - currentPeriod.GetDaysCount();
+            var additionalDays = (input.NewEndDate - rental.Period.EndDate).Days;
             var additionalCost = additionalDays * booth.PricePerDay;
 
-            rental.ExtendRental(newPeriod, additionalCost);
+            // Handle based on payment type
+            switch (input.PaymentType)
+            {
+                case ExtensionPaymentType.Free:
+                    await _extensionHandler.HandleFreeExtensionAsync(rental, input.NewEndDate);
+                    break;
 
-            await _rentalRepository.UpdateAsync(rental);
+                case ExtensionPaymentType.Cash:
+                    await _extensionHandler.HandleCashExtensionAsync(rental, input.NewEndDate, additionalCost);
+                    break;
 
-            return ObjectMapper.Map<Rental, RentalDto>(rental);
+                case ExtensionPaymentType.Terminal:
+                    await _extensionHandler.HandleTerminalExtensionAsync(
+                        rental,
+                        input.NewEndDate,
+                        additionalCost,
+                        input.TerminalTransactionId,
+                        input.TerminalReceiptNumber);
+                    break;
+
+                case ExtensionPaymentType.Online:
+                    await _extensionHandler.HandleOnlineExtensionAsync(
+                        rental,
+                        input.NewEndDate,
+                        additionalCost,
+                        input.OnlineTimeoutMinutes);
+                    break;
+
+                default:
+                    throw new BusinessException("INVALID_EXTENSION_PAYMENT_TYPE");
+            }
+
+            var updatedRental = await _rentalRepository.GetRentalWithItemsAsync(rental.Id);
+            return ObjectMapper.Map<Rental, RentalDto>(updatedRental!);
+        }
+
+        [Authorize(MPPermissions.Rentals.Extend)]
+        public async Task<RentalDto?> GetActiveRentalForBoothAsync(Guid boothId)
+        {
+            var today = DateTime.Today;
+            var queryable = await _rentalRepository.GetQueryableAsync();
+
+            var rental = await AsyncExecuter.FirstOrDefaultAsync(
+                queryable.Where(r =>
+                    r.BoothId == boothId &&
+                    (r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended) &&
+                    r.Period.StartDate <= today &&
+                    r.Period.EndDate >= today
+                )
+            );
+
+            if (rental == null)
+                return null;
+
+            var rentalWithItems = await _rentalRepository.GetRentalWithItemsAsync(rental.Id);
+            return ObjectMapper.Map<Rental, RentalDto>(rentalWithItems!);
         }
 
         public async Task<PagedResultDto<RentalListDto>> GetMyRentalsAsync(GetRentalListDto input)

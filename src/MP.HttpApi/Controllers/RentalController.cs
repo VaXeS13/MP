@@ -146,6 +146,13 @@ namespace MP.Controllers
             return _rentalAppService.GetOverdueRentalsAsync();
         }
 
+        [HttpGet]
+        [Route("active-for-booth/{boothId}")]
+        public Task<RentalDto?> GetActiveRentalForBoothAsync(Guid boothId)
+        {
+            return _rentalAppService.GetActiveRentalForBoothAsync(boothId);
+        }
+
         [HttpPost]
         [Route("booth-calendar")]
         public Task<BoothCalendarResponseDto> GetBoothCalendarAsync(BoothCalendarRequestDto input)

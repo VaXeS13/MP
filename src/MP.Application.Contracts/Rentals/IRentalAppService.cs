@@ -23,6 +23,7 @@ namespace MP.Rentals
         Task<RentalDto> CompleteRentalAsync(Guid id);
         Task<RentalDto> CancelRentalAsync(Guid id, string reason);
         Task<RentalDto> ExtendRentalAsync(Guid id, ExtendRentalDto input);
+        Task<RentalDto?> GetActiveRentalForBoothAsync(Guid boothId);
 
         // User specific
         Task<PagedResultDto<RentalListDto>> GetMyRentalsAsync(GetRentalListDto input);

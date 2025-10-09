@@ -1,0 +1,189 @@
+.extension-dialog-content {
+  padding: 1rem 0;
+}
+
+.rental-info-card {
+  background: var(--surface-50);
+  border: 1px solid var(--surface-200);
+  border-radius: 6px;
+  padding: 1rem;
+
+  h5 {
+    margin: 0 0 0.75rem 0;
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .info-grid {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    label {
+      font-weight: 500;
+      color: var(--text-color-secondary);
+      margin-bottom: 0;
+    }
+
+    span {
+      font-weight: 600;
+      color: var(--text-color);
+    }
+  }
+}
+
+.extension-summary {
+  background: var(--primary-50);
+  border: 1px solid var(--primary-200);
+  border-radius: 6px;
+  padding: 1rem;
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--primary-100);
+    }
+
+    span {
+      color: var(--text-color-secondary);
+      font-size: 0.95rem;
+    }
+
+    strong {
+      color: var(--primary-700);
+      font-size: 1.1rem;
+    }
+  }
+}
+
+.payment-type-options {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.payment-option {
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem;
+  border: 2px solid var(--surface-300);
+  border-radius: 6px;
+  background: var(--surface-0);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--primary-400);
+    background: var(--surface-50);
+  }
+
+  &.selected {
+    border-color: var(--primary-500);
+    background: var(--primary-50);
+  }
+
+  ::ng-deep .p-radiobutton {
+    margin-right: 0.75rem;
+    margin-top: 0.25rem;
+  }
+
+  .payment-label {
+    flex: 1;
+    cursor: pointer;
+    margin-bottom: 0;
+
+    .payment-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.25rem;
+
+      .payment-icon {
+        font-size: 1.25rem;
+        color: var(--primary-500);
+        margin-right: 0.5rem;
+      }
+
+      .payment-title {
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 1rem;
+      }
+    }
+
+    .payment-desc {
+      color: var(--text-color-secondary);
+      font-size: 0.85rem;
+      display: block;
+      margin-left: 1.75rem;
+    }
+  }
+}
+
+.terminal-fields,
+.online-fields {
+  background: var(--surface-50);
+  border: 1px solid var(--surface-200);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.field {
+  label {
+    font-weight: 500;
+    color: var(--text-color);
+
+    .text-danger {
+      color: var(--red-500);
+    }
+  }
+
+  .text-muted {
+    color: var(--text-color-secondary);
+    font-size: 0.875rem;
+  }
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+// Responsive adjustments
+@media (max-width: 640px) {
+  ::ng-deep .p-dialog {
+    width: 95vw !important;
+  }
+
+  .info-grid {
+    .info-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+  }
+}
+
+// PrimeNG overrides
+::ng-deep {
+  .p-calendar {
+    width: 100%;
+  }
+
+  .p-inputnumber {
+    width: 100%;
+  }
+
+  .p-message {
+    margin: 0;
+  }
+}

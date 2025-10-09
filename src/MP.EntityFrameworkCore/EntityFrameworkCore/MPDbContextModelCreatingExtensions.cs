@@ -12,6 +12,7 @@ using MP.Domain.Notifications;
 using MP.Domain.Settlements;
 using MP.Domain.Chat;
 using MP.Domain.Items;
+using MP.Carts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -161,6 +162,19 @@ namespace MP.EntityFrameworkCore
                     payment.Property(p => p.Przelewy24TransactionId)
                            .HasColumnName("Payment_Przelewy24TransactionId")
                            .HasMaxLength(100);
+
+                    payment.Property(p => p.PaymentMethod)
+                           .IsRequired()
+                           .HasColumnName("Payment_PaymentMethod")
+                           .HasDefaultValue(RentalPaymentMethod.Online);
+
+                    payment.Property(p => p.TerminalTransactionId)
+                           .HasColumnName("Payment_TerminalTransactionId")
+                           .HasMaxLength(100);
+
+                    payment.Property(p => p.TerminalReceiptNumber)
+                           .HasColumnName("Payment_TerminalReceiptNumber")
+                           .HasMaxLength(100);
                 });
 
                 // Właściwości opcjonalne
@@ -190,6 +204,72 @@ namespace MP.EntityFrameworkCore
                 b.HasIndex(x => x.BoothTypeId);
                 b.HasIndex(x => x.Status);
                 b.HasIndex(x => new { x.BoothId, x.Status });
+            });
+
+            // Konfiguracja tabeli RentalExtensionPayments
+            builder.Entity<RentalExtensionPayment>(b =>
+            {
+                b.ToTable(MPConsts.DbTablePrefix + "RentalExtensionPayments", MPConsts.DbSchema);
+                b.ConfigureByConvention();
+
+                b.Property(x => x.RentalId)
+                    .IsRequired()
+                    .HasComment("ID wynajmu");
+
+                b.Property(x => x.OldEndDate)
+                    .IsRequired()
+                    .HasColumnType("date")
+                    .HasComment("Poprzednia data zakończenia");
+
+                b.Property(x => x.NewEndDate)
+                    .IsRequired()
+                    .HasColumnType("date")
+                    .HasComment("Nowa data zakończenia");
+
+                b.Property(x => x.ExtensionCost)
+                    .IsRequired()
+                    .HasColumnType("decimal(18,2)")
+                    .HasComment("Koszt przedłużenia");
+
+                b.Property(x => x.PaymentType)
+                    .IsRequired()
+                    .HasComment("Typ płatności za przedłużenie");
+
+                b.Property(x => x.ExtendedAt)
+                    .IsRequired()
+                    .HasColumnType("datetime2")
+                    .HasComment("Data przedłużenia");
+
+                b.Property(x => x.ExtendedBy)
+                    .IsRequired()
+                    .HasComment("ID użytkownika który wykonał przedłużenie");
+
+                b.Property(x => x.TransactionId)
+                    .HasMaxLength(100)
+                    .HasComment("ID transakcji (dla Terminal/Online)");
+
+                b.Property(x => x.ReceiptNumber)
+                    .HasMaxLength(100)
+                    .HasComment("Numer paragonu (dla Terminal)");
+
+                // Relacja z Rental
+                b.HasOne<Rental>()
+                    .WithMany()
+                    .HasForeignKey(x => x.RentalId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Indeksy
+                b.HasIndex(x => x.RentalId)
+                    .HasDatabaseName("IX_RentalExtensionPayments_RentalId");
+
+                b.HasIndex(x => x.ExtendedAt)
+                    .HasDatabaseName("IX_RentalExtensionPayments_ExtendedAt");
+
+                b.HasIndex(x => x.PaymentType)
+                    .HasDatabaseName("IX_RentalExtensionPayments_PaymentType");
+
+                b.HasIndex(x => x.ExtendedBy)
+                    .HasDatabaseName("IX_RentalExtensionPayments_ExtendedBy");
             });
 
             // Konfiguracja RentalItems
@@ -815,6 +895,10 @@ namespace MP.EntityFrameworkCore
                     .IsRequired()
                     .HasComment("Status koszyka");
 
+                b.Property(x => x.ExtensionTimeoutAt)
+                    .HasColumnType("datetime2")
+                    .HasComment("Czas wygaśnięcia koszyka przy przedłużeniu online");
+
                 // Relacja z użytkownikiem
                 b.HasOne(x => x.User)
                     .WithMany()
@@ -830,6 +914,9 @@ namespace MP.EntityFrameworkCore
 
                 b.HasIndex(x => x.CreationTime)
                     .HasDatabaseName("IX_Carts_CreationTime");
+
+                b.HasIndex(x => x.ExtensionTimeoutAt)
+                    .HasDatabaseName("IX_Carts_ExtensionTimeoutAt");
             });
 
             // Konfiguracja tabeli CartItems
@@ -869,11 +956,25 @@ namespace MP.EntityFrameworkCore
                     .HasMaxLength(1000)
                     .HasComment("Notatki do wynajmu");
 
+                b.Property(x => x.ItemType)
+                    .IsRequired()
+                    .HasDefaultValue(CartItemType.Rental)
+                    .HasComment("Typ pozycji w koszyku (Rental/Extension)");
+
+                b.Property(x => x.ExtendedRentalId)
+                    .HasComment("ID wynajmu który jest przedłużany (dla ItemType=Extension)");
+
                 // Relacja z Cart
                 b.HasOne(x => x.Cart)
                     .WithMany(c => c.Items)
                     .HasForeignKey(x => x.CartId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                // Relacja z przedłużanym Rental (opcjonalna)
+                b.HasOne<Rental>()
+                    .WithMany()
+                    .HasForeignKey(x => x.ExtendedRentalId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 // Indeksy
                 b.HasIndex(x => x.CartId)
@@ -884,6 +985,12 @@ namespace MP.EntityFrameworkCore
 
                 b.HasIndex(x => new { x.BoothId, x.StartDate, x.EndDate })
                     .HasDatabaseName("IX_CartItems_Booth_Period");
+
+                b.HasIndex(x => x.ItemType)
+                    .HasDatabaseName("IX_CartItems_ItemType");
+
+                b.HasIndex(x => x.ExtendedRentalId)
+                    .HasDatabaseName("IX_CartItems_ExtendedRentalId");
             });
 
             // Konfiguracja tabeli TenantTerminalSettings

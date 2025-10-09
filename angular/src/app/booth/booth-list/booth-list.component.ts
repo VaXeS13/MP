@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { BoothService } from '../../services/booth.service';
 import { BoothSignalRService } from '../../services/booth-signalr.service';
-import { BoothDto, BoothStatus, GetBoothListDto } from '../../shared/models/booth.model';
+import { BoothListDto, BoothStatus, GetBoothListDto } from '../../shared/models/booth.model';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { LocalizationService } from '@abp/ng.core';
 import { Subscription } from 'rxjs';
@@ -34,7 +34,7 @@ import { IdentityUserService } from '@abp/ng.identity/proxy';
   ]
 })
 export class BoothListComponent implements OnInit, OnDestroy {
-  booths: BoothDto[] = [];
+  booths: BoothListDto[] = [];
   totalCount = 0;
   loading = false;
 
@@ -53,6 +53,7 @@ export class BoothListComponent implements OnInit, OnDestroy {
   displayCreateDialog = false;
   displayEditDialog = false;
   displayManualReservationDialog = false;
+  displayExtendDialog = false;
 
   // Manual Reservation
   availableUsers: any[] = [];
@@ -67,7 +68,8 @@ export class BoothListComponent implements OnInit, OnDestroy {
 
   // View mode
   viewMode: 'grid' | 'list' = 'list';
-  selectedBooth: BoothDto | null = null;
+  selectedBooth: BoothListDto | null = null;
+  selectedBoothIdForExtension: string | null = null;
   
   // Dropdowns
   statusOptions = [
@@ -161,7 +163,7 @@ this.boothService.getList(input).subscribe({
     this.displayCreateDialog = true;
   }
 
-  showEditDialog(booth: BoothDto): void {
+  showEditDialog(booth: BoothListDto): void {
     this.selectedBooth = booth;
     this.displayEditDialog = true;
   }
@@ -191,7 +193,7 @@ this.boothService.getList(input).subscribe({
     this.viewMode = mode;
   }
 
-  deleteBooth(booth: BoothDto): void {
+  deleteBooth(booth: BoothListDto): void {
     this.confirmationService.confirm({
       message: this.localizationService.instant('::Booth:DeleteConfirmation', booth.number),
       header: this.localizationService.instant('::Messages:Confirmation'),
@@ -218,7 +220,7 @@ this.boothService.getList(input).subscribe({
     });
   }
 
-  changeBoothStatus(booth: BoothDto, newStatus: BoothStatus): void {
+  changeBoothStatus(booth: BoothListDto, newStatus: BoothStatus): void {
     this.boothService.changeStatus(booth.id, newStatus).subscribe({
       next: () => {
         this.loadBooths();
@@ -248,7 +250,7 @@ this.boothService.getList(input).subscribe({
     }
   }
 
-  openManualReservationDialog(booth: BoothDto): void {
+  openManualReservationDialog(booth: BoothListDto): void {
     this.selectedBooth = booth;
     this.displayManualReservationDialog = true;
     this.loadAvailableUsers();
@@ -326,7 +328,39 @@ this.boothService.getList(input).subscribe({
     });
   }
 
-  trackByBoothId(index: number, booth: BoothDto): string {
+  openExtendDialog(booth: BoothListDto): void {
+    this.selectedBoothIdForExtension = booth.id;
+    this.displayExtendDialog = true;
+  }
+
+  onRentalExtended(): void {
+    this.displayExtendDialog = false;
+    this.selectedBoothIdForExtension = null;
+    this.loadBooths();
+    this.messageService.add({
+      severity: 'success',
+      summary: this.localizationService.instant('::Messages:Success'),
+      detail: 'Rental extended successfully'
+    });
+  }
+
+  hasActiveRental(booth: BoothListDto): boolean {
+    // Check if booth has current rental information
+    const rentalEndDate = booth.currentRentalEndDate || booth.rentalEndDate;
+
+    if (!rentalEndDate) {
+      return false;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const rentalEnd = new Date(rentalEndDate);
+    rentalEnd.setHours(0, 0, 0, 0);
+
+    return rentalEnd >= today;
+  }
+
+  trackByBoothId(index: number, booth: BoothListDto): string {
     return booth.id;
   }
 }

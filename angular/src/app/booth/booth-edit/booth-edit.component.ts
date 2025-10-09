@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { LocalizationService } from '@abp/ng.core';
 import { BoothService } from '../../services/booth.service';
-import { BoothDto, UpdateBoothDto, BoothStatus, Currency } from '../../shared/models/booth.model';
+import { BoothListDto, UpdateBoothDto, BoothStatus, Currency } from '../../shared/models/booth.model';
 
 @Component({
   standalone: false,
@@ -12,7 +12,7 @@ import { BoothDto, UpdateBoothDto, BoothStatus, Currency } from '../../shared/mo
   styleUrl: './booth-edit.component.scss'
 })
 export class BoothEditComponent implements OnInit {
-  @Input() booth!: BoothDto;
+  @Input() booth!: BoothListDto;
   @Output() saved = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();
 

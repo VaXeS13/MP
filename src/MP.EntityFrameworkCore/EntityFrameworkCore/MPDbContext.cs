@@ -69,6 +69,7 @@ public class MPDbContext :
     public DbSet<Booth> Booths { get; set; }
     public DbSet<BoothType> BoothTypes { get; set; }
     public DbSet<Rental> Rentals { get; set; }
+    public DbSet<RentalExtensionPayment> RentalExtensionPayments { get; set; }
     public DbSet<Cart> Carts { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
     public DbSet<FloorPlan> FloorPlans { get; set; }

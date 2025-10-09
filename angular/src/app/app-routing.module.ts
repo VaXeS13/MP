@@ -51,7 +51,7 @@ const routes: Routes = [
     loadChildren: () => import('./booth/booth/booth.module').then(m => m.BoothModule),
     canActivate: [AuthGuard, permissionGuard],
     data: {
-      requiredPolicy: 'MP.Booths.Create || MP.Booths.Edit || MP.Booths.Delete'
+      requiredPolicy: 'MP.Booths'
     }
   },
   {
