@@ -37,5 +37,9 @@ namespace MP.Rentals
 
         // Calendar
         Task<BoothCalendarResponseDto> GetBoothCalendarAsync(BoothCalendarRequestDto input);
+
+        // Availability and cost calculation
+        Task<bool> CheckAvailabilityAsync(Guid boothId, DateTime startDate, DateTime endDate);
+        Task<decimal> CalculateCostAsync(Guid boothId, Guid boothTypeId, DateTime startDate, DateTime endDate);
     }
 }

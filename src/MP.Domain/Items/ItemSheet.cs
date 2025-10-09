@@ -37,7 +37,7 @@ namespace MP.Domain.Items
 
         public void AddItem(
             Guid itemId,
-            decimal commissionPercentage)
+            decimal commissionPercentage = 0)
         {
             if (Status != ItemSheetStatus.Draft)
                 throw new BusinessException("CAN_ONLY_ADD_ITEMS_TO_DRAFT_SHEET");

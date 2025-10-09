@@ -160,6 +160,20 @@ namespace MP.Controllers
             return _rentalAppService.GetBoothCalendarAsync(input);
         }
 
+        [HttpGet]
+        [Route("check-availability")]
+        public Task<bool> CheckAvailabilityAsync(Guid boothId, DateTime startDate, DateTime endDate)
+        {
+            return _rentalAppService.CheckAvailabilityAsync(boothId, startDate, endDate);
+        }
+
+        [HttpGet]
+        [Route("calculate-cost")]
+        public Task<decimal> CalculateCostAsync(Guid boothId, Guid boothTypeId, DateTime startDate, DateTime endDate)
+        {
+            return _rentalAppService.CalculateCostAsync(boothId, boothTypeId, startDate, endDate);
+        }
+
         // Nowe endpointy dla płatności
         [HttpPost]
         [Route("{id}/initiate-payment")]

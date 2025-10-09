@@ -8,8 +8,7 @@ namespace MP.Items
         [Required]
         public Guid ItemId { get; set; }
 
-        [Required]
         [Range(0, 100)]
-        public decimal CommissionPercentage { get; set; }
+        public decimal CommissionPercentage { get; set; } = 0;
     }
 }

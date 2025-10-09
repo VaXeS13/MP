@@ -60,7 +60,7 @@ namespace MP.Domain.Items
         public async Task AddItemToSheetAsync(
             ItemSheet sheet,
             Item item,
-            decimal commissionPercentage)
+            decimal commissionPercentage = 0)
         {
             if (item.UserId != sheet.UserId)
                 throw new BusinessException("ITEM_AND_SHEET_MUST_BELONG_TO_SAME_USER");

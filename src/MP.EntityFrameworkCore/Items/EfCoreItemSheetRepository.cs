@@ -74,7 +74,6 @@ namespace MP.EntityFrameworkCore.Items
         {
             var dbSet = await GetDbSetAsync();
             return await dbSet
-                .AsNoTracking()
                 .Include(x => x.Items)
                     .ThenInclude(x => x.Item)
                 .Include(x => x.Rental)

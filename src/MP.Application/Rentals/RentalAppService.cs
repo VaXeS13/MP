@@ -683,5 +683,33 @@ namespace MP.Rentals
                 _ => "Unknown"
             };
         }
+
+        public async Task<bool> CheckAvailabilityAsync(Guid boothId, DateTime startDate, DateTime endDate)
+        {
+            // Check if booth exists
+            var booth = await _boothRepository.GetAsync(boothId);
+
+            // Check if booth is in maintenance
+            if (booth.Status == BoothStatus.Maintenance)
+                return false;
+
+            // Check if there are any active rentals for this booth in the given period
+            var hasConflict = await _rentalRepository.HasActiveRentalForBoothAsync(
+                boothId, startDate, endDate);
+
+            // Return true if available (no conflicts), false otherwise
+            return !hasConflict;
+        }
+
+        public async Task<decimal> CalculateCostAsync(Guid boothId, Guid boothTypeId, DateTime startDate, DateTime endDate)
+        {
+            // Create rental period
+            var period = new RentalPeriod(startDate, endDate);
+
+            // Use RentalManager to calculate cost
+            var cost = await _rentalManager.CalculateRentalCostAsync(boothId, boothTypeId, period);
+
+            return cost;
+        }
     }
 }

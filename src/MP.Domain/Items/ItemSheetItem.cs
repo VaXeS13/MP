@@ -25,7 +25,7 @@ namespace MP.Domain.Items
             Guid itemSheetId,
             Guid itemId,
             int itemNumber,
-            decimal commissionPercentage) : base(id)
+            decimal commissionPercentage = 0) : base(id)
         {
             ItemSheetId = itemSheetId;
             ItemId = itemId;

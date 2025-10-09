@@ -12,8 +12,7 @@ namespace MP.Items
         [Required]
         public List<Guid> ItemIds { get; set; } = new();
 
-        [Required]
         [Range(0, 100)]
-        public decimal CommissionPercentage { get; set; }
+        public decimal CommissionPercentage { get; set; } = 0;
     }
 }
