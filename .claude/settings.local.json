@@ -47,7 +47,9 @@
       "Bash(Select-String -Pattern \"error|warning CS\")",
       "Bash(Select-Object -First 20)",
       "Bash(Remove-Item \"C:\\Users\\mhinc\\source\\repos\\MP\\MP\\angular\\src\\app\\shared\\animations\\dialog.animations.ts\" -Force)",
-      "Bash(Select-String -Pattern \"animated-dialog\")"
+      "Bash(Select-String -Pattern \"animated-dialog\")",
+      "WebFetch(domain:abp.io)",
+      "Bash(Remove-Item \"C:\\Users\\mhinc\\source\\repos\\MP\\MP\\src\\MP.HttpApi.Host\\Pages\\Account\\Login.cshtml.cs\" -Force)"
     ],
     "deny": [],
     "ask": []

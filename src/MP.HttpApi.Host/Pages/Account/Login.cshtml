@@ -1,0 +1,232 @@
+@page
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.Extensions.Options
+@using Volo.Abp.Account.Localization
+@using Volo.Abp.Account.Settings
+@using Volo.Abp.Settings
+@using Volo.Abp.MultiTenancy
+@using Volo.Abp.Localization
+@model Volo.Abp.Account.Web.Pages.Account.LoginModel
+@inject IHtmlLocalizer<AccountResource> L
+@inject ISettingProvider SettingProvider
+@inject ICurrentTenant CurrentTenant
+@inject IOptions<AbpLocalizationOptions> LocalizationOptions
+@{
+    Layout = null;
+    var tenantName = CurrentTenant.IsAvailable ? CurrentTenant.Name : "MP";
+    var currentCulture = System.Globalization.CultureInfo.CurrentCulture.Name;
+    var languages = LocalizationOptions.Value.Languages;
+}
+
+@functions {
+    string GetLanguageFlag(string cultureName)
+    {
+        return cultureName.ToLower() switch
+        {
+            "en" or "en-gb" => "🇬🇧",
+            "zh-hans" => "🇨🇳",
+            "es" => "🇪🇸",
+            "ar" => "🇸🇦",
+            "hi" => "🇮🇳",
+            "pt-br" => "🇧🇷",
+            "fr" => "🇫🇷",
+            "ru" => "🇷🇺",
+            "de-de" => "🇩🇪",
+            "tr" => "🇹🇷",
+            "it" => "🇮🇹",
+            "cs" => "🇨🇿",
+            "hu" => "🇭🇺",
+            "ro-ro" => "🇷🇴",
+            "sv" => "🇸🇪",
+            "fi" => "🇫🇮",
+            "sk" => "🇸🇰",
+            "is" => "🇮🇸",
+            "zh-hant" => "🇹🇼",
+            "pl-pl" => "🇵🇱",
+            _ => "🌐"
+        };
+    }
+}
+
+<!DOCTYPE html>
+<html lang="@currentCulture">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@L["Login"] - @tenantName</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/account-styles.css">
+</head>
+<body>
+    <div class="account-page-container">
+        <!-- Language Selector -->
+        <div class="language-selector">
+            <form method="get" asp-page="/Account/Login">
+                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                <select name="culture" class="language-dropdown" onchange="this.form.submit()">
+                    @foreach (var language in languages)
+                    {
+                        var isSelected = currentCulture.Equals(language.CultureName, StringComparison.OrdinalIgnoreCase) ||
+                                        currentCulture.StartsWith(language.CultureName.Split('-')[0], StringComparison.OrdinalIgnoreCase);
+                        <option value="@language.CultureName" selected="@isSelected">@GetLanguageFlag(language.CultureName) @language.DisplayName</option>
+                    }
+                </select>
+            </form>
+        </div>
+
+        <div class="account-card">
+            <!-- Header -->
+            <div class="account-card-header">
+                <div class="tenant-name">
+                    <i class="fas fa-store"></i> @tenantName
+                </div>
+                <h1>@L["Login"]</h1>
+                <div class="page-title">@L["WelcomeMessage"]</div>
+            </div>
+
+            <!-- Body -->
+            <div class="account-card-body">
+                @if (Model.EnableLocalLogin)
+                {
+                    <!-- Validation Summary -->
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-circle"></i>
+                            @Html.ValidationSummary()
+                        </div>
+                    }
+
+                    <form method="post">
+                        <!-- Username/Email -->
+                        <div class="form-group">
+                            <label asp-for="LoginInput.UserNameOrEmailAddress">
+                                <i class="fas fa-user me-1"></i>
+                                @L["UserNameOrEmailAddress"]
+                            </label>
+                            <input asp-for="LoginInput.UserNameOrEmailAddress"
+                                   class="form-control"
+                                   placeholder="@L["UserNameOrEmailAddress"]"
+                                   autocomplete="username"
+                                   autofocus />
+                            <span asp-validation-for="LoginInput.UserNameOrEmailAddress" class="text-danger"></span>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="form-group">
+                            <label asp-for="LoginInput.Password">
+                                <i class="fas fa-lock me-1"></i>
+                                @L["Password"]
+                            </label>
+                            <div class="password-wrapper">
+                                <input asp-for="LoginInput.Password"
+                                       type="password"
+                                       id="passwordField"
+                                       class="form-control"
+                                       placeholder="@L["Password"]"
+                                       autocomplete="current-password" />
+                                <button type="button"
+                                        class="password-toggle"
+                                        onclick="togglePassword()"
+                                        aria-label="Show password">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="LoginInput.Password" class="text-danger"></span>
+                        </div>
+
+                        <!-- Forgot Password Link -->
+                        <div class="forgot-password">
+                            <a href="@Url.Page("./ForgotPassword", new {returnUrl = Model.ReturnUrl, returnUrlHash = Model.ReturnUrlHash})">
+                                @L["ForgotPassword"]
+                            </a>
+                        </div>
+
+                        <!-- Remember Me -->
+                        @if (await SettingProvider.IsTrueAsync(AccountSettingNames.IsSelfRegistrationEnabled))
+                        {
+                            <div class="custom-checkbox">
+                                <input asp-for="LoginInput.RememberMe" type="checkbox" id="rememberMe" />
+                                <label asp-for="LoginInput.RememberMe" for="rememberMe">
+                                    @L["RememberMe"]
+                                </label>
+                            </div>
+                        }
+
+                        <!-- Login Button -->
+                        <button type="submit" name="Action" value="Login" class="btn-primary-custom">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            @L["Login"]
+                        </button>
+
+                        <!-- Divider -->
+                        @if (await SettingProvider.IsTrueAsync(AccountSettingNames.IsSelfRegistrationEnabled))
+                        {
+                            <div class="divider">@L["Or"]</div>
+                        }
+                    </form>
+                }
+
+                <!-- External Providers -->
+                @if (Model.VisibleExternalProviders.Any())
+                {
+                    <form asp-page="./Login" asp-page-handler="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" asp-route-returnUrlHash="@Model.ReturnUrlHash" method="post">
+                        @foreach (var provider in Model.VisibleExternalProviders)
+                        {
+                            <button type="submit"
+                                    class="btn-primary-custom"
+                                    name="provider"
+                                    value="@provider.AuthenticationScheme"
+                                    style="margin-bottom: 10px; background: #fff; color: #495057; border: 2px solid #e9ecef;">
+                                <i class="fab fa-@provider.DisplayName.ToLowerInvariant() me-2"></i>
+                                @L["Login:With{0}", provider.DisplayName]
+                            </button>
+                        }
+                    </form>
+                }
+            </div>
+
+            <!-- Footer -->
+            @if (await SettingProvider.IsTrueAsync(AccountSettingNames.IsSelfRegistrationEnabled))
+            {
+                <div class="account-footer">
+                    <p class="text-muted">
+                        @L["NotAMemberYet"]
+                        <a href="@Url.Page("./Register", new {returnUrl = Model.ReturnUrl, returnUrlHash = Model.ReturnUrlHash})" class="account-link">
+                            @L["Register"]
+                        </a>
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        function togglePassword() {
+            const passwordField = document.getElementById('passwordField');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
+
+    <!-- Validation Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>
