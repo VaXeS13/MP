@@ -78,6 +78,23 @@ public static class MPPermissions
         public const string ManageCustomerChats = Default + ".ManageCustomerChats"; // Admin/Seller can manage all customer chats
     }
 
+    // Tenant settings permissions
+    public static class Tenant
+    {
+        public const string Default = GroupName + ".Tenant";
+        public const string ManageCurrency = Default + ".ManageCurrency"; // Manage tenant currency settings
+    }
+
+    // Promotions permissions
+    public static class Promotions
+    {
+        public const string Default = GroupName + ".Promotions";
+        public const string Create = Default + ".Create";
+        public const string Edit = Default + ".Edit";
+        public const string Delete = Default + ".Delete";
+        public const string Manage = Default + ".Manage"; // Activate/Deactivate promotions
+    }
+
     //Add your own permission names. Example:
     //public const string MyPermission1 = GroupName + ".MyPermission1";
 }

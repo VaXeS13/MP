@@ -41,5 +41,9 @@ namespace MP.Rentals
         // Availability and cost calculation
         Task<bool> CheckAvailabilityAsync(Guid boothId, DateTime startDate, DateTime endDate);
         Task<decimal> CalculateCostAsync(Guid boothId, Guid boothTypeId, DateTime startDate, DateTime endDate);
+
+        // Admin unified rental management
+        Task<MaxExtensionDateResponseDto> GetMaxExtensionDateAsync(Guid boothId, DateTime currentRentalEndDate);
+        Task<RentalDto> AdminManageBoothRentalAsync(AdminManageBoothRentalDto input);
     }
 }

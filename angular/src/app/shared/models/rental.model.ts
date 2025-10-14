@@ -53,6 +53,13 @@ export enum ExtensionPaymentType {
   Online = 3     // Add to cart with timeout, skip gap validation
 }
 
+export enum RentalPaymentMethod {
+  Online = 0,    // Online payment via payment gateway
+  Cash = 1,      // Cash payment on-site
+  Terminal = 2,  // Card payment via terminal on-site
+  Free = 3       // Free (gratis) - no payment required
+}
+
 export interface GetRentalListDto {
   skipCount: number;
   maxResultCount: number;
@@ -147,4 +154,28 @@ export enum CalendarDateStatus {
   Unavailable = 3,
   PastDate = 4,
   Historical = 5
+}
+
+// Admin unified rental management
+export interface AdminManageBoothRentalDto {
+  boothId: string;
+  userId?: string;
+  boothTypeId?: string;
+  startDate: string; // YYYY-MM-DD format
+  endDate: string;   // YYYY-MM-DD format
+  paymentMethod: RentalPaymentMethod;
+  terminalTransactionId?: string;
+  terminalReceiptNumber?: string;
+  notes?: string;
+  isExtension: boolean;
+  existingRentalId?: string;
+  onlineTimeoutMinutes?: number;
+}
+
+export interface MaxExtensionDateResponseDto {
+  maxExtensionDate?: string; // YYYY-MM-DD format
+  hasBlockingRental: boolean;
+  nextRentalId?: string;
+  nextRentalStartDate?: string;
+  message?: string;
 }

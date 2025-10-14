@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BoothService } from '../../services/booth.service';
 import { BoothTypeService } from '../../services/booth-type.service';
@@ -7,6 +7,7 @@ import { PaymentService } from '../../services/payment.service';
 import { CartService } from '../../services/cart.service';
 import { BoothSettingsService } from '../../services/booth-settings.service';
 import { BoothSignalRService } from '../../services/booth-signalr.service';
+import { TenantCurrencyService } from '../../services/tenant-currency.service';
 import { BoothDto } from '../../shared/models/booth.model';
 import { BoothTypeDto } from '../../shared/models/booth-type.model';
 import { CreateRentalDto, CreateRentalWithPaymentDto, CreateRentalWithPaymentResultDto, BoothCalendarRequestDto, BoothCalendarResponseDto, CalendarDateDto, CalendarDateStatus } from '../../shared/models/rental.model';
@@ -45,8 +46,27 @@ export interface CalendarDay {
   styleUrls: ['./rental-calendar.component.scss'],
   standalone: false
 })
-export class RentalCalendarComponent implements OnInit, OnDestroy {
-  boothId?: string;
+export class RentalCalendarComponent implements OnInit, OnDestroy, OnChanges {
+  // Input properties for reusability
+  @Input() boothId?: string; // Can be provided from parent instead of route
+  @Input() mode: 'user' | 'admin' = 'user'; // Display mode
+  @Input() customMinDate?: Date; // Custom min date (for extension mode)
+  @Input() customMaxDate?: Date; // Custom max date (for extension mode)
+  @Input() hideBoothInfo = false; // Hide booth details card
+  @Input() hideBoothTypeSelection = false; // Hide booth type selection
+  @Input() hidePaymentActions = false; // Hide payment and cart actions
+  @Input() hideCalendarNavigation = false; // Hide calendar navigation buttons
+  @Input() hideLegend = false; // Hide calendar legend
+  @Input() preselectedBoothTypeId?: string; // Preselect booth type (for admin mode)
+  @Input() excludeCartId?: string; // Exclude specific cart ID from calendar validation (for cart editing)
+
+  // Output properties
+  @Output() datesSelected = new EventEmitter<{startDate: Date, endDate: Date, isValid: boolean}>();
+  @Output() validationError = new EventEmitter<string | null>();
+  @Output() costCalculated = new EventEmitter<{cost: number, days: number}>();
+  @Output() paymentRequested = new EventEmitter<{provider: any, method?: any}>();
+  @Output() paymentDialogStateChange = new EventEmitter<boolean>();
+
   booth?: BoothDto;
   boothTypes: BoothTypeDto[] = [];
   selectedBoothType?: BoothTypeDto;
@@ -77,6 +97,7 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
   processingPayment = false;
   hasGapError = false;
   gapErrorMessage = '';
+  tenantCurrencyCode: string = 'PLN';
 
   // Payment selection
   showPaymentSelection = false;
@@ -92,7 +113,9 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
   currentCart: CartDto | null = null;
   private cartSubscription?: Subscription;
   private boothUpdatesSubscription?: Subscription;
-  currentCartItem?: CartItemDto; // Current cart item for this booth (if exists)
+  currentCartItems: CartItemDto[] = []; // All cart items for this booth
+  currentCartItem?: CartItemDto; // Currently selected cart item for editing
+  selectedCartItemId?: string; // ID of currently selected/active cart item for visual highlighting
   isEditingCartItem = false; // Flag to track if we're editing existing cart item
   notes = ''; // Notes/special requests for the booking
 
@@ -107,28 +130,36 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
     private boothSignalRService: BoothSignalRService,
     private messageService: MessageService,
     private boothSettingsService: BoothSettingsService,
-    private localization: LocalizationService
+    private tenantCurrencyService: TenantCurrencyService,
+    private localization: LocalizationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     console.log('RentalCalendar: ngOnInit called, component initialized');
-    console.log('RentalCalendar: Current route params:', this.route.snapshot.paramMap);
-    console.log('RentalCalendar: Current query params:', this.route.snapshot.queryParams);
-    console.log('RentalCalendar: Current route URL:', this.router.url);
+    console.log('RentalCalendar: Mode:', this.mode);
+    console.log('RentalCalendar: BoothId from Input:', this.boothId);
 
     // Load booth settings for gap validation
     this.loadBoothSettings();
 
-    // Subscribe to cart changes
-    this.cartSubscription = this.cartService.cart$.subscribe(cart => {
-      this.currentCart = cart;
-      // Check if this booth is in cart and load its data
-      this.loadCartItemData();
-      // Regenerate calendar when cart changes to update visual indicators
-      if (this.boothId && this.calendarDays.length > 0) {
-        this.generateCalendar();
-      }
+    // Load tenant currency
+    this.tenantCurrencyService.getCurrency().subscribe(result => {
+      this.tenantCurrencyCode = this.tenantCurrencyService.getCurrencyName(result.currency);
     });
+
+    // Subscribe to cart changes (only in user mode)
+    if (this.mode === 'user') {
+      this.cartSubscription = this.cartService.cart$.subscribe(cart => {
+        this.currentCart = cart;
+        // Check if this booth is in cart and load its data
+        this.loadCartItemData();
+        // Regenerate calendar when cart changes to update visual indicators
+        if (this.boothId && this.calendarDays.length > 0) {
+          this.generateCalendar();
+        }
+      });
+    }
 
     // Subscribe to booth status updates via SignalR
     console.log('RentalCalendar: Setting up booth updates subscription for boothId:', this.boothId);
@@ -144,21 +175,52 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
     });
     console.log('RentalCalendar: ✅ Booth updates subscription active');
 
-    this.boothId = this.route.snapshot.paramMap.get('boothId') || undefined;
+    // If boothId not provided via Input, try to get it from route (backward compatibility)
+    if (!this.boothId) {
+      this.boothId = this.route.snapshot.paramMap.get('boothId') || undefined;
+    }
+
     if (this.boothId) {
       this.loadBooth();
       this.loadBoothTypes();
       this.generateCalendar();
 
-      // Check if payment dialog should be opened from URL params
-      if (this.route.snapshot.queryParams['payment'] === 'true') {
+      // Check if payment dialog should be opened from URL params (only in user mode)
+      if (this.mode === 'user' && this.route.snapshot.queryParams['payment'] === 'true') {
         console.log('🚨 RentalCalendar: Payment dialog requested from URL - this might be the problem!');
         this.showPaymentSelection = true;
         this.debugDialogOpenReason = 'URL_PARAM';
       }
     } else {
-      // If no boothId, redirect back to rental booth selection
-      this.router.navigate(['/rentals']);
+      // If no boothId and in user mode, redirect back to rental booth selection
+      if (this.mode === 'user') {
+        this.router.navigate(['/rentals']);
+      }
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    console.log('RentalCalendar: ngOnChanges called', changes);
+
+    // React to changes in Input properties
+    if (changes['boothId'] && this.boothId) {
+      console.log('RentalCalendar: boothId changed to:', this.boothId);
+      // Load booth data when boothId changes (including first time)
+      this.loadBooth();
+      this.loadBoothTypes();
+      this.generateCalendar();
+      this.cdr.detectChanges();
+    }
+
+    if (changes['preselectedBoothTypeId'] && this.preselectedBoothTypeId) {
+      console.log('RentalCalendar: preselectedBoothTypeId changed to:', this.preselectedBoothTypeId);
+      // Find and select the preselected booth type
+      const boothType = this.boothTypes.find(bt => bt.id === this.preselectedBoothTypeId);
+      if (boothType) {
+        this.selectedBoothType = boothType;
+        this.validateAndCalculatePrice();
+        this.cdr.detectChanges();
+      }
     }
   }
 
@@ -219,7 +281,11 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
   }
 
   generateCalendar(): void {
-    if (!this.boothId) return;
+    console.log('RentalCalendar: generateCalendar called, boothId:', this.boothId);
+    if (!this.boothId) {
+      console.warn('RentalCalendar: generateCalendar aborted - no boothId');
+      return;
+    }
 
     const year = this.currentDate.getFullYear();
     const month = this.currentDate.getMonth();
@@ -233,27 +299,37 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
     const remainingDays = 6 - lastDayOfMonth.getDay();
     lastDayOfCalendar.setDate(lastDayOfCalendar.getDate() + remainingDays);
 
+    console.log('RentalCalendar: Calendar range:', { firstDay: firstDayOfCalendar, lastDay: lastDayOfCalendar });
+
     // Load calendar data from backend
     this.loadCalendarData(firstDayOfCalendar, lastDayOfCalendar, month);
   }
 
   private loadCalendarData(startDate: Date, endDate: Date, month: number): void {
-    if (!this.boothId) return;
+    console.log('RentalCalendar: loadCalendarData called, boothId:', this.boothId);
+    if (!this.boothId) {
+      console.warn('RentalCalendar: loadCalendarData aborted - no boothId');
+      return;
+    }
 
     const request: BoothCalendarRequestDto = {
       boothId: this.boothId,
       startDate: this.formatDateForApi(startDate),
-      endDate: this.formatDateForApi(endDate)
+      endDate: this.formatDateForApi(endDate),
+      excludeCartId: this.excludeCartId // Exclude specific cart from validation (for cart editing)
     };
+
+    console.log('RentalCalendar: Fetching calendar data with request:', request);
 
     this.rentalService.getBoothCalendar(request).subscribe({
       next: (response) => {
+        console.log('RentalCalendar: Calendar data received:', response);
         this.calendarData = response;
         this.calendarLegend = response.legend;
         this.buildCalendarDays(startDate, endDate, month, response.dates);
       },
       error: (error) => {
-        console.error('Error loading calendar data:', error);
+        console.error('RentalCalendar: Error loading calendar data:', error);
         // Fallback to client-side calendar generation
         this.buildCalendarDaysWithoutBackendData(startDate, endDate, month);
       }
@@ -261,6 +337,7 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
   }
 
   private buildCalendarDays(startDate: Date, endDate: Date, month: number, backendDates: CalendarDateDto[]): void {
+    console.log('RentalCalendar: buildCalendarDays called', { startDate, endDate, backendDatesCount: backendDates.length });
     this.calendarDays = [];
     const currentDate = new Date(startDate);
 
@@ -299,9 +376,13 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
       this.calendarDays.push(day);
       currentDate.setDate(currentDate.getDate() + 1);
     }
+
+    console.log('RentalCalendar: buildCalendarDays completed, days count:', this.calendarDays.length);
+    this.cdr.detectChanges();
   }
 
   private buildCalendarDaysWithoutBackendData(startDate: Date, endDate: Date, month: number): void {
+    console.log('RentalCalendar: buildCalendarDaysWithoutBackendData called (fallback)');
     this.calendarDays = [];
     const currentDate = new Date(startDate);
 
@@ -325,6 +406,9 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
       this.calendarDays.push(day);
       currentDate.setDate(currentDate.getDate() + 1);
     }
+
+    console.log('RentalCalendar: buildCalendarDaysWithoutBackendData completed, days count:', this.calendarDays.length);
+    this.cdr.detectChanges();
   }
 
   private formatDateForApi(date: Date): string {
@@ -360,49 +444,245 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load cart item data for current booth (if exists)
+   * Load all cart items for current booth
+   * Sorts by reservation expiry (active first, then expired) and then by start date
    */
   private loadCartItemData(): void {
     if (!this.currentCart || !this.currentCart.items || !this.boothId) {
+      this.currentCartItems = [];
       this.currentCartItem = undefined;
       this.isEditingCartItem = false;
       return;
     }
 
-    // Find cart item for this booth (take first one if multiple exist)
-    const cartItem = this.currentCart.items.find(item => item.boothId === this.boothId);
+    // Find ALL cart items for this booth (not just first one)
+    this.currentCartItems = this.currentCart.items
+      .filter(item => item.boothId === this.boothId)
+      .sort((a, b) => {
+        // Sort by reservation expiry (active first, then expired)
+        const now = new Date();
+        const aActive = a.reservationExpiresAt && new Date(a.reservationExpiresAt) > now;
+        const bActive = b.reservationExpiresAt && new Date(b.reservationExpiresAt) > now;
 
-    if (cartItem) {
-      this.currentCartItem = cartItem;
-      this.isEditingCartItem = true;
+        if (aActive && !bActive) return -1;
+        if (!aActive && bActive) return 1;
 
-      // Set dates from cart item
-      this.selectedStartDate = new Date(cartItem.startDate);
-      this.selectedEndDate = new Date(cartItem.endDate);
+        // Then by start date
+        return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+      });
 
-      // Set notes from cart item
-      this.notes = cartItem.notes || '';
-
-      // Set booth type from cart item (will be applied when booth types are loaded)
-      if (this.boothTypes.length > 0) {
-        const boothType = this.boothTypes.find(bt => bt.id === cartItem.boothTypeId);
-        if (boothType) {
-          this.selectedBoothType = boothType;
-          this.validateAndCalculatePrice();
-        }
-      }
-
-      // Regenerate calendar to show selection
-      if (this.calendarDays.length > 0) {
-        this.generateCalendar();
-      }
-    } else {
-      this.currentCartItem = undefined;
+    // If no current item selected and we have items, don't auto-select
+    // Let user explicitly choose which one to edit
+    if (!this.currentCartItem && this.currentCartItems.length > 0) {
+      // Just clear the editing flag
       this.isEditingCartItem = false;
     }
   }
 
+  /**
+   * Select cart item for editing - loads its data into calendar
+   * Makes this item active (highlighted) and dimms other items
+   */
+  editCartItem(item: CartItemDto): void {
+    // Set this item as selected
+    this.selectedCartItemId = item.id;
+
+    // Set dates and booth type from selected item
+    this.selectedStartDate = new Date(item.startDate);
+    this.selectedEndDate = new Date(item.endDate);
+    this.notes = item.notes || '';
+
+    const boothType = this.boothTypes.find(bt => bt.id === item.boothTypeId);
+    if (boothType) {
+      this.selectedBoothType = boothType;
+    }
+
+    // Mark as editing this specific item
+    this.currentCartItem = item;
+    this.isEditingCartItem = true;
+
+    // Regenerate calendar to show selection
+    this.generateCalendar();
+    this.validateAndCalculatePrice();
+
+    // Force change detection to update UI
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Cancel editing - deselect cart item
+   */
+  cancelEditingCartItem(): void {
+    this.selectedCartItemId = undefined;
+    this.currentCartItem = undefined;
+    this.isEditingCartItem = false;
+    this.clearSelection();
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Check if given cart item is currently selected/active
+   */
+  isCartItemSelected(item: CartItemDto): boolean {
+    return this.selectedCartItemId === item.id;
+  }
+
+  /**
+   * Check if given cart item should be dimmed (when another item is selected)
+   */
+  isCartItemDimmed(item: CartItemDto): boolean {
+    return !!this.selectedCartItemId && this.selectedCartItemId !== item.id;
+  }
+
+  /**
+   * Remove specific cart item
+   */
+  removeCartItem(item: CartItemDto): void {
+    this.cartService.removeItem(item.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Removed from Cart',
+          detail: `Reservation for ${new Date(item.startDate).toLocaleDateString()} - ${new Date(item.endDate).toLocaleDateString()} removed`,
+          life: 3000
+        });
+
+        // If we were editing this item, clear the selection
+        if (this.currentCartItem?.id === item.id) {
+          this.clearSelection();
+          this.currentCartItem = undefined;
+          this.isEditingCartItem = false;
+        }
+
+        // Cart will auto-update via subscription
+      },
+      error: (error) => {
+        console.error('Error removing cart item:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to remove item from cart'
+        });
+      }
+    });
+  }
+
+  /**
+   * Start new reservation (clear selection)
+   */
+  startNewReservation(): void {
+    // Clear current selection
+    this.clearSelection();
+    this.currentCartItem = undefined;
+    this.isEditingCartItem = false;
+
+    // Scroll to calendar
+    setTimeout(() => {
+      const calendarElement = document.querySelector('.calendar-container');
+      if (calendarElement) {
+        calendarElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'New Reservation',
+      detail: 'Select dates in calendar to add new period',
+      life: 3000
+    });
+  }
+
+  /**
+   * Get countdown display for cart item (reuse from cart.component logic)
+   */
+  getCountdown(itemId: string): string {
+    const item = this.currentCartItems.find(i => i.id === itemId);
+    if (!item || !item.reservationExpiresAt) {
+      return '';
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(item.reservationExpiresAt);
+    const diff = expiresAt.getTime() - now.getTime();
+
+    if (diff <= 0) {
+      return '00:00';
+    }
+
+    const minutes = Math.floor(diff / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  /**
+   * Get count of active (non-expired) reservations
+   */
+  get activeReservationsCount(): number {
+    const now = new Date();
+    return this.currentCartItems.filter(item =>
+      item.reservationExpiresAt && new Date(item.reservationExpiresAt) > now
+    ).length;
+  }
+
+  /**
+   * Get count of expired reservations
+   */
+  get expiredReservationsCount(): number {
+    const now = new Date();
+    return this.currentCartItems.filter(item =>
+      item.reservationExpiresAt && new Date(item.reservationExpiresAt) <= now
+    ).length;
+  }
+
+  /**
+   * TrackBy function for cart items list
+   */
+  trackByCartItemId(index: number, item: CartItemDto): string {
+    return item.id;
+  }
+
+  /**
+   * Check if cart item has active (non-expired) reservation
+   */
+  isReservationActive(item: CartItemDto): boolean {
+    if (!item.reservationExpiresAt) return false;
+    const now = new Date();
+    const expiresAt = new Date(item.reservationExpiresAt);
+    return expiresAt > now;
+  }
+
+  /**
+   * Check if cart item has expired reservation
+   */
+  isReservationExpired(item: CartItemDto): boolean {
+    if (!item.reservationExpiresAt) return false;
+    const now = new Date();
+    const expiresAt = new Date(item.reservationExpiresAt);
+    return expiresAt <= now;
+  }
+
   isDateSelectable(date: Date, backendData?: CalendarDateDto): boolean {
+    // Check custom min/max dates first
+    if (this.customMinDate) {
+      const minDate = new Date(this.customMinDate);
+      minDate.setHours(0, 0, 0, 0);
+      const checkDate = new Date(date);
+      checkDate.setHours(0, 0, 0, 0);
+      if (checkDate < minDate) {
+        return false;
+      }
+    }
+
+    if (this.customMaxDate) {
+      const maxDate = new Date(this.customMaxDate);
+      maxDate.setHours(0, 0, 0, 0);
+      const checkDate = new Date(date);
+      checkDate.setHours(0, 0, 0, 0);
+      if (checkDate > maxDate) {
+        return false;
+      }
+    }
+
     // If we have backend data, use that for selectability
     if (backendData) {
       return backendData.status === CalendarDateStatus.Available;
@@ -485,6 +765,8 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
   }
 
   onDayClick(day: CalendarDay): void {
+    console.log('RentalCalendar: onDayClick called', day.date);
+
     if (!day.isSelectable || day.status !== CalendarDateStatus.Available) {
       // Show message if trying to click unavailable day
       if (day.status !== CalendarDateStatus.Available && day.status !== CalendarDateStatus.PastDate) {
@@ -498,11 +780,37 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
     }
 
     if (!this.selectedStartDate || (this.selectedStartDate && this.selectedEndDate)) {
-      // Start new selection
-      this.selectedStartDate = new Date(day.date);
+      // Start new selection - validate start date for gaps
+      const proposedStartDate = new Date(day.date);
+
+      // Check if this start date would create an invalid gap
+      if (this.minimumGapDays > 0 && this.calendarData) {
+        const gapValidation = this.validateStartDateGap(proposedStartDate);
+        if (gapValidation) {
+          // Invalid gap detected - auto-correct to adjacent date
+          this.messageService.add({
+            severity: 'warn',
+            summary: gapValidation.title,
+            detail: gapValidation.message,
+            life: 8000
+          });
+
+          // Auto-correct to the suggested adjacent date
+          this.selectedStartDate = gapValidation.suggestedDate;
+          this.selectedEndDate = undefined;
+          this.isSelectingRange = true;
+          this.generateCalendar();
+          this.cdr.detectChanges();
+          return;
+        }
+      }
+
+      // Valid start date - proceed
+      this.selectedStartDate = proposedStartDate;
       this.selectedEndDate = undefined;
       this.isSelectingRange = true;
       this.generateCalendar();
+      this.cdr.detectChanges(); // Force change detection
     } else if (this.selectedStartDate && !this.selectedEndDate) {
       // User is selecting end date
       let tempStartDate = this.selectedStartDate;
@@ -548,12 +856,30 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // Set the dates - GAP validation will happen in validateAndCalculatePrice
+      // Check if end date would create an invalid gap with the next rental
+      if (this.minimumGapDays > 0 && this.calendarData) {
+        const endGapValidation = this.validateEndDateGap(tempEndDate);
+        if (endGapValidation) {
+          // Invalid gap detected - auto-correct to adjacent date
+          this.messageService.add({
+            severity: 'warn',
+            summary: endGapValidation.title,
+            detail: endGapValidation.message,
+            life: 8000
+          });
+
+          // Auto-correct to the suggested adjacent date
+          tempEndDate = endGapValidation.suggestedDate;
+        }
+      }
+
+      // Set the dates
       this.selectedStartDate = tempStartDate;
       this.selectedEndDate = tempEndDate;
       this.isSelectingRange = false;
       this.generateCalendar();
       this.validateAndCalculatePrice();
+      this.cdr.detectChanges(); // Force change detection
     }
   }
 
@@ -577,12 +903,19 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
       this.commissionPercentage = this.selectedBoothType.commissionPercentage;
     }
 
+    // Emit cost calculation
+    this.costCalculated.emit({
+      cost: this.calculatedPrice,
+      days: this.calculatedDays
+    });
+
     // Validate gaps if minimum gap is set - but don't clear selection, just warn
     if (this.minimumGapDays > 0 && this.calendarData) {
       const gapError = this.validateGaps(this.selectedStartDate, this.selectedEndDate, this.calendarData.dates);
       if (gapError) {
         this.hasGapError = true;
         this.gapErrorMessage = gapError.message;
+        this.validationError.emit(gapError.message);
         this.messageService.add({
           severity: 'error',
           summary: gapError.title,
@@ -590,8 +923,101 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
           life: 10000
         });
         // Don't clear the selection - let user see the issue and adjust
+      } else {
+        this.validationError.emit(null);
+      }
+    } else {
+      this.validationError.emit(null);
+    }
+
+    // Emit dates selection with validation status
+    this.datesSelected.emit({
+      startDate: this.selectedStartDate,
+      endDate: this.selectedEndDate,
+      isValid: !this.hasGapError && this.calculatedDays >= 7
+    });
+  }
+
+  /**
+   * Validate if a proposed start date creates an invalid gap with the previous rental
+   * Returns validation result with suggested correction date
+   */
+  validateStartDateGap(startDate: Date): { title: string, message: string, suggestedDate: Date } | null {
+    if (!this.calendarData) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Find nearest rental before start date
+    const rentalsBefore = this.calendarData.dates
+      .filter(d => {
+        const date = new Date(d.date);
+        return date < startDate && (d.status === CalendarDateStatus.Reserved || d.status === CalendarDateStatus.Occupied);
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    if (rentalsBefore.length > 0) {
+      const lastRentalEndDate = new Date(rentalsBefore[0].date);
+      lastRentalEndDate.setHours(0, 0, 0, 0);
+
+      // If the previous rental ended in the past, don't enforce gap validation
+      if (lastRentalEndDate >= today) {
+        const gapDays = Math.round((startDate.getTime() - lastRentalEndDate.getTime()) / (1000 * 60 * 60 * 24)) - 1;
+
+        if (gapDays > 0 && gapDays < this.minimumGapDays) {
+          const suggestedDate = new Date(lastRentalEndDate);
+          suggestedDate.setDate(suggestedDate.getDate() + 1); // Adjacent date
+          const alternativeDate = new Date(lastRentalEndDate);
+          alternativeDate.setDate(alternativeDate.getDate() + this.minimumGapDays + 1);
+
+          return {
+            title: this.localization.instant('MP::UnusableGapBeforeRental', 'Unusable Gap Before Rental'),
+            message: `Your rental would leave a ${gapDays}-day gap after the previous rental (ends ${lastRentalEndDate.toLocaleDateString()}). Minimum gap is ${this.minimumGapDays} days. Auto-corrected to ${suggestedDate.toLocaleDateString()} (adjacent). Alternative: ${alternativeDate.toLocaleDateString()} (with minimum gap).`,
+            suggestedDate: suggestedDate
+          };
+        }
       }
     }
+
+    return null;
+  }
+
+  /**
+   * Validate if a proposed end date creates an invalid gap with the next rental
+   * Returns validation result with suggested correction date
+   */
+  validateEndDateGap(endDate: Date): { title: string, message: string, suggestedDate: Date } | null {
+    if (!this.calendarData) return null;
+
+    // Find nearest rental after end date
+    const rentalsAfter = this.calendarData.dates
+      .filter(d => {
+        const date = new Date(d.date);
+        return date > endDate && (d.status === CalendarDateStatus.Reserved || d.status === CalendarDateStatus.Occupied);
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    if (rentalsAfter.length > 0) {
+      const nextRentalStartDate = new Date(rentalsAfter[0].date);
+      nextRentalStartDate.setHours(0, 0, 0, 0);
+
+      const gapDays = Math.round((nextRentalStartDate.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24)) - 1;
+
+      if (gapDays > 0 && gapDays < this.minimumGapDays) {
+        const suggestedDate = new Date(nextRentalStartDate);
+        suggestedDate.setDate(suggestedDate.getDate() - 1); // Adjacent date
+        const alternativeDate = new Date(nextRentalStartDate);
+        alternativeDate.setDate(alternativeDate.getDate() - this.minimumGapDays - 1);
+
+        return {
+          title: this.localization.instant('MP::UnusableGapAfterRental', 'Unusable Gap After Rental'),
+          message: `Your rental would leave a ${gapDays}-day gap before the next rental (starts ${nextRentalStartDate.toLocaleDateString()}). Minimum gap is ${this.minimumGapDays} days. Auto-corrected to ${suggestedDate.toLocaleDateString()} (adjacent). Alternative: ${alternativeDate.toLocaleDateString()} (with minimum gap).`,
+          suggestedDate: suggestedDate
+        };
+      }
+    }
+
+    return null;
   }
 
   validateGaps(startDate: Date, endDate: Date, calendarDates: CalendarDateDto[]): { title: string, message: string } | null {
@@ -666,16 +1092,19 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
   nextMonth(): void {
     this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 1);
     this.generateCalendar();
+    this.cdr.detectChanges();
   }
 
   prevMonth(): void {
     this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 1, 1);
     this.generateCalendar();
+    this.cdr.detectChanges();
   }
 
   goToToday(): void {
     this.currentDate = new Date();
     this.generateCalendar();
+    this.cdr.detectChanges();
   }
 
   clearSelection(): void {
@@ -686,6 +1115,7 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
     this.calculatedDays = 0;
     this.notes = ''; // Clear notes
     this.generateCalendar();
+    this.cdr.detectChanges();
   }
 
   canProceedToPayment(): boolean {
@@ -897,7 +1327,7 @@ export class RentalCalendarComponent implements OnInit, OnDestroy {
     try {
       const paymentRequest: PaymentRequest = {
         amount: this.calculatedPrice,
-        currency: this.booth?.currencyDisplayName || 'PLN',
+        currency: this.tenantCurrencyCode,
         description: `Booth rental ${this.booth?.number} from ${this.selectedStartDate?.toLocaleDateString()} to ${this.selectedEndDate?.toLocaleDateString()}`,
         providerId: this.selectedPaymentProvider.id,
         methodId: this.selectedPaymentMethod?.id,

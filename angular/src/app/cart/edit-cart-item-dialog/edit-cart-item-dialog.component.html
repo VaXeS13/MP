@@ -5,6 +5,7 @@
   [draggable]="false"
   [resizable]="false"
   [style]="{ width: '90vw', maxWidth: '900px' }"
+  [styleClass]="'animated-dialog'"
   header="Edit Booking"
   (onHide)="close()">
 
@@ -14,15 +15,6 @@
   </div>
 
   <div *ngIf="!loading && booth">
-    <!-- Info Banner -->
-    <div class="alert alert-info mb-3">
-      <small>
-        <i class="fas fa-info-circle me-1"></i>
-        Select rental period (minimum 7 days)
-        <span *ngIf="minimumGapDays > 0"> | Minimum gap between rentals: {{ minimumGapDays }} days</span>
-      </small>
-    </div>
-
     <!-- Booth Info -->
     <div class="card mb-3">
       <div class="card-body">
@@ -33,7 +25,7 @@
         <p class="mb-0">
           <strong>Price per day:</strong>
           <span class="text-success fw-bold ms-2">
-            {{ booth.pricePerDay | currency:booth.currencyDisplayName:'symbol':'1.2-2' }}
+            {{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
           </span>
         </p>
       </div>
@@ -58,78 +50,21 @@
       </div>
     </div>
 
-    <!-- Calendar -->
-    <div class="card mb-3">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <button class="btn btn-outline-secondary btn-sm" (click)="prevMonth()">
-            <i class="fas fa-chevron-left"></i> Previous
-          </button>
-          <h5 class="mb-0">
-            <i class="fas fa-calendar me-2"></i>
-            {{ getMonthYear() }}
-          </h5>
-          <button class="btn btn-outline-secondary btn-sm" (click)="nextMonth()">
-            Next <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-
-        <div class="calendar-grid">
-          <!-- Day Headers -->
-          <div class="day-header">Sun</div>
-          <div class="day-header">Mon</div>
-          <div class="day-header">Tue</div>
-          <div class="day-header">Wed</div>
-          <div class="day-header">Thu</div>
-          <div class="day-header">Fri</div>
-          <div class="day-header">Sat</div>
-
-          <!-- Calendar Days -->
-          <div
-            *ngFor="let day of calendarDays; trackBy: trackByIndex"
-            [class]="getDayClass(day)"
-            (click)="onDayClick(day)">
-            <span class="day-number">{{ day.date.getDate() }}</span>
-            <div class="day-indicators" *ngIf="day.status !== CalendarDateStatus.Available && day.status !== CalendarDateStatus.PastDate">
-              <small class="status-text">{{ day.statusDisplayName }}</small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Selection Info -->
-        <div class="alert alert-info mt-3" *ngIf="isValidDate(selectedStartDate) && isValidDate(selectedEndDate)">
-          <strong>Selected Period:</strong>
-          {{ selectedStartDate | date:'shortDate' }} - {{ selectedEndDate | date:'shortDate' }}
-          ({{ calculatedDays }} days)
-          <br>
-          <strong>Total Price:</strong>
-          {{ calculatedPrice | currency:booth.currencyDisplayName:'symbol':'1.2-2' }}
-        </div>
-
-        <div class="alert alert-warning mt-3" *ngIf="isValidDate(selectedStartDate) && isValidDate(selectedEndDate) && calculatedDays < 7">
-          <i class="fas fa-exclamation-triangle me-2"></i>
-          Minimum rental period is 7 days
-        </div>
-      </div>
-    </div>
-
-    <!-- Calendar Legend -->
-    <div class="card mb-3" *ngIf="calendarLegend && getCalendarStatuses().length > 0">
-      <div class="card-body">
-        <h6 class="card-title">
-          <i class="fas fa-info-circle me-2"></i>
-          Calendar Legend
-        </h6>
-        <div class="row g-2">
-          <div class="col-md-6" *ngFor="let statusKey of getCalendarStatuses(); trackBy: trackByStatusKey">
-            <div class="d-flex align-items-center">
-              <div class="legend-color-box" [ngClass]="getLegendClass(statusKey)"></div>
-              <span class="ms-2">{{ calendarLegend[statusKey] }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Rental Calendar -->
+    <app-rental-calendar
+      [boothId]="cartItem!.boothId"
+      [mode]="'user'"
+      [hideBoothInfo]="true"
+      [hideBoothTypeSelection]="true"
+      [hidePaymentActions]="true"
+      [hideCalendarNavigation]="false"
+      [hideLegend]="false"
+      [preselectedBoothTypeId]="selectedBoothType?.id"
+      [excludeCartId]="cartItem!.cartId"
+      (datesSelected)="onCalendarDatesSelected($event)"
+      (validationError)="onCalendarValidationError($event)"
+      (costCalculated)="onCalendarCostCalculated($event)">
+    </app-rental-calendar>
 
     <!-- Notes Section -->
     <div class="card mb-3">

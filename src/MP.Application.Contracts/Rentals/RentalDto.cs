@@ -24,6 +24,7 @@ namespace MP.Rentals
         public string StatusDisplayName { get; set; } = null!;
 
         public decimal TotalAmount { get; set; }
+        public string Currency { get; set; } = null!;
         public decimal PaidAmount { get; set; }
         public DateTime? PaidDate { get; set; }
         public bool IsPaid { get; set; }

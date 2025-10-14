@@ -10,6 +10,7 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TagModule } from 'primeng/tag';
 import { CardModule } from 'primeng/card';
@@ -19,10 +20,13 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CalendarModule } from 'primeng/calendar';
+import { DatePickerModule } from 'primeng/datepicker';
+import { MessageModule } from 'primeng/message';
 import { BoothListComponent } from '../booth-list/booth-list.component';
 import { BoothCreateComponent } from '../booth-create/booth-create.component';
 import { BoothEditComponent } from '../booth-edit/booth-edit.component';
 import { BoothSettingsComponent } from '../booth-settings/booth-settings.component';
+import { AdminBoothRentalDialogComponent } from '../admin-booth-rental-dialog/admin-booth-rental-dialog.component';
 import { RentalSharedModule } from '../../rental/rental-shared.module';
 // Components
 
@@ -47,7 +51,8 @@ const routes: Routes = [
     BoothListComponent,
     BoothCreateComponent,
     BoothEditComponent,
-    BoothSettingsComponent
+    BoothSettingsComponent,
+    AdminBoothRentalDialogComponent
   ],
   imports: [
     CommonModule,
@@ -62,6 +67,7 @@ const routes: Routes = [
     DialogModule,
     InputTextModule,
     DropdownModule,
+    SelectModule,
     InputNumberModule,
     TagModule,
     CardModule,
@@ -71,6 +77,8 @@ const routes: Routes = [
     TooltipModule,
     ProgressSpinnerModule,
     CalendarModule,
+    DatePickerModule,
+    MessageModule,
 
     // Rental Shared Module (for ExtendRentalDialogComponent)
     RentalSharedModule

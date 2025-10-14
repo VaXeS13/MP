@@ -45,6 +45,14 @@ const routes: Routes = [
     loadComponent: () => import('./terminal-settings/terminal-settings.component').then(m => m.TerminalSettingsComponent),
     canActivate: [authGuard],
   },
+  {
+    path: 'tenant-currency-settings',
+    loadComponent: () => import('./tenant-currency-settings/tenant-currency-settings.component').then(m => m.TenantCurrencySettingsComponent),
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      requiredPolicy: 'MP.Tenant.ManageCurrency'
+    }
+  },
   // NASZE ROUTES
   {
     path: 'booths',
@@ -60,6 +68,14 @@ const routes: Routes = [
     canActivate: [AuthGuard, permissionGuard],
     data: {
       requiredPolicy: 'MP.Booths'
+    }
+  },
+  {
+    path: 'promotions',
+    loadChildren: () => import('./promotions/promotions.module').then(m => m.PromotionsModule),
+    canActivate: [AuthGuard, permissionGuard],
+    data: {
+      requiredPolicy: 'MP.Promotions'
     }
   },
   {

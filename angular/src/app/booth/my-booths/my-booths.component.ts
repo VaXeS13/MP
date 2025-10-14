@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { LocalizationService, PagedResultDto } from '@abp/ng.core';
 import { BoothService } from '../../services/booth.service';
+import { TenantCurrencyService } from '../../services/tenant-currency.service';
 import { BoothListDto, GetBoothListDto, BoothStatus } from '../../shared/models/booth.model';
 import { BoothTypeDto } from '../../shared/models/booth-type.model';
 
@@ -17,16 +18,23 @@ export class MyBoothsComponent implements OnInit {
   pageSize = 10;
   pageIndex = 0;
   filter = '';
+  tenantCurrencyCode: string = 'PLN';
 
   // Enum references for template
   BoothStatus = BoothStatus;
 
   constructor(
     private boothService: BoothService,
+    private tenantCurrencyService: TenantCurrencyService,
     private localization: LocalizationService
   ) {}
 
   ngOnInit(): void {
+    // Load tenant currency
+    this.tenantCurrencyService.getCurrency().subscribe(result => {
+      this.tenantCurrencyCode = this.tenantCurrencyService.getCurrencyName(result.currency);
+    });
+
     this.loadBooths();
   }
 

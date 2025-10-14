@@ -46,7 +46,7 @@ namespace MP.Rentals
             rental.ExtendRental(newPeriod, 0);
             await _rentalRepository.UpdateAsync(rental);
 
-            await LogExtensionAsync(rental.Id, rental.Period.EndDate, newEndDate, 0, ExtensionPaymentType.Free);
+            await LogExtensionAsync(rental.Id, rental.Period.EndDate, newEndDate, 0, rental.Currency, ExtensionPaymentType.Free);
 
             return rental;
         }
@@ -58,7 +58,7 @@ namespace MP.Rentals
             rental.MarkAsPaid(cost, DateTime.Now, "CASH_PAYMENT");
 
             await _rentalRepository.UpdateAsync(rental);
-            await LogExtensionAsync(rental.Id, rental.Period.EndDate, newEndDate, cost, ExtensionPaymentType.Cash);
+            await LogExtensionAsync(rental.Id, rental.Period.EndDate, newEndDate, cost, rental.Currency, ExtensionPaymentType.Cash);
 
             return rental;
         }
@@ -84,6 +84,7 @@ namespace MP.Rentals
                 rental.Period.EndDate,
                 newEndDate,
                 cost,
+                rental.Currency,
                 ExtensionPaymentType.Terminal,
                 transactionId,
                 receiptNumber);
@@ -113,6 +114,7 @@ namespace MP.Rentals
                 rental.Period.StartDate,
                 newEndDate,
                 cost / ((newEndDate - rental.Period.EndDate).Days),
+                rental.Currency,
                 CartItemType.Extension,
                 rental.Id
             );
@@ -129,6 +131,7 @@ namespace MP.Rentals
             DateTime oldEndDate,
             DateTime newEndDate,
             decimal cost,
+            Currency currency,
             ExtensionPaymentType paymentType,
             string? transactionId = null,
             string? receiptNumber = null)
@@ -139,6 +142,7 @@ namespace MP.Rentals
                 oldEndDate,
                 newEndDate,
                 cost,
+                currency,
                 paymentType,
                 _currentUser.GetId(),
                 transactionId,

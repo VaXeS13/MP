@@ -1,6 +1,23 @@
+import type { RentalPaymentMethod } from '../domain/rentals/rental-payment-method.enum';
 import type { CalendarDateStatus } from './calendar-date-status.enum';
+import type { ExtensionPaymentType } from './extension-payment-type.enum';
 import type { EntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { RentalStatus } from './rental-status.enum';
+
+export interface AdminManageBoothRentalDto {
+  boothId: string;
+  userId?: string;
+  boothTypeId?: string;
+  startDate: string;
+  endDate: string;
+  paymentMethod: RentalPaymentMethod;
+  terminalTransactionId?: string;
+  terminalReceiptNumber?: string;
+  notes?: string;
+  isExtension: boolean;
+  existingRentalId?: string;
+  onlineTimeoutMinutes?: number;
+}
 
 export interface BoothCalendarRequestDto {
   boothId: string;
@@ -66,7 +83,12 @@ export interface CreateRentalWithPaymentResultDto {
 }
 
 export interface ExtendRentalDto {
+  rentalId: string;
   newEndDate: string;
+  paymentType: ExtensionPaymentType;
+  terminalTransactionId?: string;
+  terminalReceiptNumber?: string;
+  onlineTimeoutMinutes?: number;
 }
 
 export interface GetRentalListDto extends PagedAndSortedResultRequestDto {
@@ -77,6 +99,14 @@ export interface GetRentalListDto extends PagedAndSortedResultRequestDto {
   fromDate?: string;
   toDate?: string;
   isOverdue?: boolean;
+}
+
+export interface MaxExtensionDateResponseDto {
+  maxExtensionDate?: string;
+  hasBlockingRental: boolean;
+  nextRentalId?: string;
+  nextRentalStartDate?: string;
+  message?: string;
 }
 
 export interface PaymentDto {
@@ -96,6 +126,7 @@ export interface RentalDto extends FullAuditedEntityDto<string> {
   status?: RentalStatus;
   statusDisplayName?: string;
   totalAmount: number;
+  currency?: string;
   paidAmount: number;
   paidDate?: string;
   isPaid: boolean;

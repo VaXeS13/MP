@@ -15,6 +15,9 @@ import { MessageModule } from 'primeng/message';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmationService } from 'primeng/api';
 
+// Rental Shared Module
+import { RentalSharedModule } from '../rental/rental-shared.module';
+
 // Components
 import { CartIconComponent } from './cart-icon/cart-icon.component';
 import { CartComponent } from './cart/cart.component';
@@ -45,6 +48,7 @@ const routes: Routes = [
     FormsModule,
     ReactiveFormsModule,
     RouterModule.forChild(routes),
+    RentalSharedModule,
     ButtonModule,
     CardModule,
     TableModule,

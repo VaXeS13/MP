@@ -14,6 +14,7 @@ using MP.Application.Payments;
 using MP.Application.Contracts.Rentals;
 using MP.Application.Rentals;
 using MP.Application.Terminals;
+using MP.Carts;
 
 namespace MP;
 
@@ -91,5 +92,8 @@ public class MPApplicationModule : AbpModule
 
         // Rejestruj factory kas fiskalnych
         services.AddTransient<Application.FiscalPrinters.IFiscalPrinterProviderFactory, Application.FiscalPrinters.FiscalPrinterProviderFactory>();
+
+        // Rejestruj Background Workers jako Hosted Services
+        services.AddHostedService<ExpiredCartCleanupWorker>();
     }
 }

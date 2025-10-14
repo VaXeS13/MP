@@ -38,14 +38,6 @@ export class ItemFormComponent implements OnInit {
   saving = false;
   createAnother = false;
 
-  currencies = [
-    { label: 'PLN', value: 'PLN' },
-    { label: 'EUR', value: 'EUR' },
-    { label: 'USD', value: 'USD' },
-    { label: 'GBP', value: 'GBP' },
-    { label: 'CZK', value: 'CZK' }
-  ];
-
   constructor(
     private fb: FormBuilder,
     private itemService: ItemService,
@@ -61,11 +53,10 @@ export class ItemFormComponent implements OnInit {
       this.form.patchValue({
         name: this.item.name,
         category: this.item.category,
-        price: this.item.price,
-        currency: this.item.currency
+        price: this.item.price
       });
     } else if (this.form) {
-      this.form.reset({ currency: 'PLN' });
+      this.form.reset();
     }
   }
 
@@ -73,15 +64,15 @@ export class ItemFormComponent implements OnInit {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(200)]],
       category: ['', Validators.maxLength(100)],
-      price: [null, [Validators.required, Validators.min(0.01)]],
-      currency: ['PLN', Validators.required]
+      price: [null, [Validators.required, Validators.min(0.01)]]
+      // Note: Currency is automatically set from tenant settings
     });
   }
 
   onHide(): void {
     this.visible = false;
     this.visibleChange.emit(false);
-    this.form.reset({ currency: 'PLN' });
+    this.form.reset();
     this.createAnother = false;
   }
 
@@ -101,8 +92,8 @@ export class ItemFormComponent implements OnInit {
       const updateDto: UpdateItemDto = {
         name: formValue.name,
         category: formValue.category || undefined,
-        price: formValue.price,
-        currency: formValue.currency
+        price: formValue.price
+        // Note: Currency is NOT updated - items keep their original currency
       };
 
       this.itemService.update(this.item.id, updateDto).subscribe({
@@ -130,8 +121,8 @@ export class ItemFormComponent implements OnInit {
       const createDto: CreateItemDto = {
         name: formValue.name,
         category: formValue.category || undefined,
-        price: formValue.price,
-        currency: formValue.currency
+        price: formValue.price
+        // Note: Currency is automatically set from tenant settings on backend
       };
 
       this.itemService.create(createDto).subscribe({

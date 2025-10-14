@@ -20,19 +20,17 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 
 import { RentalRoutingModule } from './rental-routing.module';
 import { RentalSharedModule } from './rental-shared.module';
-import { RentalCalendarComponent } from './rental-calendar/rental-calendar.component';
 import { RentalListComponent } from './rental-list/rental-list.component';
 import { RentalBoothSelectionComponent } from './rental-booth-selection/rental-booth-selection.component';
-import { PaymentSelectionComponent } from './payment-selection/payment-selection.component';
 import { RentalDetailsComponent } from './rental-details/rental-details.component';
+import { RentalCalendarPageComponent } from './rental-calendar-page/rental-calendar-page.component';
 
 @NgModule({
   declarations: [
-    RentalCalendarComponent,
     RentalListComponent,
     RentalBoothSelectionComponent,
-    PaymentSelectionComponent,
-    RentalDetailsComponent
+    RentalDetailsComponent,
+    RentalCalendarPageComponent
   ],
   imports: [
     CommonModule,

@@ -42,40 +42,6 @@
         </div>
       </div>
 
-      <!-- Currency Field -->
-      <div class="form-field">
-        <label for="currency" class="form-label">
-          <i class="pi pi-dollar"></i>
-          {{ '::Booth:Currency' | abpLocalization }}
-          <span class="required">*</span>
-        </label>
-        <p-dropdown
-          id="currency"
-          formControlName="currency"
-          [options]="currencyOptions"
-          [placeholder]="'::Currency:SelectCurrency' | abpLocalization"
-          [class.error]="isFieldInvalid('currency')"
-          styleClass="modern-dropdown">
-
-          <ng-template pTemplate="selectedItem" let-selectedOption>
-            <div class="currency-option">
-              <span class="currency-code">{{ selectedOption?.label }}</span>
-            </div>
-          </ng-template>
-
-          <ng-template pTemplate="item" let-option>
-            <div class="currency-option">
-              <span class="currency-code">{{ option.label }}</span>
-              <span class="currency-name">{{ getCurrencyName(option.value) }}</span>
-            </div>
-          </ng-template>
-        </p-dropdown>
-        <div class="field-error" *ngIf="isFieldInvalid('currency')">
-          <i class="pi pi-exclamation-triangle"></i>
-          {{ '::Booth:CurrencyRequired' | abpLocalization }}
-        </div>
-      </div>
-
       <!-- Price Field -->
       <div class="form-field">
         <label for="pricePerDay" class="form-label">
@@ -87,9 +53,7 @@
           <p-inputNumber
             id="pricePerDay"
             formControlName="pricePerDay"
-            mode="currency"
-            [currency]="getSelectedCurrencyCode()"
-            [locale]="getCurrentLocale()"
+            mode="decimal"
             [minFractionDigits]="2"
             [maxFractionDigits]="2"
             [min]="0.01"

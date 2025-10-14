@@ -2,6 +2,7 @@ using System;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.MultiTenancy;
 using MP.Rentals;
+using MP.Domain.Booths;
 
 namespace MP.Domain.Rentals
 {
@@ -12,6 +13,7 @@ namespace MP.Domain.Rentals
         public DateTime OldEndDate { get; private set; }
         public DateTime NewEndDate { get; private set; }
         public decimal ExtensionCost { get; private set; }
+        public Currency Currency { get; private set; }
         public ExtensionPaymentType PaymentType { get; private set; }
         public DateTime ExtendedAt { get; private set; }
         public Guid ExtendedBy { get; private set; }
@@ -26,6 +28,7 @@ namespace MP.Domain.Rentals
             DateTime oldEndDate,
             DateTime newEndDate,
             decimal extensionCost,
+            Currency currency,
             ExtensionPaymentType paymentType,
             Guid extendedBy,
             string? transactionId = null,
@@ -36,6 +39,7 @@ namespace MP.Domain.Rentals
             OldEndDate = oldEndDate;
             NewEndDate = newEndDate;
             ExtensionCost = extensionCost;
+            Currency = currency;
             PaymentType = paymentType;
             ExtendedAt = DateTime.Now;
             ExtendedBy = extendedBy;

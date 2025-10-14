@@ -15,10 +15,14 @@ export interface CartItemDto {
   notes?: string;
   daysCount: number;
   totalPrice: number;
+  discountAmount: number;
+  finalPrice: number;
   boothNumber?: string;
   boothDescription?: string;
   boothTypeName?: string;
   currency?: string;
+  reservationExpiresAt?: string; // ISO datetime string
+  isExpired: boolean; // Deprecated: use reservationExpiresAt instead
 }
 
 export interface CartDto {
@@ -34,6 +38,11 @@ export interface CartDto {
   userEmail?: string;
   creationTime: string;
   lastModificationTime?: string;
+  // Promotion fields
+  appliedPromotionId?: string;
+  promotionName?: string;
+  discountAmount: number;
+  promoCodeUsed?: string;
 }
 
 export interface AddToCartDto {

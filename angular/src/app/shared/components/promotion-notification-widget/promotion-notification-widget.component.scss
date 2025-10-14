@@ -1,0 +1,133 @@
+.promotion-widget {
+  position: fixed;
+  bottom: 20px;
+  z-index: 1050;
+  animation: slideIn 0.3s ease-out;
+
+  &.position-bottom-right {
+    right: 20px;
+  }
+
+  &.position-bottom-left {
+    left: 20px;
+  }
+}
+
+.promotion-card {
+  position: relative;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-width: 350px;
+  min-width: 300px;
+}
+
+.btn-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: white;
+  opacity: 0.8;
+  filter: brightness(0) invert(1);
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.promotion-icon {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #ffd700;
+}
+
+.promotion-content {
+  text-align: center;
+}
+
+.promotion-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.promotion-message {
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.promotion-code {
+  margin-top: 15px;
+
+  .badge {
+    font-size: 1rem;
+    padding: 8px 15px;
+    border-radius: 8px;
+
+    strong {
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+    }
+  }
+}
+
+.promotion-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+
+  .btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  .promotion-counter {
+    font-size: 0.9rem;
+    margin: 0 10px;
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .promotion-widget {
+    bottom: 10px;
+    left: 10px !important;
+    right: 10px !important;
+
+    &.position-bottom-right,
+    &.position-bottom-left {
+      left: 10px;
+      right: 10px;
+    }
+  }
+
+  .promotion-card {
+    max-width: none;
+    min-width: auto;
+  }
+}

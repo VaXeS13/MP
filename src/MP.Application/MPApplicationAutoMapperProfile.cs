@@ -14,9 +14,11 @@ using MP.Domain.Terminals;
 using MP.Domain.Notifications;
 using MP.Domain.Settlements;
 using MP.Domain.Items;
+using MP.Domain.Promotions;
 using MP.Rentals;
 using MP.FloorPlans;
 using MP.Items;
+using MP.Promotions;
 
 namespace MP;
 
@@ -46,8 +48,6 @@ public class MPApplicationAutoMapperProfile : Profile
         CreateMap<Booth, BoothListDto>()
                 .ForMember(dest => dest.StatusDisplayName,
                     opt => opt.MapFrom(src => GetBoothStatusDisplayName(src.Status)))
-                .ForMember(dest => dest.CurrencyDisplayName,
-                    opt => opt.MapFrom(src => GetCurrencyDisplayName(src.Currency)))
                 .ForMember(dest => dest.CurrentRentalId, opt => opt.Ignore())
                 .ForMember(dest => dest.CurrentRentalUserName, opt => opt.Ignore())
                 .ForMember(dest => dest.CurrentRentalUserEmail, opt => opt.Ignore())
@@ -72,6 +72,8 @@ public class MPApplicationAutoMapperProfile : Profile
                 opt => opt.MapFrom(src => GetRentalStatusDisplayName(src.Status)))
             .ForMember(dest => dest.TotalAmount,
                 opt => opt.MapFrom(src => src.Payment.TotalAmount))
+            .ForMember(dest => dest.Currency,
+                opt => opt.MapFrom(src => src.Currency.ToString()))
             .ForMember(dest => dest.PaidAmount,
                 opt => opt.MapFrom(src => src.Payment.PaidAmount))
             .ForMember(dest => dest.PaidDate,
@@ -141,8 +143,6 @@ public class MPApplicationAutoMapperProfile : Profile
         CreateMap<Booth, BoothDto>()
             .ForMember(dest => dest.StatusDisplayName,
                 opt => opt.MapFrom(src => GetBoothStatusDisplayName(src.Status)))
-            .ForMember(dest => dest.CurrencyDisplayName,
-                opt => opt.MapFrom(src => GetCurrencyDisplayName(src.Currency)))
             .ForMember(dest => dest.CurrentRentalId, opt => opt.Ignore())
             .ForMember(dest => dest.CurrentRentalUserName, opt => opt.Ignore())
             .ForMember(dest => dest.CurrentRentalUserEmail, opt => opt.Ignore())
@@ -192,6 +192,13 @@ public class MPApplicationAutoMapperProfile : Profile
                 opt => opt.MapFrom(src => src.Items))
             .ForMember(dest => dest.BoothNumber,
                 opt => opt.MapFrom(src => src.Rental != null ? src.Rental.Booth.Number : null));
+
+        // PROMOTION MAPPINGS
+        CreateMap<Promotion, PromotionDto>()
+            .ForMember(dest => dest.ApplicableBoothTypeIds,
+                opt => opt.MapFrom(src => src.ApplicableBoothTypeIds.ToList()));
+        CreateMap<CreatePromotionDto, Promotion>();
+        CreateMap<UpdatePromotionDto, Promotion>();
     }
 
     private static string GetBoothStatusDisplayName(BoothStatus status)

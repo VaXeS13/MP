@@ -6,6 +6,7 @@ using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.Identity;
 using Volo.Abp.MultiTenancy;
 using MP.Carts;
+using MP.Domain.Booths;
 
 namespace MP.Domain.Carts
 {
@@ -15,6 +16,11 @@ namespace MP.Domain.Carts
         public Guid UserId { get; private set; }
         public CartStatus Status { get; private set; }
         public DateTime? ExtensionTimeoutAt { get; private set; }
+
+        // Promotion fields
+        public Guid? AppliedPromotionId { get; private set; }
+        public decimal DiscountAmount { get; private set; }
+        public string? PromoCodeUsed { get; private set; }
 
         // Navigation properties
         public IdentityUser User { get; set; } = null!;
@@ -43,15 +49,18 @@ namespace MP.Domain.Carts
             DateTime startDate,
             DateTime endDate,
             decimal pricePerDay,
+            Currency currency,
+            DateTime? reservationExpiresAt = null,
             string? notes = null)
         {
             if (Status != CartStatus.Active)
                 throw new BusinessException("CART_NOT_ACTIVE");
 
-            // Check if same booth already in cart with overlapping dates
+            // Check if same booth already in cart with overlapping dates (only active reservations)
             var existingItem = _items.FirstOrDefault(item =>
                 item.BoothId == boothId &&
-                item.OverlapsWith(startDate, endDate));
+                item.OverlapsWith(startDate, endDate) &&
+                item.HasActiveReservation());
 
             if (existingItem != null)
                 throw new BusinessException("CART_BOOTH_ALREADY_ADDED_WITH_OVERLAPPING_DATES")
@@ -66,9 +75,12 @@ namespace MP.Domain.Carts
                 startDate,
                 endDate,
                 pricePerDay,
+                currency,
                 CartItemType.Rental,
-                null,
-                notes
+                extendedRentalId: null,
+                rentalId: null,
+                reservationExpiresAt: reservationExpiresAt,
+                notes: notes
             );
 
             _items.Add(item);
@@ -197,6 +209,44 @@ namespace MP.Domain.Carts
             return _items.Any(item =>
                 item.BoothId == boothId &&
                 item.OverlapsWith(startDate, endDate));
+        }
+
+        // Promotion Methods
+
+        public void ApplyPromotion(Guid promotionId, decimal discountAmount, string? promoCode = null)
+        {
+            if (Status != CartStatus.Active)
+                throw new BusinessException("CART_NOT_ACTIVE");
+
+            if (discountAmount < 0)
+                throw new BusinessException("DISCOUNT_AMOUNT_CANNOT_BE_NEGATIVE");
+
+            if (discountAmount > GetTotalAmount())
+                throw new BusinessException("DISCOUNT_CANNOT_EXCEED_TOTAL");
+
+            AppliedPromotionId = promotionId;
+            DiscountAmount = discountAmount;
+            PromoCodeUsed = promoCode;
+        }
+
+        public void RemovePromotion()
+        {
+            if (Status != CartStatus.Active)
+                throw new BusinessException("CART_NOT_ACTIVE");
+
+            AppliedPromotionId = null;
+            DiscountAmount = 0;
+            PromoCodeUsed = null;
+        }
+
+        public decimal GetFinalAmount()
+        {
+            return Math.Max(0, GetTotalAmount() - DiscountAmount);
+        }
+
+        public bool HasPromotionApplied()
+        {
+            return AppliedPromotionId.HasValue && DiscountAmount > 0;
         }
     }
 }

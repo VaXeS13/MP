@@ -72,7 +72,7 @@
               </td>
               <td>
                 <strong class="text-success">
-                  {{ booth.pricePerDay | number:'1.2-2' }} {{ booth.currencyDisplayName }}
+                  {{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
                 </strong>
               </td>
               <td>

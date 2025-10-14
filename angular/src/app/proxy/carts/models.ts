@@ -19,6 +19,10 @@ export interface CartDto extends EntityDto<string> {
   totalDays: number;
   userName?: string;
   userEmail?: string;
+  appliedPromotionId?: string;
+  promotionName?: string;
+  discountAmount: number;
+  promoCodeUsed?: string;
   creationTime?: string;
   lastModificationTime?: string;
 }
@@ -33,10 +37,14 @@ export interface CartItemDto extends EntityDto<string> {
   notes?: string;
   daysCount: number;
   totalPrice: number;
+  discountAmount: number;
+  finalPrice: number;
   boothNumber?: string;
   boothDescription?: string;
   boothTypeName?: string;
   currency?: string;
+  reservationExpiresAt?: string;
+  isExpired: boolean;
 }
 
 export interface CheckoutCartDto {

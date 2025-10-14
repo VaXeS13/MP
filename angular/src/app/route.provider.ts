@@ -40,6 +40,14 @@ function configureRoutes() {
         requiredPolicy: 'MP.Booths.ManageSettings',
       },
       {
+        path: '/promotions',
+        name: '::Menu:Promotions',
+        parentName: '::Menu:BoothsManagement',
+        iconClass: 'fas fa-tags',
+        order: 3,
+        requiredPolicy: 'MP.Promotions',
+      },
+      {
         path: '/my-booths',
         name: '::Menu:MyBooths',
         iconClass: 'fas fa-store',
@@ -149,6 +157,14 @@ function configureRoutes() {
         parentName: '::Menu:Administration',
         iconClass: 'fas fa-cash-register',
         order: 6,
+      },
+      {
+        path: '/tenant-currency-settings',
+        name: '::Menu:TenantCurrency',
+        parentName: '::Menu:Administration',
+        iconClass: 'fas fa-dollar-sign',
+        order: 7,
+        requiredPolicy: 'MP.Tenant.ManageCurrency',
       },
       {
         path: '/seller-checkout',

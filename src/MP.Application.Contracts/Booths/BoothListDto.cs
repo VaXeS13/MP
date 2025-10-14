@@ -14,8 +14,6 @@ namespace MP.Booths
         public BoothStatus Status { get; set; }
         public string StatusDisplayName { get; set; } = null!;
         public decimal PricePerDay { get; set; }
-        public Currency Currency { get; set; }
-        public string CurrencyDisplayName { get; set; } = null!;
         public DateTime CreationTime { get; set; }
         public DateTime? RentalStartDate { get; set; }
         public DateTime? RentalEndDate { get; set; }

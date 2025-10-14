@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { MessageService } from 'primeng/api';
 import { FloorPlanService } from '../services/floor-plan.service';
 import { BoothService } from '../services/booth.service';
+import { TenantCurrencyService } from '../services/tenant-currency.service';
 import {
   FloorPlanDto,
   CreateFloorPlanDto,
@@ -202,7 +203,7 @@ import { CreateFloorPlanElementDto } from '../proxy/floor-plans/models';
                     <div>
                       <strong>{{ booth.number }}</strong>
                       <div class="text-sm text-color-secondary">
-                        {{ booth.pricePerDay }} {{ booth.currencyDisplayName }}/dzień
+                        {{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}/dzień
                       </div>
                     </div>
                     <p-badge
@@ -538,6 +539,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
   saving = false;
   publishing = false;
   isDragOver = false;
+  tenantCurrencyCode: string = 'PLN';
 
   // Status options for filtering
   statusOptions = [
@@ -550,6 +552,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
   constructor(
     private floorPlanService: FloorPlanService,
     private boothService: BoothService,
+    private tenantCurrencyService: TenantCurrencyService,
     private messageService: MessageService,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
@@ -557,6 +560,12 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
   ) {}
 
   ngOnInit() {
+    // Load tenant currency
+    this.tenantCurrencyService.getCurrency().subscribe(result => {
+      this.tenantCurrencyCode = this.tenantCurrencyService.getCurrencyName(result.currency);
+      this.cdr.markForCheck();
+    });
+
     this.loadAvailableBooths();
 
     // Check if we're editing an existing floor plan

@@ -5,6 +5,7 @@ using Volo.Abp;
 using Volo.Abp.Domain.Services;
 using Volo.Abp.Guids;
 using Volo.Abp.Settings;
+using MP.Carts;
 using MP.Domain.Booths;
 using MP.Domain.Rentals;
 using MP.Domain.Settings;
@@ -59,6 +60,7 @@ namespace MP.Domain.Carts
 
         /// <summary>
         /// Validates if a booth can be added to cart for the given period
+        /// Checks for active rentals AND active reservations in other users' carts
         /// </summary>
         public async Task ValidateCartItemAsync(
             Guid boothId,
@@ -91,8 +93,15 @@ namespace MP.Domain.Carts
                     .WithData("EndDate", endDate);
             }
 
-            // Note: We allow multiple users to have the same booth in their carts.
-            // First user to complete payment (create rental) wins.
+            // NEW: Check if booth has active reservations in other users' carts
+            var hasActiveReservation = await HasActiveReservationAsync(boothId, startDate, endDate, excludeCartId);
+            if (hasActiveReservation)
+            {
+                throw new BusinessException("BOOTH_RESERVED_BY_ANOTHER_USER")
+                    .WithData("BoothId", boothId)
+                    .WithData("StartDate", startDate)
+                    .WithData("EndDate", endDate);
+            }
 
             // Validate minimum rental period (e.g., 7 days)
             var days = (endDate - startDate).Days + 1;
@@ -105,6 +114,32 @@ namespace MP.Domain.Carts
 
             // Validate minimum gap between rentals
             await ValidateMinimumGapAsync(boothId, startDate, endDate);
+        }
+
+        /// <summary>
+        /// Checks if booth has active (non-expired) reservations in other users' carts
+        /// </summary>
+        private async Task<bool> HasActiveReservationAsync(
+            Guid boothId,
+            DateTime startDate,
+            DateTime endDate,
+            Guid? excludeCartId = null)
+        {
+            var now = DateTime.Now;
+            var queryable = await _cartRepository.GetQueryableAsync();
+
+            var hasReservation = queryable
+                .Where(c => c.Status == CartStatus.Active)
+                .Where(c => !excludeCartId.HasValue || c.Id != excludeCartId.Value)
+                .SelectMany(c => c.Items)
+                .Any(item =>
+                    item.BoothId == boothId &&
+                    item.StartDate <= endDate &&
+                    item.EndDate >= startDate &&
+                    item.ReservationExpiresAt.HasValue &&
+                    item.ReservationExpiresAt.Value >= now); // Only active reservations
+
+            return hasReservation;
         }
 
         /// <summary>
@@ -176,7 +211,7 @@ namespace MP.Domain.Carts
         }
 
         /// <summary>
-        /// Adds an item to the cart with validation
+        /// Adds an item to the cart with validation and automatic 5-minute reservation
         /// </summary>
         public async Task<CartItem> AddItemToCartAsync(
             Cart cart,
@@ -184,7 +219,8 @@ namespace MP.Domain.Carts
             Guid boothTypeId,
             DateTime startDate,
             DateTime endDate,
-            string? notes = null)
+            string? notes = null,
+            int? reservationMinutes = null)
         {
             // Validate the cart item
             await ValidateCartItemAsync(boothId, startDate, endDate, cart.Id);
@@ -192,7 +228,13 @@ namespace MP.Domain.Carts
             // Get booth for pricing
             var booth = await _boothRepository.GetAsync(boothId);
 
-            // Add item to cart
+            // Get tenant currency
+            var currency = await GetTenantCurrencyAsync();
+
+            // Set reservation expiration (default 5 minutes for normal users)
+            var reservationExpires = DateTime.Now.AddMinutes(reservationMinutes ?? 5);
+
+            // Add item to cart with reservation and tenant currency
             var itemId = _guidGenerator.Create();
             var item = cart.AddItem(
                 itemId,
@@ -201,6 +243,8 @@ namespace MP.Domain.Carts
                 startDate,
                 endDate,
                 booth.PricePerDay,
+                currency,
+                reservationExpires,
                 notes
             );
 
@@ -230,6 +274,18 @@ namespace MP.Domain.Carts
 
             // Update the item
             cart.UpdateItem(itemId, boothTypeId, startDate, endDate, notes);
+        }
+
+        private async Task<Currency> GetTenantCurrencyAsync()
+        {
+            var currencySetting = await _settingProvider.GetOrNullAsync(MPSettings.Tenant.Currency);
+            if (int.TryParse(currencySetting, out var currencyValue))
+            {
+                return (Currency)currencyValue;
+            }
+
+            // Default to PLN if setting not found
+            return Currency.PLN;
         }
     }
 }

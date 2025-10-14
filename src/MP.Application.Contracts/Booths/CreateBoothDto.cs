@@ -20,9 +20,5 @@ namespace MP.Booths
         [Range(0.01, 9999.99)]
         [Display(Name = "Cena za dzień")]
         public decimal PricePerDay { get; set; }
-
-        [Required]
-        [Display(Name = "Waluta")]
-        public Currency Currency { get; set; } = Currency.PLN;
     }
 }

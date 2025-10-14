@@ -26,6 +26,7 @@ using MP.Domain.Notifications;
 using MP.Domain.Settlements;
 using MP.Domain.Chat;
 using MP.Domain.Items;
+using MP.Domain.Promotions;
 
 namespace MP.EntityFrameworkCore;
 
@@ -86,6 +87,8 @@ public class MPDbContext :
     public DbSet<Item> Items { get; set; }
     public DbSet<ItemSheet> ItemSheets { get; set; }
     public DbSet<ItemSheetItem> ItemSheetItems { get; set; }
+    public DbSet<Promotion> Promotions { get; set; }
+    public DbSet<PromotionUsage> PromotionUsages { get; set; }
 
     #endregion
 

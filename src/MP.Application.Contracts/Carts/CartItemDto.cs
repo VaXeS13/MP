@@ -19,10 +19,20 @@ namespace MP.Carts
         public int DaysCount { get; set; }
         public decimal TotalPrice { get; set; }
 
+        // Promotion discount applied to this item
+        public decimal DiscountAmount { get; set; }
+        public decimal FinalPrice { get; set; }
+
         // Related entity data for display
         public string? BoothNumber { get; set; }
         public string? BoothDescription { get; set; }
         public string? BoothTypeName { get; set; }
         public string? Currency { get; set; }
+
+        // Reservation expiration
+        public DateTime? ReservationExpiresAt { get; set; }
+
+        // Deprecated: Use ReservationExpiresAt instead
+        public bool IsExpired { get; set; }
     }
 }

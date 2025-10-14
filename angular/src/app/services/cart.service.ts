@@ -37,10 +37,26 @@ export class CartService {
   }
 
   /**
-   * Get cart total amount
+   * Get cart total amount (before discounts)
    */
   get totalAmount(): number {
     return this.cartSubject.value?.totalAmount || 0;
+  }
+
+  /**
+   * Get cart discount amount
+   */
+  get discountAmount(): number {
+    return this.cartSubject.value?.discountAmount || 0;
+  }
+
+  /**
+   * Get cart final amount (after discounts)
+   */
+  get finalAmount(): number {
+    const total = this.totalAmount;
+    const discount = this.discountAmount;
+    return total - discount;
   }
 
   /**

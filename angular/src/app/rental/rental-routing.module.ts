@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { PermissionGuard } from '@abp/ng.core';
-import { RentalCalendarComponent } from './rental-calendar/rental-calendar.component';
+import { RentalCalendarPageComponent } from './rental-calendar-page/rental-calendar-page.component';
 import { RentalListComponent } from './rental-list/rental-list.component';
 import { RentalBoothSelectionComponent } from './rental-booth-selection/rental-booth-selection.component';
 import { RentalDetailsComponent } from './rental-details/rental-details.component';
@@ -25,7 +25,7 @@ const routes: Routes = [
   },
   {
     path: 'book/:boothId',
-    component: RentalCalendarComponent,
+    component: RentalCalendarPageComponent,
     canActivate: [PermissionGuard],
     data: {
       requiredPolicy: 'MP.Rentals',

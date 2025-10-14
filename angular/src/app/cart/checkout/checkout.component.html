@@ -23,7 +23,19 @@
                     <td><strong>{{ item.boothNumber }}</strong><br><small class="text-muted">{{ item.boothTypeName }}</small></td>
                     <td><small>{{ formatDate(item.startDate) }} - {{ formatDate(item.endDate) }}</small></td>
                     <td>{{ item.daysCount }}</td>
-                    <td class="text-end">{{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}</td>
+                    <td class="text-end">
+                      <div *ngIf="item.discountAmount > 0">
+                        <div class="text-muted text-decoration-line-through small">
+                          {{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}
+                        </div>
+                        <div class="text-success fw-bold">
+                          {{ item.finalPrice | currency:item.currency:'symbol':'1.2-2' }}
+                        </div>
+                      </div>
+                      <div *ngIf="item.discountAmount === 0">
+                        {{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}
+                      </div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -88,7 +100,41 @@
               <div class="summary-row"><span>Items:</span><strong>{{ cart.itemCount }}</strong></div>
               <div class="summary-row"><span>Total Days:</span><strong>{{ cart.totalDays }}</strong></div>
               <hr>
-              <div class="summary-row total-row"><span>Total Amount:</span><strong class="text-success fs-4">{{ cart.totalAmount | currency:'PLN':'symbol':'1.2-2' }}</strong></div>
+
+              <!-- Promotion Information -->
+              <div *ngIf="cart.appliedPromotionId" class="mb-3 p-2 bg-success bg-opacity-10 rounded border border-success">
+                <div class="d-flex align-items-center">
+                  <i class="pi pi-tag text-success me-2"></i>
+                  <div>
+                    <div class="fw-bold text-success small">{{ cart.promoCodeUsed }}</div>
+                    <div class="text-muted" style="font-size: 0.75rem;" *ngIf="cart.promotionName">{{ cart.promotionName }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pricing Breakdown -->
+              <div *ngIf="!cart.appliedPromotionId">
+                <div class="summary-row total-row">
+                  <span>Total Amount:</span>
+                  <strong class="text-success fs-4">{{ cart.totalAmount | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</strong>
+                </div>
+              </div>
+
+              <div *ngIf="cart.appliedPromotionId">
+                <div class="summary-row">
+                  <span>Subtotal:</span>
+                  <span>{{ cart.totalAmount | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</span>
+                </div>
+                <div class="summary-row text-success">
+                  <span><i class="pi pi-tag me-1"></i>Discount:</span>
+                  <span class="fw-bold">-{{ cart.discountAmount | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</span>
+                </div>
+                <hr>
+                <div class="summary-row total-row">
+                  <span>Total Amount:</span>
+                  <strong class="text-success fs-4">{{ (cart.totalAmount - cart.discountAmount) | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</strong>
+                </div>
+              </div>
             </div>
           </div>
           <div class="card mt-3">

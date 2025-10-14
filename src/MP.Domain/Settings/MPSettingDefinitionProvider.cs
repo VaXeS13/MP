@@ -76,6 +76,13 @@ public class MPSettingDefinitionProvider : SettingDefinitionProvider
             isVisibleToClients: true
         ).WithProviders(TenantSettingValueProvider.ProviderName));
 
+        // Tenant Settings - Tenant level
+        context.Add(new SettingDefinition(
+            MPSettings.Tenant.Currency,
+            "1", // Default: PLN
+            isVisibleToClients: true
+        ).WithProviders(TenantSettingValueProvider.ProviderName));
+
         //Define your own settings here. Example:
         //context.Add(new SettingDefinition(MPSettings.MySetting1));
     }

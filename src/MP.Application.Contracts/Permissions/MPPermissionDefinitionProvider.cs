@@ -70,6 +70,17 @@ public class MPPermissionDefinitionProvider : PermissionDefinitionProvider
             L("Permission:Chat"),
             multiTenancySide: MultiTenancySides.Both);
         chatPermission.AddChild(MPPermissions.Chat.ManageCustomerChats, L("Permission:Chat.ManageCustomerChats"));
+
+        // Tenant settings permissions
+        var tenantPermission = myGroup.AddPermission(MPPermissions.Tenant.Default, L("Permission:Tenant"));
+        tenantPermission.AddChild(MPPermissions.Tenant.ManageCurrency, L("Permission:Tenant.ManageCurrency"));
+
+        // Promotions permissions
+        var promotionsPermission = myGroup.AddPermission(MPPermissions.Promotions.Default, L("Permission:Promotions"));
+        promotionsPermission.AddChild(MPPermissions.Promotions.Create, L("Permission:Promotions.Create"));
+        promotionsPermission.AddChild(MPPermissions.Promotions.Edit, L("Permission:Promotions.Edit"));
+        promotionsPermission.AddChild(MPPermissions.Promotions.Delete, L("Permission:Promotions.Delete"));
+        promotionsPermission.AddChild(MPPermissions.Promotions.Manage, L("Permission:Promotions.Manage"));
     }
 
     private static LocalizableString L(string name)

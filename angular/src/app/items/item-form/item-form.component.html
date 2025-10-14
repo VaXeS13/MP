@@ -57,20 +57,18 @@
         </small>
       </div>
 
-      <!-- Currency -->
-      <div class="form-field">
-        <label for="currency" class="required">Currency</label>
-        <p-dropdown
-          inputId="currency"
-          formControlName="currency"
-          [options]="currencies"
-          placeholder="Select currency"
-          appendTo="body"
-          [class.ng-invalid]="isFieldInvalid('currency')"
-          [class.ng-dirty]="isFieldInvalid('currency')">
-        </p-dropdown>
-        <small class="p-error" *ngIf="isFieldInvalid('currency')">
-          {{ getFieldError('currency') }}
+      <!-- Currency Info -->
+      <div class="form-field" *ngIf="item?.currency">
+        <label>Currency</label>
+        <div class="p-inputtext p-component" style="background-color: #f8f9fa; border-color: #ced4da;">
+          {{ item.currency }}
+        </div>
+        <small class="p-text-secondary">Currency cannot be changed for existing items</small>
+      </div>
+
+      <div class="form-field" *ngIf="!item?.id">
+        <small class="p-text-secondary">
+          <i class="pi pi-info-circle"></i> Currency will be automatically set from your tenant settings
         </small>
       </div>
     </div>

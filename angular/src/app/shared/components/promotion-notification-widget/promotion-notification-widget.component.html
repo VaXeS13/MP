@@ -1,0 +1,56 @@
+<div
+  *ngIf="visible && currentPromotion"
+  class="promotion-widget"
+  [class.position-bottom-right]="displayPosition === 'bottom-right'"
+  [class.position-bottom-left]="displayPosition === 'bottom-left'"
+>
+  <div class="promotion-card">
+    <!-- Close Button -->
+    <button
+      type="button"
+      class="btn-close"
+      (click)="close()"
+      aria-label="Close"
+    ></button>
+
+    <!-- Promotion Icon -->
+    <div class="promotion-icon">
+      <i class="fa fa-gift fa-2x"></i>
+    </div>
+
+    <!-- Promotion Content -->
+    <div class="promotion-content">
+      <h6 class="promotion-title">{{ currentPromotion.name }}</h6>
+      <p class="promotion-message" *ngIf="getPromotionMessage(currentPromotion)">
+        {{ getPromotionMessage(currentPromotion) }}
+      </p>
+      <div class="promotion-code" *ngIf="currentPromotion.promoCode">
+        <span class="badge bg-warning text-dark">
+          <i class="fa fa-tag me-1"></i>
+          {{ 'MP::UseCode' | abpLocalization }}: <strong>{{ currentPromotion.promoCode }}</strong>
+        </span>
+      </div>
+    </div>
+
+    <!-- Navigation Controls (if multiple promotions) -->
+    <div class="promotion-nav" *ngIf="promotions.length > 1">
+      <button
+        type="button"
+        class="btn btn-sm btn-light me-1"
+        (click)="previousPromotion()"
+        [attr.aria-label]="'MP::Previous' | abpLocalization"
+      >
+        <i class="fa fa-chevron-left"></i>
+      </button>
+      <span class="promotion-counter">{{ currentPromotionIndex + 1 }} / {{ promotions.length }}</span>
+      <button
+        type="button"
+        class="btn btn-sm btn-light ms-1"
+        (click)="nextPromotion()"
+        [attr.aria-label]="'MP::Next' | abpLocalization"
+      >
+        <i class="fa fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+</div>

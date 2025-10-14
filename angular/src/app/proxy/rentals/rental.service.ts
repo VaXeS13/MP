@@ -1,4 +1,4 @@
-import type { BoothCalendarRequestDto, BoothCalendarResponseDto, CreateMyRentalDto, CreateRentalDto, CreateRentalWithPaymentDto, CreateRentalWithPaymentResultDto, ExtendRentalDto, GetRentalListDto, PaymentDto, RentalDto, RentalListDto, UpdateRentalDto } from './models';
+import type { AdminManageBoothRentalDto, BoothCalendarRequestDto, BoothCalendarResponseDto, CreateMyRentalDto, CreateRentalDto, CreateRentalWithPaymentDto, CreateRentalWithPaymentResultDto, ExtendRentalDto, GetRentalListDto, MaxExtensionDateResponseDto, PaymentDto, RentalDto, RentalListDto, UpdateRentalDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -10,11 +10,38 @@ export class RentalService {
   apiName = 'Default';
   
 
+  adminManageBoothRental = (input: AdminManageBoothRentalDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, RentalDto>({
+      method: 'POST',
+      url: '/api/app/rental/admin-manage-booth-rental',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  calculateCost = (boothId: string, boothTypeId: string, startDate: string, endDate: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number>({
+      method: 'POST',
+      url: '/api/app/rental/calculate-cost',
+      params: { boothId, boothTypeId, startDate, endDate },
+    },
+    { apiName: this.apiName,...config });
+  
+
   cancelRental = (id: string, reason: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, RentalDto>({
       method: 'POST',
       url: `/api/app/rental/${id}/cancel-rental`,
       params: { reason },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  checkAvailability = (boothId: string, startDate: string, endDate: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, boolean>({
+      method: 'POST',
+      url: `/api/app/rental/check-availability/${boothId}`,
+      params: { startDate, endDate },
     },
     { apiName: this.apiName,...config });
   
@@ -79,6 +106,14 @@ export class RentalService {
     { apiName: this.apiName,...config });
   
 
+  getActiveRentalForBooth = (boothId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, RentalDto>({
+      method: 'GET',
+      url: `/api/app/rental/active-rental-for-booth/${boothId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   getActiveRentals = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, RentalListDto[]>({
       method: 'GET',
@@ -109,6 +144,15 @@ export class RentalService {
       method: 'GET',
       url: '/api/app/rental',
       params: { filter: input.filter, status: input.status, userId: input.userId, boothId: input.boothId, fromDate: input.fromDate, toDate: input.toDate, isOverdue: input.isOverdue, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getMaxExtensionDate = (boothId: string, currentRentalEndDate: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, MaxExtensionDateResponseDto>({
+      method: 'GET',
+      url: `/api/app/rental/max-extension-date/${boothId}`,
+      params: { currentRentalEndDate },
     },
     { apiName: this.apiName,...config });
   

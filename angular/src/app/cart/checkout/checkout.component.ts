@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { PaymentService } from '../../services/payment.service';
+import { TenantCurrencyService } from '../../services/tenant-currency.service';
 import { CartDto, CheckoutCartDto } from '../../shared/models/cart.model';
 import { PaymentProvider, PaymentMethod } from '../../shared/models/payment.model';
 import { MessageService } from 'primeng/api';
@@ -22,15 +23,22 @@ export class CheckoutComponent implements OnInit {
   loading = false;
   processing = false;
   step: 'review' | 'payment' = 'review';
+  tenantCurrencyCode: string = 'PLN';
 
   constructor(
     private cartService: CartService,
     private paymentService: PaymentService,
+    private tenantCurrencyService: TenantCurrencyService,
     private router: Router,
     private messageService: MessageService
   ) {}
 
   ngOnInit(): void {
+    // Load tenant currency
+    this.tenantCurrencyService.getCurrency().subscribe(result => {
+      this.tenantCurrencyCode = this.tenantCurrencyService.getCurrencyName(result.currency);
+    });
+
     this.loadCart();
     this.loadPaymentProviders();
   }
@@ -180,11 +188,21 @@ export class CheckoutComponent implements OnInit {
           // Redirect to payment
           window.location.href = result.paymentUrl;
         } else {
+          // Check if error is promotion-related
+          const isPromotionError = result.errorMessage?.includes('Promotion:');
+
           this.messageService.add({
             severity: 'error',
             summary: 'Checkout Failed',
-            detail: result.errorMessage || 'Failed to complete checkout'
+            detail: result.errorMessage || 'Failed to complete checkout',
+            life: isPromotionError ? 8000 : 5000
           });
+
+          // If promotion error, reload cart to show updated prices (promotion was removed)
+          if (isPromotionError) {
+            this.loadCart();
+          }
+
           this.processing = false;
         }
       },

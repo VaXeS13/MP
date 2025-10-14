@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { BoothService } from '../../services/booth.service';
 import { BoothSignalRService } from '../../services/booth-signalr.service';
+import { TenantCurrencyService } from '../../services/tenant-currency.service';
 import { BoothListDto, BoothStatus, GetBoothListDto } from '../../shared/models/booth.model';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { LocalizationService } from '@abp/ng.core';
@@ -39,6 +40,7 @@ export class BoothListComponent implements OnInit, OnDestroy {
   loading = false;
 
   currentLocale: string = 'en-US';
+  tenantCurrencyCode: string = 'PLN';
   showAdvancedFilters = false;
   private boothUpdatesSubscription?: Subscription;
   // Filters
@@ -54,8 +56,9 @@ export class BoothListComponent implements OnInit, OnDestroy {
   displayEditDialog = false;
   displayManualReservationDialog = false;
   displayExtendDialog = false;
+  displayAdminRentalDialog = false; // New unified dialog
 
-  // Manual Reservation
+  // Manual Reservation (keep for backward compatibility)
   availableUsers: any[] = [];
   selectedUserId: string = '';
   reservationStartDate: Date | null = null;
@@ -70,6 +73,7 @@ export class BoothListComponent implements OnInit, OnDestroy {
   viewMode: 'grid' | 'list' = 'list';
   selectedBooth: BoothListDto | null = null;
   selectedBoothIdForExtension: string | null = null;
+  rentalManagementMode: 'new' | 'extend' = 'new'; // Mode for unified dialog
   
   // Dropdowns
   statusOptions = [
@@ -88,11 +92,19 @@ export class BoothListComponent implements OnInit, OnDestroy {
     private confirmationService: ConfirmationService,
     private localizationService: LocalizationService,
     private identityUserService: IdentityUserService,
+    private tenantCurrencyService: TenantCurrencyService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.currentLocale = this.localizationService.currentLang;
+
+    // Load tenant currency
+    this.tenantCurrencyService.getCurrency().subscribe(result => {
+      this.tenantCurrencyCode = this.tenantCurrencyService.getCurrencyName(result.currency);
+      this.cdr.markForCheck();
+    });
+
     this.loadBooths();
 
     // Subscribe to booth status updates via SignalR
@@ -341,6 +353,26 @@ this.boothService.getList(input).subscribe({
       severity: 'success',
       summary: this.localizationService.instant('::Messages:Success'),
       detail: 'Rental extended successfully'
+    });
+  }
+
+  // New unified rental management methods
+  openAdminRentalDialog(booth: BoothListDto, mode: 'new' | 'extend'): void {
+    this.selectedBooth = booth;
+    this.rentalManagementMode = mode;
+    this.displayAdminRentalDialog = true;
+  }
+
+  onAdminRentalCreatedOrExtended(): void {
+    this.displayAdminRentalDialog = false;
+    this.selectedBooth = null;
+    this.loadBooths();
+    this.messageService.add({
+      severity: 'success',
+      summary: this.localizationService.instant('::Messages:Success'),
+      detail: this.rentalManagementMode === 'extend'
+        ? this.localizationService.instant('::Rental:ExtendedSuccessfully')
+        : this.localizationService.instant('::Rental:CreatedSuccessfully')
     });
   }
 

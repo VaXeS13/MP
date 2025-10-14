@@ -78,7 +78,7 @@
             <div class="text-end">
               <div class="price-tag">
                 <span class="text-success fw-bold">
-                  {{ booth.pricePerDay | currency:booth.currencyDisplayName:'symbol':'1.2-2' }}
+                  {{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
                 </span>
                 <small class="text-muted d-block">/day</small>
               </div>

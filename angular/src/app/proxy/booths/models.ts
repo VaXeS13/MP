@@ -1,14 +1,11 @@
 import type { EntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { BoothStatus } from '../domain/booths/booth-status.enum';
-import type { Currency } from '../domain/booths/currency.enum';
 
 export interface BoothDto extends FullAuditedEntityDto<string> {
   number?: string;
   status?: BoothStatus;
   statusDisplayName?: string;
   pricePerDay: number;
-  currency?: Currency;
-  currencyDisplayName?: string;
   rentalStartDate?: string;
   rentalEndDate?: string;
   currentRentalId?: string;
@@ -23,8 +20,6 @@ export interface BoothListDto extends EntityDto<string> {
   status?: BoothStatus;
   statusDisplayName?: string;
   pricePerDay: number;
-  currency?: Currency;
-  currencyDisplayName?: string;
   creationTime?: string;
   rentalStartDate?: string;
   rentalEndDate?: string;
@@ -42,7 +37,6 @@ export interface BoothSettingsDto {
 export interface CreateBoothDto {
   number: string;
   pricePerDay: number;
-  currency: Currency;
 }
 
 export interface CreateManualReservationDto {
@@ -61,6 +55,5 @@ export interface GetBoothListDto extends PagedAndSortedResultRequestDto {
 export interface UpdateBoothDto {
   number: string;
   pricePerDay: number;
-  currency: Currency;
   status?: BoothStatus;
 }

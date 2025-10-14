@@ -25,8 +25,7 @@ namespace MP.Domain.Booths
 
         public async Task<Booth> CreateAsync(
             string number,
-            decimal pricePerDay,
-            Currency currency = Currency.PLN)
+            decimal pricePerDay)
         {
             // Sprawdź czy numer jest unikalny w tym tenant
             if (!await _boothRepository.IsNumberUniqueAsync(number))
@@ -39,8 +38,7 @@ namespace MP.Domain.Booths
                 GuidGenerator.Create(),
                 number,
                 pricePerDay,
-                currency,
-                _currentTenant.Id  // ← PRZEKAŻ TENANT ID
+                _currentTenant.Id
             );
 
             return booth;

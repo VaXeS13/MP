@@ -31,7 +31,6 @@ export interface CreateItemDto {
   name: string;
   category?: string;
   price: number;
-  currency: string;
 }
 
 export interface CreateItemSheetDto {
@@ -72,5 +71,4 @@ export interface UpdateItemDto {
   name: string;
   category?: string;
   price: number;
-  currency: string;
 }

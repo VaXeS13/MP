@@ -6,6 +6,7 @@ export enum CalendarDateStatus {
   Occupied = 2,
   Unavailable = 3,
   PastDate = 4,
+  Historical = 5,
 }
 
 export const calendarDateStatusOptions = mapEnumToOptions(CalendarDateStatus);

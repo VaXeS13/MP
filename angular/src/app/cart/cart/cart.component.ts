@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CartService } from '../../services/cart.service';
+import { TenantCurrencyService } from '../../services/tenant-currency.service';
 import { CartDto, CartItemDto, UpdateCartItemDto } from '../../shared/models/cart.model';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { BoothTypeService } from '../../services/booth-type.service';
@@ -8,8 +9,9 @@ import { BoothTypeDto } from '../../shared/models/booth-type.model';
 import { RentalService } from '../../services/rental.service';
 import { BoothSettingsService } from '../../services/booth-settings.service';
 import { BoothCalendarRequestDto, CalendarDateDto, CalendarDateStatus } from '../../shared/models/rental.model';
-import { forkJoin } from 'rxjs';
+import { forkJoin, interval, Subscription } from 'rxjs';
 import { LocalizationService } from '@abp/ng.core';
+import { PromotionService } from '../../proxy/promotions/promotion.service';
 
 @Component({
   selector: 'app-cart',
@@ -17,16 +19,27 @@ import { LocalizationService } from '@abp/ng.core';
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.scss'
 })
-export class CartComponent implements OnInit {
+export class CartComponent implements OnInit, OnDestroy {
   cart: CartDto | null = null;
   loading = false;
   showEditDialog = false;
   editingItem: CartItemDto | null = null;
+  tenantCurrencyCode: string = 'PLN';
 
   // Validation
   itemValidationErrors = new Map<string, string>(); // cartItemId -> error message
   minimumGapDays = 7;
   validating = false;
+
+  // Reservation countdown
+  private countdownSubscription?: Subscription;
+  itemCountdowns = new Map<string, string>(); // cartItemId -> countdown display string
+
+  // Promo code
+  promoCode: string = '';
+  applyingPromoCode = false;
+  promoCodeError: string = '';
+  promoCodeSuccess: string = '';
 
   constructor(
     public cartService: CartService,
@@ -35,12 +48,84 @@ export class CartComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private rentalService: RentalService,
     private boothSettingsService: BoothSettingsService,
-    private localization: LocalizationService
+    private tenantCurrencyService: TenantCurrencyService,
+    private localization: LocalizationService,
+    private promotionService: PromotionService
   ) {}
 
   ngOnInit(): void {
     this.loadBoothSettings();
+
+    // Load tenant currency
+    this.tenantCurrencyService.getCurrency().subscribe(result => {
+      this.tenantCurrencyCode = this.tenantCurrencyService.getCurrencyName(result.currency);
+    });
+
     this.loadCart();
+    this.startCountdownTimer();
+  }
+
+  ngOnDestroy(): void {
+    this.stopCountdownTimer();
+  }
+
+  private startCountdownTimer(): void {
+    // Update countdown every second
+    this.countdownSubscription = interval(1000).subscribe(() => {
+      this.updateCountdowns();
+    });
+  }
+
+  private stopCountdownTimer(): void {
+    if (this.countdownSubscription) {
+      this.countdownSubscription.unsubscribe();
+    }
+  }
+
+  private updateCountdowns(): void {
+    if (!this.cart || !this.cart.items) return;
+
+    const now = new Date();
+
+    this.cart.items.forEach(item => {
+      if (!item.reservationExpiresAt) {
+        this.itemCountdowns.delete(item.id);
+        return;
+      }
+
+      const expiresAt = new Date(item.reservationExpiresAt);
+      const diff = expiresAt.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        // Reservation expired - show 00:00 but keep item in cart
+        // Background worker will release reservation, but CartItem stays
+        this.itemCountdowns.set(item.id, '00:00');
+      } else {
+        // Calculate remaining time
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        this.itemCountdowns.set(item.id, `${minutes}:${seconds.toString().padStart(2, '0')}`);
+      }
+    });
+
+    // NOTE: We do NOT reload cart when items expire
+    // Items stay in cart, only reservation is released by background worker
+  }
+
+  getCountdown(itemId: string): string {
+    return this.itemCountdowns.get(itemId) || '';
+  }
+
+  hasReservation(item: CartItemDto): boolean {
+    return !!item.reservationExpiresAt;
+  }
+
+  isReservationExpiring(item: CartItemDto): boolean {
+    if (!item.reservationExpiresAt) return false;
+    const expiresAt = new Date(item.reservationExpiresAt);
+    const now = new Date();
+    const diff = expiresAt.getTime() - now.getTime();
+    return diff > 0 && diff <= 60000; // Less than 1 minute remaining
   }
 
   loadBoothSettings(): void {
@@ -268,6 +353,14 @@ export class CartComponent implements OnInit {
     return this.itemValidationErrors.size > 0;
   }
 
+  get hasExpiredItems(): boolean {
+    return !!this.cart && this.cart.items.some(item => item.isExpired);
+  }
+
+  get expiredItemsCount(): number {
+    return this.cart?.items.filter(item => item.isExpired).length || 0;
+  }
+
   get canProceedToCheckout(): boolean {
     return !this.hasValidationErrors && !this.validating && !!this.cart && this.cart.itemCount > 0;
   }
@@ -387,5 +480,76 @@ export class CartComponent implements OnInit {
 
   trackByCartItemId(index: number, item: CartItemDto): string {
     return item.id;
+  }
+
+  applyPromoCode(): void {
+    if (!this.promoCode || !this.promoCode.trim()) {
+      this.promoCodeError = this.localization.instant('MP::PromoCodeRequired');
+      return;
+    }
+
+    this.applyingPromoCode = true;
+    this.promoCodeError = '';
+    this.promoCodeSuccess = '';
+
+    this.promotionService.applyPromotionToCart({ promoCode: this.promoCode.trim() }).subscribe({
+      next: () => {
+        this.promoCodeSuccess = this.localization.instant('MP::PromoCodeAppliedSuccess');
+        this.messageService.add({
+          severity: 'success',
+          summary: this.localization.instant('::Messages:Success'),
+          detail: this.localization.instant('MP::PromoCodeAppliedSuccess')
+        });
+        this.loadCart(); // Reload cart to get updated prices
+        this.applyingPromoCode = false;
+      },
+      error: (error) => {
+        console.error('Error applying promo code:', error);
+        const errorMessage = error.error?.error?.message || this.localization.instant('MP::PromoCodeInvalid');
+        this.promoCodeError = errorMessage;
+        this.messageService.add({
+          severity: 'error',
+          summary: this.localization.instant('::Messages:Error'),
+          detail: errorMessage
+        });
+        this.applyingPromoCode = false;
+      }
+    });
+  }
+
+  removePromoCode(): void {
+    this.promotionService.removePromotionFromCart().subscribe({
+      next: () => {
+        this.promoCode = '';
+        this.promoCodeError = '';
+        this.promoCodeSuccess = '';
+        this.messageService.add({
+          severity: 'success',
+          summary: this.localization.instant('::Messages:Removed'),
+          detail: this.localization.instant('MP::PromoCodeRemovedSuccess')
+        });
+        this.loadCart(); // Reload cart to get updated prices
+      },
+      error: (error) => {
+        console.error('Error removing promo code:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: this.localization.instant('::Messages:Error'),
+          detail: this.localization.instant('MP::PromoCodeRemoveError')
+        });
+      }
+    });
+  }
+
+  hasPromoCode(): boolean {
+    return !!this.cart?.appliedPromotionId;
+  }
+
+  getDiscountAmount(): number {
+    return this.cart?.discountAmount || 0;
+  }
+
+  getFinalAmount(): number {
+    return (this.cart?.totalAmount || 0) - (this.cart?.discountAmount || 0);
   }
 }

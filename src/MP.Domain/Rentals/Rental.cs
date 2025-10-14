@@ -26,6 +26,7 @@ namespace MP.Domain.Rentals
         public RentalPeriod Period { get; private set; } = null!;
         public Payment Payment { get; private set; } = null!;
         public RentalStatus Status { get; private set; }
+        public Currency Currency { get; private set; }
 
         // Szczegóły wynajęcia
         // Szczegóły wynajęcia
@@ -50,6 +51,7 @@ namespace MP.Domain.Rentals
             Guid boothTypeId,
             RentalPeriod period,
             decimal totalCost,
+            Currency currency,
             Guid? tenantId = null) : base(id)
         {
             TenantId = tenantId;
@@ -58,6 +60,7 @@ namespace MP.Domain.Rentals
             BoothTypeId = boothTypeId;
             Period = period;
             Payment = new Payment(totalCost);
+            Currency = currency;
             Status = RentalStatus.Draft;
         }
 

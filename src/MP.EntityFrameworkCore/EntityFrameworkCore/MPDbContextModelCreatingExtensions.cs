@@ -92,10 +92,6 @@ namespace MP.EntityFrameworkCore
                     .HasColumnType("decimal(18,2)")
                     .HasComment("Cena za dzień");
 
-                b.Property(x => x.Currency)
-                    .IsRequired()
-                    .HasComment("Waluta stanowiska");
-
                 // Indeksy
                 // 🔄 Zmieniony indeks: unikalność per TenantId + Number
                 b.HasIndex(x => new { x.TenantId, x.Number })
@@ -117,6 +113,10 @@ namespace MP.EntityFrameworkCore
                 b.Property(x => x.BoothId).IsRequired();
                 b.Property(x => x.BoothTypeId).IsRequired();
                 b.Property(x => x.Status).IsRequired();
+
+                b.Property(x => x.Currency)
+                    .IsRequired()
+                    .HasComment("Waluta wynajmu (snapshot at checkout)");
 
                 // RentalPeriod jako owned type
                 b.OwnsOne(x => x.Period, period =>
@@ -230,6 +230,10 @@ namespace MP.EntityFrameworkCore
                     .IsRequired()
                     .HasColumnType("decimal(18,2)")
                     .HasComment("Koszt przedłużenia");
+
+                b.Property(x => x.Currency)
+                    .IsRequired()
+                    .HasComment("Waluta przedłużenia (snapshot)");
 
                 b.Property(x => x.PaymentType)
                     .IsRequired()
@@ -952,6 +956,10 @@ namespace MP.EntityFrameworkCore
                     .HasColumnType("decimal(18,2)")
                     .HasComment("Cena za dzień");
 
+                b.Property(x => x.Currency)
+                    .IsRequired()
+                    .HasComment("Waluta (snapshot from tenant)");
+
                 b.Property(x => x.Notes)
                     .HasMaxLength(1000)
                     .HasComment("Notatki do wynajmu");
@@ -1522,6 +1530,186 @@ namespace MP.EntityFrameworkCore
                 b.HasIndex(x => new { x.ItemSheetId, x.ItemNumber })
                     .IsUnique()
                     .HasDatabaseName("IX_ItemSheetItems_ItemSheetId_ItemNumber");
+            });
+
+            // Konfiguracja tabeli Promotions
+            builder.Entity<MP.Domain.Promotions.Promotion>(b =>
+            {
+                b.ToTable(MPConsts.DbTablePrefix + "Promotions", MPConsts.DbSchema);
+                b.ConfigureByConvention();
+
+                b.Property(x => x.Name)
+                    .IsRequired()
+                    .HasMaxLength(200)
+                    .HasComment("Promotion name");
+
+                b.Property(x => x.Description)
+                    .HasMaxLength(1000)
+                    .HasComment("Promotion description");
+
+                b.Property(x => x.Type)
+                    .IsRequired()
+                    .HasComment("Promotion type (Quantity, PromoCode, DateRange)");
+
+                b.Property(x => x.DisplayMode)
+                    .IsRequired()
+                    .HasComment("Display mode for customer notification");
+
+                b.Property(x => x.IsActive)
+                    .IsRequired()
+                    .HasDefaultValue(false)
+                    .HasComment("Whether promotion is active");
+
+                b.Property(x => x.ValidFrom)
+                    .HasColumnType("datetime2")
+                    .HasComment("Promotion start date");
+
+                b.Property(x => x.ValidTo)
+                    .HasColumnType("datetime2")
+                    .HasComment("Promotion end date");
+
+                b.Property(x => x.Priority)
+                    .IsRequired()
+                    .HasDefaultValue(0)
+                    .HasComment("Priority for display (higher = shown first)");
+
+                b.Property(x => x.MinimumBoothsCount)
+                    .HasComment("Minimum booths required");
+
+                b.Property(x => x.PromoCode)
+                    .HasMaxLength(50)
+                    .HasComment("Promo code");
+
+                b.Property(x => x.RequiresPromoCode)
+                    .IsRequired()
+                    .HasDefaultValue(false)
+                    .HasComment("Whether promo code is required");
+
+                b.Property(x => x.DiscountType)
+                    .IsRequired()
+                    .HasComment("Discount type (Percentage or FixedAmount)");
+
+                b.Property(x => x.DiscountValue)
+                    .IsRequired()
+                    .HasColumnType("decimal(18,2)")
+                    .HasComment("Discount value");
+
+                b.Property(x => x.MaxDiscountAmount)
+                    .HasColumnType("decimal(18,2)")
+                    .HasComment("Max discount amount (for percentage)");
+
+                b.Property(x => x.MaxUsageCount)
+                    .HasComment("Maximum total uses");
+
+                b.Property(x => x.CurrentUsageCount)
+                    .IsRequired()
+                    .HasDefaultValue(0)
+                    .HasComment("Current usage count");
+
+                b.Property(x => x.MaxUsagePerUser)
+                    .HasComment("Maximum uses per user");
+
+                b.Property(x => x.CustomerMessage)
+                    .HasMaxLength(500)
+                    .HasComment("Customer message");
+
+                // Indeksy
+                b.HasIndex(x => x.TenantId)
+                    .HasDatabaseName("IX_Promotions_TenantId");
+
+                b.HasIndex(x => x.IsActive)
+                    .HasDatabaseName("IX_Promotions_IsActive");
+
+                b.HasIndex(x => x.PromoCode)
+                    .HasDatabaseName("IX_Promotions_PromoCode");
+
+                b.HasIndex(x => new { x.TenantId, x.PromoCode })
+                    .HasDatabaseName("IX_Promotions_TenantId_PromoCode");
+
+                b.HasIndex(x => new { x.IsActive, x.ValidFrom, x.ValidTo })
+                    .HasDatabaseName("IX_Promotions_Active_Validity");
+
+                b.HasIndex(x => x.Priority)
+                    .HasDatabaseName("IX_Promotions_Priority");
+
+                b.HasIndex(x => x.Type)
+                    .HasDatabaseName("IX_Promotions_Type");
+            });
+
+            // Konfiguracja tabeli PromotionUsages
+            builder.Entity<MP.Domain.Promotions.PromotionUsage>(b =>
+            {
+                b.ToTable(MPConsts.DbTablePrefix + "PromotionUsages", MPConsts.DbSchema);
+                b.ConfigureByConvention();
+
+                b.Property(x => x.PromotionId)
+                    .IsRequired()
+                    .HasComment("Promotion ID");
+
+                b.Property(x => x.UserId)
+                    .IsRequired()
+                    .HasComment("User ID");
+
+                b.Property(x => x.CartId)
+                    .IsRequired()
+                    .HasComment("Cart ID");
+
+                b.Property(x => x.RentalId)
+                    .HasComment("Rental ID (optional)");
+
+                b.Property(x => x.DiscountAmount)
+                    .IsRequired()
+                    .HasColumnType("decimal(18,2)")
+                    .HasComment("Discount amount applied");
+
+                b.Property(x => x.PromoCodeUsed)
+                    .HasMaxLength(50)
+                    .HasComment("Promo code used");
+
+                b.Property(x => x.OriginalAmount)
+                    .IsRequired()
+                    .HasColumnType("decimal(18,2)")
+                    .HasComment("Original cart amount");
+
+                b.Property(x => x.FinalAmount)
+                    .IsRequired()
+                    .HasColumnType("decimal(18,2)")
+                    .HasComment("Final cart amount after discount");
+
+                // Relacje
+                b.HasOne(x => x.Promotion)
+                    .WithMany()
+                    .HasForeignKey(x => x.PromotionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasOne<MP.Domain.Carts.Cart>()
+                    .WithMany()
+                    .HasForeignKey(x => x.CartId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasOne<Rental>()
+                    .WithMany()
+                    .HasForeignKey(x => x.RentalId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                // Indeksy
+                b.HasIndex(x => x.PromotionId)
+                    .HasDatabaseName("IX_PromotionUsages_PromotionId");
+
+                b.HasIndex(x => x.UserId)
+                    .HasDatabaseName("IX_PromotionUsages_UserId");
+
+                b.HasIndex(x => x.CartId)
+                    .HasDatabaseName("IX_PromotionUsages_CartId");
+
+                b.HasIndex(x => x.RentalId)
+                    .HasDatabaseName("IX_PromotionUsages_RentalId");
+
+                b.HasIndex(x => new { x.PromotionId, x.UserId })
+                    .HasDatabaseName("IX_PromotionUsages_PromotionId_UserId");
+
+                b.HasIndex(x => x.CreationTime)
+                    .HasDatabaseName("IX_PromotionUsages_CreationTime");
             });
         }
     }

@@ -16,7 +16,6 @@ namespace MP.Domain.Booths
         public string Number { get; private set; } = null!;
         public BoothStatus Status { get; private set; }
         public decimal PricePerDay { get; private set; }
-        public Currency Currency { get; private set; }
 
         // Konstruktor dla EF Core
         private Booth() { }
@@ -25,14 +24,12 @@ namespace MP.Domain.Booths
            Guid id,
            string number,
            decimal pricePerDay,
-           Currency currency = Currency.PLN,
            Guid? tenantId = null
        ) : base(id)
         {
             TenantId = tenantId;
             SetNumber(number);
             SetPricePerDay(pricePerDay);
-            SetCurrency(currency);
             Status = BoothStatus.Available;
         }
 
@@ -55,11 +52,6 @@ namespace MP.Domain.Booths
                 throw new BusinessException("BOOTH_PRICE_MUST_BE_POSITIVE");
 
             PricePerDay = price;
-        }
-
-        public void SetCurrency(Currency currency)
-        {
-            Currency = currency;
         }
 
         public void MarkAsReserved()

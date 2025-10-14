@@ -4,8 +4,6 @@ export interface BoothDto {
   status: BoothStatus;
   statusDisplayName: string;
   pricePerDay: number;
-  currency: Currency;
-  currencyDisplayName: string;
   creationTime: Date;
   lastModificationTime?: Date;
   rentalStartDate?: Date;
@@ -24,8 +22,6 @@ export interface BoothListDto {
   status: BoothStatus;
   statusDisplayName: string;
   pricePerDay: number;
-  currency: Currency;
-  currencyDisplayName: string;
   creationTime: Date;
   rentalStartDate?: Date;
   rentalEndDate?: Date;
@@ -40,13 +36,11 @@ export interface BoothListDto {
 export interface CreateBoothDto {
   number: string;
   pricePerDay: number;
-  currency: Currency;
 }
 
 export interface UpdateBoothDto {
   number: string;
   pricePerDay: number;
-  currency: Currency;
   status: BoothStatus;
 }
 
@@ -56,14 +50,6 @@ export enum BoothStatus {
   Reserved = 2,
   Rented = 3,
   Maintenance = 4
-}
-
-export enum Currency {
-  PLN = 1,
-  EUR = 2,
-  USD = 3,
-  GBP = 4,
-  CZK = 5
 }
 
 export interface GetBoothListDto {

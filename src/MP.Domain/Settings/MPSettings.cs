@@ -40,6 +40,19 @@ public static class MPSettings
         public const string MinimumGapDays = BoothsPrefix + ".MinimumGapDays";
     }
 
+    public static class Tenant
+    {
+        private const string TenantPrefix = Prefix + ".Tenant";
+
+        /// <summary>
+        /// Default currency for tenant.
+        /// All new booths, rentals, and items will use this currency.
+        /// Stored as integer corresponding to Currency enum (1 = PLN, 2 = EUR, etc.)
+        /// Default: 1 (PLN)
+        /// </summary>
+        public const string Currency = TenantPrefix + ".Currency";
+    }
+
     //Add your own setting names here. Example:
     //public const string MySetting1 = Prefix + ".MySetting1";
 }

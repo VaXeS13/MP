@@ -15,6 +15,8 @@ using MP.Domain.Carts;
 using MP.Domain.Booths;
 using MP.Domain.Rentals;
 using MP.Domain.BoothTypes;
+using MP.Rentals;
+using MP.Domain.Promotions;
 
 namespace MP.Carts
 {
@@ -27,6 +29,8 @@ namespace MP.Carts
         private readonly CartManager _cartManager;
         private readonly RentalManager _rentalManager;
         private readonly IRentalRepository _rentalRepository;
+        private readonly MP.Domain.Promotions.IPromotionRepository _promotionRepository;
+        private readonly PromotionManager _promotionManager;
 
         public CartAppService(
             ICartRepository cartRepository,
@@ -34,7 +38,9 @@ namespace MP.Carts
             IBoothTypeRepository boothTypeRepository,
             CartManager cartManager,
             RentalManager rentalManager,
-            IRentalRepository rentalRepository)
+            IRentalRepository rentalRepository,
+            MP.Domain.Promotions.IPromotionRepository promotionRepository,
+            PromotionManager promotionManager)
         {
             _cartRepository = cartRepository;
             _boothRepository = boothRepository;
@@ -42,6 +48,8 @@ namespace MP.Carts
             _cartManager = cartManager;
             _rentalManager = rentalManager;
             _rentalRepository = rentalRepository;
+            _promotionRepository = promotionRepository;
+            _promotionManager = promotionManager;
         }
 
         public async Task<CartDto> GetMyCartAsync()
@@ -103,6 +111,29 @@ namespace MP.Carts
             if (cart == null)
                 throw new BusinessException("CART_NOT_FOUND");
 
+            // Find the item to check if it has a linked Rental
+            var item = cart.Items.FirstOrDefault(i => i.Id == itemId);
+            if (item != null && item.RentalId.HasValue)
+            {
+                // If item has linked Rental (admin-created with online payment), soft delete it
+                try
+                {
+                    var rental = await _rentalRepository.GetAsync(item.RentalId.Value);
+                    if (rental.Status == RentalStatus.Draft)
+                    {
+                        await _rentalRepository.DeleteAsync(rental);
+                        Logger.LogInformation("Deleted Draft Rental {RentalId} when user removed CartItem {CartItemId}",
+                            rental.Id, itemId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, "Failed to delete Rental {RentalId} when removing CartItem {CartItemId}",
+                        item.RentalId, itemId);
+                    // Continue with cart item removal even if rental deletion fails
+                }
+            }
+
             cart.RemoveItem(itemId);
 
             await _cartRepository.UpdateAsync(cart);
@@ -117,6 +148,28 @@ namespace MP.Carts
 
             if (cart == null)
                 throw new BusinessException("CART_NOT_FOUND");
+
+            // Delete all linked Draft Rentals before clearing cart
+            var itemsWithRentals = cart.Items.Where(i => i.RentalId.HasValue).ToList();
+            foreach (var item in itemsWithRentals)
+            {
+                try
+                {
+                    var rental = await _rentalRepository.GetAsync(item.RentalId!.Value);
+                    if (rental.Status == RentalStatus.Draft)
+                    {
+                        await _rentalRepository.DeleteAsync(rental);
+                        Logger.LogInformation("Deleted Draft Rental {RentalId} when clearing cart {CartId}",
+                            rental.Id, cart.Id);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, "Failed to delete Rental {RentalId} when clearing cart",
+                        item.RentalId);
+                    // Continue with clearing cart even if rental deletion fails
+                }
+            }
 
             cart.Clear();
 
@@ -142,6 +195,42 @@ namespace MP.Carts
                     };
                 }
 
+                // Check for expired items and validate availability
+                var expiredItems = cart.Items.Where(i => i.IsReservationExpired()).ToList();
+                if (expiredItems.Any())
+                {
+                    // Revalidate expired items - they may no longer be available
+                    var unavailableItems = new List<string>();
+                    foreach (var item in expiredItems)
+                    {
+                        try
+                        {
+                            await _cartManager.ValidateCartItemAsync(
+                                item.BoothId,
+                                item.StartDate,
+                                item.EndDate,
+                                cart.Id
+                            );
+                        }
+                        catch (BusinessException)
+                        {
+                            var booth = await _boothRepository.GetAsync(item.BoothId);
+                            unavailableItems.Add($"Booth {booth.Number}");
+                        }
+                    }
+
+                    if (unavailableItems.Any())
+                    {
+                        return new CheckoutResultDto
+                        {
+                            Success = false,
+                            ErrorMessage = $"The following booths are no longer available: {string.Join(", ", unavailableItems)}. Please remove them from your cart."
+                        };
+                    }
+
+                    Logger.LogInformation("Checkout: Revalidated {ExpiredItemCount} expired items - all still available", expiredItems.Count);
+                }
+
                 // Validate all items are still available
                 foreach (var item in cart.Items)
                 {
@@ -153,28 +242,101 @@ namespace MP.Carts
                     );
                 }
 
-                // Create all rentals
+                // Validate promotion if applied
+                if (cart.HasPromotionApplied())
+                {
+                    try
+                    {
+                        var promotion = await _promotionRepository.GetAsync(cart.AppliedPromotionId!.Value);
+
+                        // Check if promotion is still valid
+                        if (!promotion.IsValid())
+                        {
+                            cart.RemovePromotion();
+                            await _cartRepository.UpdateAsync(cart);
+
+                            Logger.LogWarning("Promotion {PromotionId} is no longer valid during checkout for cart {CartId}",
+                                cart.AppliedPromotionId, cart.Id);
+
+                            return new CheckoutResultDto
+                            {
+                                Success = false,
+                                ErrorMessage = L["Promotion:NoLongerValid"]
+                            };
+                        }
+
+                        // Validate promotion for cart (minimum booths, booth types, per-user limit)
+                        await _promotionManager.ValidateAndApplyToCartAsync(cart, cart.PromoCodeUsed);
+                    }
+                    catch (BusinessException ex) when (ex.Code == "PROMOTION_NOT_VALID" ||
+                                                       ex.Code == "PROMOTION_MINIMUM_BOOTHS_NOT_MET" ||
+                                                       ex.Code == "PROMOTION_NOT_APPLICABLE_TO_BOOTH_TYPES" ||
+                                                       ex.Code == "PROMOTION_USER_LIMIT_EXCEEDED")
+                    {
+                        cart.RemovePromotion();
+                        await _cartRepository.UpdateAsync(cart);
+
+                        Logger.LogWarning("Promotion validation failed during checkout: {ErrorCode}", ex.Code);
+
+                        return new CheckoutResultDto
+                        {
+                            Success = false,
+                            ErrorMessage = L["Promotion:ValidationFailed"]
+                        };
+                    }
+                    catch (EntityNotFoundException)
+                    {
+                        cart.RemovePromotion();
+                        await _cartRepository.UpdateAsync(cart);
+
+                        Logger.LogWarning("Promotion {PromotionId} not found during checkout for cart {CartId}",
+                            cart.AppliedPromotionId, cart.Id);
+
+                        return new CheckoutResultDto
+                        {
+                            Success = false,
+                            ErrorMessage = L["Promotion:NotFound"]
+                        };
+                    }
+                }
+
+                // Create all rentals or use existing ones
                 var rentalIds = new List<Guid>();
                 decimal totalAmount = 0;
 
                 foreach (var item in cart.Items)
                 {
                     var booth = await _boothRepository.GetAsync(item.BoothId);
+                    Rental rental;
 
-                    // Create rental
-                    var rental = await _rentalManager.CreateRentalAsync(
-                        userId,
-                        item.BoothId,
-                        item.BoothTypeId,
-                        item.StartDate,
-                        item.EndDate,
-                        booth.PricePerDay
-                    );
+                    // Check if CartItem has pre-created Rental (from admin)
+                    if (item.RentalId.HasValue)
+                    {
+                        // Use existing Rental created by admin
+                        rental = await _rentalRepository.GetAsync(item.RentalId.Value);
 
-                    rental.SetNotes(item.Notes);
+                        // Verify rental is still in Draft status
+                        if (rental.Status != RentalStatus.Draft)
+                            throw new BusinessException("RENTAL_ALREADY_PROCESSED")
+                                .WithData("RentalId", rental.Id)
+                                .WithData("Status", rental.Status);
+                    }
+                    else
+                    {
+                        // Create new rental (normal user flow)
+                        rental = await _rentalManager.CreateRentalAsync(
+                            userId,
+                            item.BoothId,
+                            item.BoothTypeId,
+                            item.StartDate,
+                            item.EndDate,
+                            booth.PricePerDay
+                        );
 
-                    await _rentalRepository.InsertAsync(rental);
-                    await _boothRepository.UpdateAsync(booth);
+                        rental.SetNotes(item.Notes);
+                        await _rentalRepository.InsertAsync(rental);
+                        await _boothRepository.UpdateAsync(booth);
+                    }
 
                     rentalIds.Add(rental.Id);
                     totalAmount += rental.Payment.TotalAmount;
@@ -183,11 +345,14 @@ namespace MP.Carts
                 // Force save rentals before payment
                 await UnitOfWorkManager.Current!.SaveChangesAsync();
 
+                // Get currency from first cart item (all items should have same currency - tenant currency)
+                var currency = cart.Items.First().Currency.ToString();
+
                 // Create single payment for all rentals
                 var paymentRequest = new MP.Application.Contracts.Payments.CreatePaymentRequestDto
                 {
                     Amount = totalAmount,
-                    Currency = "PLN", // TODO: Get from booth or tenant settings
+                    Currency = currency,
                     Description = $"Cart checkout - {cart.Items.Count} booth rental(s)",
                     ProviderId = input.PaymentProviderId,
                     MethodId = input.PaymentMethodId,
@@ -259,11 +424,47 @@ namespace MP.Carts
                 LastModificationTime = cart.LastModificationTime
             };
 
+            // Add promotion data if applied
+            if (cart.HasPromotionApplied())
+            {
+                dto.AppliedPromotionId = cart.AppliedPromotionId;
+                dto.DiscountAmount = cart.DiscountAmount;
+                dto.PromoCodeUsed = cart.PromoCodeUsed;
+
+                // Get promotion name
+                if (cart.AppliedPromotionId.HasValue)
+                {
+                    try
+                    {
+                        var promotion = await _promotionRepository.GetAsync(cart.AppliedPromotionId.Value);
+                        dto.PromotionName = promotion.Name;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning(ex, "Failed to load promotion {PromotionId} for cart {CartId}",
+                            cart.AppliedPromotionId, cart.Id);
+                    }
+                }
+            }
+
+            // Calculate per-item discount (proportional to item price)
+            var totalAmount = cart.GetTotalAmount();
+            var totalDiscount = cart.DiscountAmount;
+
             // Map items with related data
             foreach (var item in cart.Items)
             {
                 var booth = await _boothRepository.GetAsync(item.BoothId);
                 var boothType = await _boothTypeRepository.GetAsync(item.BoothTypeId);
+
+                var itemTotalPrice = item.GetTotalPrice();
+
+                // Calculate proportional discount for this item
+                decimal itemDiscount = 0;
+                if (totalAmount > 0 && totalDiscount > 0)
+                {
+                    itemDiscount = (itemTotalPrice / totalAmount) * totalDiscount;
+                }
 
                 var itemDto = new CartItemDto
                 {
@@ -276,11 +477,15 @@ namespace MP.Carts
                     PricePerDay = item.PricePerDay,
                     Notes = item.Notes,
                     DaysCount = item.GetDaysCount(),
-                    TotalPrice = item.GetTotalPrice(),
+                    TotalPrice = itemTotalPrice,
+                    DiscountAmount = itemDiscount,
+                    FinalPrice = itemTotalPrice - itemDiscount,
                     BoothNumber = booth.Number,
                     BoothDescription = $"Booth {booth.Number}",
                     BoothTypeName = boothType.Name,
-                    Currency = booth.Currency.ToString()
+                    Currency = item.Currency.ToString(),
+                    ReservationExpiresAt = item.ReservationExpiresAt,
+                    IsExpired = item.IsReservationExpired()
                 };
 
                 dto.Items.Add(itemDto);

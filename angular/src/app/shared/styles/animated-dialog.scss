@@ -1,0 +1,128 @@
+/**
+ * Animated Dialog Styles for PrimeNG
+ * Simple and reliable approach that works with PrimeNG's dynamic rendering
+ */
+
+// PrimeNG dialog mask (backdrop)
+.p-dialog-mask {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  background-color: rgba(0, 0, 0, 0.4) !important;
+}
+
+// PrimeNG dialog container
+.p-dialog {
+  // Smooth border radius and shadow
+  border-radius: 1rem !important;
+  overflow: hidden !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.22) !important;
+
+  // Smooth shape morphing / zoom match animation
+  animation: dialogZoomIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transform-origin: center center !important;
+}
+
+@keyframes dialogZoomIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Styled dialog variant with gradient header
+.p-dialog.animated-dialog {
+  .p-dialog-header {
+    border-top-left-radius: 1rem !important;
+    border-top-right-radius: 1rem !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    padding: 1.5rem !important;
+
+    .p-dialog-title {
+      font-weight: 600 !important;
+      font-size: 1.25rem !important;
+      color: white !important;
+    }
+
+    .p-dialog-header-icon,
+    .p-dialog-header-icons button {
+      color: white !important;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+      }
+    }
+  }
+
+  .p-dialog-content {
+    padding: 1.5rem !important;
+    background-color: #ffffff !important;
+  }
+
+  .p-dialog-footer {
+    padding: 1rem 1.5rem !important;
+    border-bottom-left-radius: 1rem !important;
+    border-bottom-right-radius: 1rem !important;
+    background-color: #f8f9fa !important;
+    border-top: 1px solid #e9ecef !important;
+  }
+}
+
+// Mobile responsiveness
+@media (max-width: 768px) {
+  .p-dialog {
+    border-radius: 1.5rem !important;
+    margin: 1rem !important;
+
+    &.animated-dialog {
+      .p-dialog-header {
+        border-top-left-radius: 1.5rem !important;
+        border-top-right-radius: 1.5rem !important;
+      }
+
+      .p-dialog-footer {
+        border-bottom-left-radius: 1.5rem !important;
+        border-bottom-right-radius: 1.5rem !important;
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .p-dialog-mask {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+  }
+
+  .p-dialog.animated-dialog {
+    .p-dialog-content {
+      background-color: #1e1e1e !important;
+      color: #e0e0e0 !important;
+    }
+
+    .p-dialog-footer {
+      background-color: #2d2d2d !important;
+      border-top-color: #3d3d3d !important;
+    }
+  }
+}
+
+// Fallback for browsers without backdrop-filter
+@supports not (backdrop-filter: blur(8px)) {
+  .p-dialog-mask {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+  }
+}
+
+// Accessibility: Respect reduced motion
+@media (prefers-reduced-motion: reduce) {
+  .p-dialog-mask,
+  .p-dialog {
+    animation: none !important;
+    transition: none !important;
+  }
+}

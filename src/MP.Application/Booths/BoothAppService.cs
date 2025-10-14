@@ -109,8 +109,7 @@ namespace MP.Booths
         {
             var booth = await _boothManager.CreateAsync(
                 input.Number,
-                input.PricePerDay,
-                input.Currency
+                input.PricePerDay
             );
 
             await _boothRepository.InsertAsync(booth);
@@ -132,7 +131,6 @@ namespace MP.Booths
 
             // Inne zmiany
             booth.SetPricePerDay(input.PricePerDay);
-            booth.SetCurrency(input.Currency);
 
             // Zmiana statusu
             switch (input.Status)

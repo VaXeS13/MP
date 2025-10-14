@@ -130,10 +130,6 @@ namespace MP.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("CreatorId");
 
-                    b.Property<int>("Currency")
-                        .HasColumnType("int")
-                        .HasComment("Waluta stanowiska");
-
                     b.Property<Guid?>("DeleterId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("DeleterId");
@@ -197,6 +193,9 @@ namespace MP.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("AppliedPromotionId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -220,6 +219,9 @@ namespace MP.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("DeletionTime");
 
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime?>("ExtensionTimeoutAt")
                         .HasColumnType("datetime2")
                         .HasComment("Czas wygaśnięcia koszyka przy przedłużeniu online");
@@ -242,6 +244,9 @@ namespace MP.Migrations
                     b.Property<Guid?>("LastModifierId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
+
+                    b.Property<string>("PromoCodeUsed")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int")
@@ -297,6 +302,10 @@ namespace MP.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("CreatorId");
 
+                    b.Property<int>("Currency")
+                        .HasColumnType("int")
+                        .HasComment("Waluta (snapshot from tenant)");
+
                     b.Property<Guid?>("DeleterId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("DeleterId");
@@ -341,6 +350,12 @@ namespace MP.Migrations
                     b.Property<decimal>("PricePerDay")
                         .HasColumnType("decimal(18,2)")
                         .HasComment("Cena za dzień");
+
+                    b.Property<Guid?>("RentalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ReservationExpiresAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("date")
@@ -1806,6 +1821,241 @@ namespace MP.Migrations
                     b.ToTable("AppStripeTransactions", (string)null);
                 });
 
+            modelBuilder.Entity("MP.Domain.Promotions.Promotion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<int>("CurrentUsageCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasComment("Current usage count");
+
+                    b.Property<string>("CustomerMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasComment("Customer message");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasComment("Promotion description");
+
+                    b.Property<int>("DiscountType")
+                        .HasColumnType("int")
+                        .HasComment("Discount type (Percentage or FixedAmount)");
+
+                    b.Property<decimal>("DiscountValue")
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Discount value");
+
+                    b.Property<int>("DisplayMode")
+                        .HasColumnType("int")
+                        .HasComment("Display mode for customer notification");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasComment("Whether promotion is active");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<decimal?>("MaxDiscountAmount")
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Max discount amount (for percentage)");
+
+                    b.Property<int?>("MaxUsageCount")
+                        .HasColumnType("int")
+                        .HasComment("Maximum total uses");
+
+                    b.Property<int?>("MaxUsagePerUser")
+                        .HasColumnType("int")
+                        .HasComment("Maximum uses per user");
+
+                    b.Property<int?>("MinimumBoothsCount")
+                        .HasColumnType("int")
+                        .HasComment("Minimum booths required");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasComment("Promotion name");
+
+                    b.Property<int>("Priority")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasComment("Priority for display (higher = shown first)");
+
+                    b.Property<string>("PromoCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Promo code");
+
+                    b.Property<bool>("RequiresPromoCode")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasComment("Whether promo code is required");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int")
+                        .HasComment("Promotion type (Quantity, PromoCode, DateRange)");
+
+                    b.Property<DateTime?>("ValidFrom")
+                        .HasColumnType("datetime2")
+                        .HasComment("Promotion start date");
+
+                    b.Property<DateTime?>("ValidTo")
+                        .HasColumnType("datetime2")
+                        .HasComment("Promotion end date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Promotions_IsActive");
+
+                    b.HasIndex("Priority")
+                        .HasDatabaseName("IX_Promotions_Priority");
+
+                    b.HasIndex("PromoCode")
+                        .HasDatabaseName("IX_Promotions_PromoCode");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_Promotions_TenantId");
+
+                    b.HasIndex("Type")
+                        .HasDatabaseName("IX_Promotions_Type");
+
+                    b.HasIndex("TenantId", "PromoCode")
+                        .HasDatabaseName("IX_Promotions_TenantId_PromoCode");
+
+                    b.HasIndex("IsActive", "ValidFrom", "ValidTo")
+                        .HasDatabaseName("IX_Promotions_Active_Validity");
+
+                    b.ToTable("AppPromotions", (string)null);
+                });
+
+            modelBuilder.Entity("MP.Domain.Promotions.PromotionUsage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CartId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Cart ID");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Discount amount applied");
+
+                    b.Property<decimal>("FinalAmount")
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Final cart amount after discount");
+
+                    b.Property<decimal>("OriginalAmount")
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Original cart amount");
+
+                    b.Property<string>("PromoCodeUsed")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Promo code used");
+
+                    b.Property<Guid>("PromotionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Promotion ID");
+
+                    b.Property<Guid?>("RentalId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Rental ID (optional)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("User ID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartId")
+                        .HasDatabaseName("IX_PromotionUsages_CartId");
+
+                    b.HasIndex("CreationTime")
+                        .HasDatabaseName("IX_PromotionUsages_CreationTime");
+
+                    b.HasIndex("PromotionId")
+                        .HasDatabaseName("IX_PromotionUsages_PromotionId");
+
+                    b.HasIndex("RentalId")
+                        .HasDatabaseName("IX_PromotionUsages_RentalId");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_PromotionUsages_UserId");
+
+                    b.HasIndex("PromotionId", "UserId")
+                        .HasDatabaseName("IX_PromotionUsages_PromotionId_UserId");
+
+                    b.ToTable("AppPromotionUsages", (string)null);
+                });
+
             modelBuilder.Entity("MP.Domain.Rentals.Rental", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1834,6 +2084,10 @@ namespace MP.Migrations
                     b.Property<Guid?>("CreatorId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("CreatorId");
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("int")
+                        .HasComment("Waluta wynajmu (snapshot at checkout)");
 
                     b.Property<Guid?>("DeleterId")
                         .HasColumnType("uniqueidentifier")
@@ -1898,6 +2152,10 @@ namespace MP.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("int")
+                        .HasComment("Waluta przedłużenia (snapshot)");
 
                     b.Property<DateTime>("ExtendedAt")
                         .HasColumnType("datetime2")
@@ -4234,6 +4492,28 @@ namespace MP.Migrations
                         .WithMany()
                         .HasForeignKey("RentalId")
                         .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("MP.Domain.Promotions.PromotionUsage", b =>
+                {
+                    b.HasOne("MP.Domain.Carts.Cart", null)
+                        .WithMany()
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MP.Domain.Promotions.Promotion", "Promotion")
+                        .WithMany()
+                        .HasForeignKey("PromotionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MP.Domain.Rentals.Rental", null)
+                        .WithMany()
+                        .HasForeignKey("RentalId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Promotion");
                 });
 
             modelBuilder.Entity("MP.Domain.Rentals.Rental", b =>

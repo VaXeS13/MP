@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Settings;
 using MP.Domain.Items;
 using MP.Domain.Booths;
+using MP.Domain.Settings;
 
 namespace MP.Items
 {
@@ -15,13 +17,16 @@ namespace MP.Items
     {
         private readonly IItemRepository _itemRepository;
         private readonly ItemManager _itemManager;
+        private readonly ISettingProvider _settingProvider;
 
         public ItemAppService(
             IItemRepository itemRepository,
-            ItemManager itemManager)
+            ItemManager itemManager,
+            ISettingProvider settingProvider)
         {
             _itemRepository = itemRepository;
             _itemManager = itemManager;
+            _settingProvider = settingProvider;
         }
 
         public async Task<ItemDto> GetAsync(Guid id)
@@ -68,7 +73,11 @@ namespace MP.Items
         {
             var userId = CurrentUser.Id.Value;
 
-            var currency = Enum.Parse<Currency>(input.Currency);
+            // Get tenant currency from settings (default to PLN if not set)
+            var currencySettingValue = await _settingProvider.GetOrNullAsync(MPSettings.Tenant.Currency);
+            var currency = string.IsNullOrEmpty(currencySettingValue)
+                ? Currency.PLN
+                : Enum.Parse<Currency>(currencySettingValue);
 
             var item = await _itemManager.CreateAsync(
                 userId,
@@ -92,7 +101,7 @@ namespace MP.Items
             item.SetName(input.Name);
             item.SetCategory(input.Category);
             item.SetPrice(input.Price);
-            item.SetCurrency(Enum.Parse<Currency>(input.Currency));
+            // Note: Currency is NOT updated - items keep their original currency (historical data)
 
             await _itemRepository.UpdateAsync(item);
 

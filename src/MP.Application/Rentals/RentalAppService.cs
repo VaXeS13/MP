@@ -468,7 +468,7 @@ namespace MP.Rentals
                 var paymentRequest = new MP.Application.Contracts.Payments.CreatePaymentRequestDto
                 {
                     Amount = rental.TotalAmount,
-                    Currency = booth.Currency.ToString(),
+                    Currency = rental.Currency.ToString(),
                     Description = $"Booth rental {booth.Number} from {input.StartDate:yyyy-MM-dd} to {input.EndDate:yyyy-MM-dd}",
                     ProviderId = input.PaymentProviderId,
                     MethodId = input.PaymentMethodId,
@@ -570,26 +570,64 @@ namespace MP.Rentals
                     rental.Id, rental.StartDate, rental.EndDate, rental.Status);
             }
 
+            // Get all active cart items for this booth that overlap with the requested date range
+            // IMPORTANT: Only include items with active (non-expired) reservations
+            var now = DateTime.Now;
+            var cartQueryable = await _cartRepository.GetQueryableAsync();
+            var cartItems = await AsyncExecuter.ToListAsync(
+                cartQueryable
+                    .AsNoTracking()
+                    .Where(c => c.Status == CartStatus.Active)
+                    .SelectMany(c => c.Items)
+                    .Where(item => item.BoothId == input.BoothId &&
+                                  item.StartDate <= input.EndDate &&
+                                  item.EndDate >= input.StartDate &&
+                                  item.ReservationExpiresAt.HasValue &&
+                                  item.ReservationExpiresAt.Value >= now &&  // Only active reservations
+                                  (!input.ExcludeCartId.HasValue || item.CartId != input.ExcludeCartId.Value))
+                    .Select(item => new CartItemCalendarProjection
+                    {
+                        Id = item.Id,
+                        CartId = item.CartId,
+                        StartDate = item.StartDate,
+                        EndDate = item.EndDate,
+                        UserName = item.Cart.User.Name,
+                        UserEmail = item.Cart.User.Email,
+                        Notes = item.Notes,
+                        ReservationExpiresAt = item.ReservationExpiresAt
+                    })
+            );
+
+            Logger.LogInformation("GetBoothCalendar: Found {CartItemCount} cart items for booth {BoothId} between {StartDate:yyyy-MM-dd} and {EndDate:yyyy-MM-dd}",
+                cartItems.Count, input.BoothId, input.StartDate, input.EndDate);
+            foreach (var cartItem in cartItems)
+            {
+                Logger.LogInformation("  CartItem {CartItemId}: {StartDate:yyyy-MM-dd} to {EndDate:yyyy-MM-dd}, CartId: {CartId}",
+                    cartItem.Id, cartItem.StartDate, cartItem.EndDate, cartItem.CartId);
+            }
+
             // Generate calendar dates
             var calendarDates = new List<CalendarDateDto>();
             var currentDate = input.StartDate.Date;
 
             while (currentDate <= input.EndDate.Date)
             {
-                var dateStatus = GetDateStatus(currentDate, rentals);
+                var dateStatus = GetDateStatus(currentDate, rentals, cartItems);
                 var rentalForDate = GetRentalForDate(currentDate, rentals);
+                var cartItemForDate = GetCartItemForDate(currentDate, cartItems);
 
+                // Prefer rental over cart item if both exist (rental is confirmed)
                 var calendarDate = new CalendarDateDto
                 {
                     Date = currentDate.ToString("yyyy-MM-dd"),
                     Status = dateStatus,
                     StatusDisplayName = GetStatusDisplayName(dateStatus),
                     RentalId = rentalForDate?.Id,
-                    UserName = rentalForDate?.UserName,
-                    UserEmail = rentalForDate?.UserEmail,
-                    RentalStartDate = rentalForDate?.StartDate,
-                    RentalEndDate = rentalForDate?.EndDate,
-                    Notes = rentalForDate?.Notes
+                    UserName = rentalForDate?.UserName ?? cartItemForDate?.UserName,
+                    UserEmail = rentalForDate?.UserEmail ?? cartItemForDate?.UserEmail,
+                    RentalStartDate = rentalForDate?.StartDate ?? cartItemForDate?.StartDate,
+                    RentalEndDate = rentalForDate?.EndDate ?? cartItemForDate?.EndDate,
+                    Notes = rentalForDate?.Notes ?? cartItemForDate?.Notes
                 };
 
                 calendarDates.Add(calendarDate);
@@ -618,11 +656,11 @@ namespace MP.Rentals
             };
         }
 
-        private CalendarDateStatus GetDateStatus(DateTime date, List<RentalCalendarProjection> rentals)
+        private CalendarDateStatus GetDateStatus(DateTime date, List<RentalCalendarProjection> rentals, List<CartItemCalendarProjection> cartItems)
         {
             var today = DateTime.Today;
 
-            // Check if there's a rental for this date
+            // Check if there's a rental for this date (priority over cart items)
             var rental = GetRentalForDate(date, rentals);
             if (rental != null)
             {
@@ -644,7 +682,15 @@ namespace MP.Rentals
                 }
             }
 
-            // Past dates without rentals
+            // Check if there's a cart item for this date
+            var cartItem = GetCartItemForDate(date, cartItems);
+            if (cartItem != null)
+            {
+                // Cart items are always shown as Reserved (pending payment)
+                return CalendarDateStatus.Reserved;
+            }
+
+            // Past dates without rentals or cart items
             if (date < today)
                 return CalendarDateStatus.PastDate;
 
@@ -658,6 +704,13 @@ namespace MP.Rentals
                 date <= r.EndDate.Date);
         }
 
+        private CartItemCalendarProjection? GetCartItemForDate(DateTime date, List<CartItemCalendarProjection> cartItems)
+        {
+            return cartItems.FirstOrDefault(item =>
+                date >= item.StartDate.Date &&
+                date <= item.EndDate.Date);
+        }
+
         // Projection class for calendar queries - loads only required fields
         private class RentalCalendarProjection
         {
@@ -668,6 +721,19 @@ namespace MP.Rentals
             public string? UserName { get; set; }
             public string? UserEmail { get; set; }
             public string? Notes { get; set; }
+        }
+
+        // Projection class for cart item calendar queries
+        private class CartItemCalendarProjection
+        {
+            public Guid Id { get; set; }
+            public Guid CartId { get; set; }
+            public DateTime StartDate { get; set; }
+            public DateTime EndDate { get; set; }
+            public string? UserName { get; set; }
+            public string? UserEmail { get; set; }
+            public string? Notes { get; set; }
+            public DateTime? ReservationExpiresAt { get; set; }
         }
 
         private string GetStatusDisplayName(CalendarDateStatus status)
@@ -710,6 +776,251 @@ namespace MP.Rentals
             var cost = await _rentalManager.CalculateRentalCostAsync(boothId, boothTypeId, period);
 
             return cost;
+        }
+
+        [Authorize(MPPermissions.Rentals.Manage)]
+        public async Task<MaxExtensionDateResponseDto> GetMaxExtensionDateAsync(Guid boothId, DateTime currentRentalEndDate)
+        {
+            // Find the nearest rental after the current rental end date
+            var nextRental = await _rentalRepository.GetNearestRentalAfterAsync(boothId, currentRentalEndDate);
+
+            if (nextRental == null)
+            {
+                // No blocking rental - can extend indefinitely
+                return new MaxExtensionDateResponseDto
+                {
+                    MaxExtensionDate = null,
+                    HasBlockingRental = false,
+                    Message = "No upcoming rentals - can extend indefinitely"
+                };
+            }
+
+            // Calculate max extension date (day before next rental starts)
+            var maxDate = nextRental.Period.StartDate.AddDays(-1);
+
+            return new MaxExtensionDateResponseDto
+            {
+                MaxExtensionDate = maxDate,
+                HasBlockingRental = true,
+                NextRentalId = nextRental.Id,
+                NextRentalStartDate = nextRental.Period.StartDate,
+                Message = $"Can extend until {maxDate:yyyy-MM-dd} (next rental starts {nextRental.Period.StartDate:yyyy-MM-dd})"
+            };
+        }
+
+        [Authorize(MPPermissions.Rentals.Manage)]
+        public async Task<RentalDto> AdminManageBoothRentalAsync(AdminManageBoothRentalDto input)
+        {
+            if (input.IsExtension)
+            {
+                return await HandleRentalExtensionAsync(input);
+            }
+            else
+            {
+                return await HandleNewRentalAsync(input);
+            }
+        }
+
+        private async Task<RentalDto> HandleNewRentalAsync(AdminManageBoothRentalDto input)
+        {
+            // Validate required fields for new rental
+            if (!input.UserId.HasValue)
+                throw new BusinessException("USER_ID_REQUIRED_FOR_NEW_RENTAL");
+
+            if (!input.BoothTypeId.HasValue)
+                throw new BusinessException("BOOTH_TYPE_ID_REQUIRED_FOR_NEW_RENTAL");
+
+            // Validate gap rules
+            await _rentalManager.ValidateGapRulesAsync(
+                input.BoothId,
+                input.StartDate,
+                input.EndDate);
+
+            // Get booth for price calculation
+            var booth = await _boothRepository.GetAsync(input.BoothId);
+
+            // Create rental through RentalManager
+            var rental = await _rentalManager.CreateRentalAsync(
+                input.UserId.Value,
+                input.BoothId,
+                input.BoothTypeId.Value,
+                input.StartDate,
+                input.EndDate,
+                booth.PricePerDay);
+
+            rental.SetNotes(input.Notes);
+
+            // Apply payment method
+            await ApplyPaymentMethodAsync(rental, input.PaymentMethod, input, booth);
+
+            // Save rental
+            await _rentalRepository.InsertAsync(rental);
+
+            // Update booth status
+            await _boothRepository.UpdateAsync(booth);
+
+            // Send SignalR notification
+            await _signalRNotificationService.SendBoothStatusUpdateAsync(
+                CurrentTenant.Id,
+                booth.Id,
+                booth.Status.ToString(),
+                !booth.IsAvailable(),
+                rental.Id,
+                rental.Period.EndDate);
+
+            var savedRental = await _rentalRepository.GetRentalWithItemsAsync(rental.Id);
+            return ObjectMapper.Map<Rental, RentalDto>(savedRental!);
+        }
+
+        private async Task<RentalDto> HandleRentalExtensionAsync(AdminManageBoothRentalDto input)
+        {
+            // Validate required fields for extension
+            if (!input.ExistingRentalId.HasValue)
+                throw new BusinessException("EXISTING_RENTAL_ID_REQUIRED_FOR_EXTENSION");
+
+            var rental = await _rentalRepository.GetRentalWithItemsAsync(input.ExistingRentalId.Value);
+            if (rental == null)
+                throw new EntityNotFoundException(typeof(Rental), input.ExistingRentalId.Value);
+
+            // Validate extension is possible
+            if (!rental.IsActive())
+                throw new BusinessException("CAN_ONLY_EXTEND_ACTIVE_RENTAL");
+
+            if (input.EndDate <= rental.Period.EndDate)
+                throw new BusinessException("EXTENSION_MUST_INCREASE_END_DATE");
+
+            // Validate no conflicts
+            await _rentalManager.ValidateExtensionAsync(rental, input.EndDate);
+
+            // Calculate cost
+            var booth = await _boothRepository.GetAsync(rental.BoothId);
+            var additionalDays = (input.EndDate - rental.Period.EndDate).Days;
+            var additionalCost = additionalDays * booth.PricePerDay;
+
+            // Convert RentalPaymentMethod to ExtensionPaymentType
+            var extensionPaymentType = ConvertToExtensionPaymentType(input.PaymentMethod);
+
+            // Handle extension based on payment type
+            switch (extensionPaymentType)
+            {
+                case ExtensionPaymentType.Free:
+                    await _extensionHandler.HandleFreeExtensionAsync(rental, input.EndDate);
+                    break;
+
+                case ExtensionPaymentType.Cash:
+                    await _extensionHandler.HandleCashExtensionAsync(rental, input.EndDate, additionalCost);
+                    break;
+
+                case ExtensionPaymentType.Terminal:
+                    if (string.IsNullOrWhiteSpace(input.TerminalTransactionId))
+                        throw new BusinessException("TERMINAL_TRANSACTION_ID_REQUIRED");
+
+                    await _extensionHandler.HandleTerminalExtensionAsync(
+                        rental,
+                        input.EndDate,
+                        additionalCost,
+                        input.TerminalTransactionId,
+                        input.TerminalReceiptNumber);
+                    break;
+
+                case ExtensionPaymentType.Online:
+                    await _extensionHandler.HandleOnlineExtensionAsync(
+                        rental,
+                        input.EndDate,
+                        additionalCost,
+                        input.OnlineTimeoutMinutes);
+                    break;
+
+                default:
+                    throw new BusinessException("INVALID_PAYMENT_METHOD");
+            }
+
+            var updatedRental = await _rentalRepository.GetRentalWithItemsAsync(rental.Id);
+            return ObjectMapper.Map<Rental, RentalDto>(updatedRental!);
+        }
+
+        private async Task ApplyPaymentMethodAsync(
+            Rental rental,
+            RentalPaymentMethod paymentMethod,
+            AdminManageBoothRentalDto input,
+            Booth booth)
+        {
+            var totalAmount = rental.Payment.TotalAmount;
+
+            switch (paymentMethod)
+            {
+                case RentalPaymentMethod.Free:
+                    // Free rental - mark as paid with 0 amount
+                    rental.MarkAsPaid(0, DateTime.Now, "FREE_RENTAL");
+                    break;
+
+                case RentalPaymentMethod.Cash:
+                    // Cash payment - mark as paid immediately
+                    rental.MarkAsPaid(totalAmount, DateTime.Now, "CASH_PAYMENT");
+                    break;
+
+                case RentalPaymentMethod.Terminal:
+                    // Terminal payment - mark as paid with transaction ID
+                    if (string.IsNullOrWhiteSpace(input.TerminalTransactionId))
+                        throw new BusinessException("TERMINAL_TRANSACTION_ID_REQUIRED");
+
+                    rental.MarkAsPaid(totalAmount, DateTime.Now, input.TerminalTransactionId);
+                    rental.Payment.SetTerminalDetails(input.TerminalTransactionId, input.TerminalReceiptNumber);
+                    break;
+
+                case RentalPaymentMethod.Online:
+                    // Online payment - add to cart with reservation, rental stays in Draft status
+                    var cart = await _cartRepository.GetActiveCartByUserIdAsync(rental.UserId, includeItems: true);
+                    if (cart == null)
+                    {
+                        // Create cart using CartManager
+                        var cartManager = LazyServiceProvider.LazyGetRequiredService<CartManager>();
+                        cart = await cartManager.GetOrCreateCartAsync(rental.UserId);
+                    }
+
+                    // Set reservation timeout (configurable, default 30 minutes for admin-created)
+                    var timeout = input.OnlineTimeoutMinutes ?? 30;
+                    var reservationExpires = DateTime.Now.AddMinutes(timeout);
+
+                    // Create CartItem for new rental - link to pre-created Rental with reservation
+                    var cartItem = new CartItem(
+                        GuidGenerator.Create(),
+                        cart.Id,
+                        rental.BoothId,
+                        rental.BoothTypeId,
+                        rental.Period.StartDate,
+                        rental.Period.EndDate,
+                        booth.PricePerDay,
+                        rental.Currency,
+                        CartItemType.Rental,
+                        extendedRentalId: null,
+                        rentalId: rental.Id,  // Link to pre-created Rental
+                        reservationExpiresAt: reservationExpires,  // NEW: Reservation on CartItem level
+                        notes: rental.Notes
+                    );
+
+                    cart.AddItem(cartItem);
+                    await _cartRepository.UpdateAsync(cart);
+
+                    // Note: User will see the cart item when they open their cart
+                    // Could implement additional notification here if needed
+                    break;
+
+                default:
+                    throw new BusinessException("INVALID_PAYMENT_METHOD");
+            }
+        }
+
+        private ExtensionPaymentType ConvertToExtensionPaymentType(RentalPaymentMethod paymentMethod)
+        {
+            return paymentMethod switch
+            {
+                RentalPaymentMethod.Free => ExtensionPaymentType.Free,
+                RentalPaymentMethod.Cash => ExtensionPaymentType.Cash,
+                RentalPaymentMethod.Terminal => ExtensionPaymentType.Terminal,
+                RentalPaymentMethod.Online => ExtensionPaymentType.Online,
+                _ => throw new BusinessException("UNSUPPORTED_PAYMENT_METHOD")
+            };
         }
     }
 }

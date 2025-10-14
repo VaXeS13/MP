@@ -8,6 +8,6 @@
     <span class="cart-badge" *ngIf="itemCount > 0">{{ itemCount }}</span>
   </div>
   <div class="cart-amount" *ngIf="totalAmount > 0">
-    {{ totalAmount | currency:currency:'symbol':'1.0-0' }}
+    {{ totalAmount | currency:currency:'symbol':'1.2-2' }}
   </div>
 </button>

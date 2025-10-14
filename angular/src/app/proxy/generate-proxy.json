@@ -9413,6 +9413,23 @@
                   }
                 },
                 {
+                  "name": "GetActiveRentalForBoothAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "boothId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Rentals.RentalDto",
+                    "typeSimple": "MP.Rentals.RentalDto"
+                  }
+                },
+                {
                   "name": "GetMyRentalsAsync",
                   "parametersOnMethod": [
                     {
@@ -9502,6 +9519,122 @@
                   "returnValue": {
                     "type": "MP.Rentals.BoothCalendarResponseDto",
                     "typeSimple": "MP.Rentals.BoothCalendarResponseDto"
+                  }
+                },
+                {
+                  "name": "CheckAvailabilityAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "boothId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "startDate",
+                      "typeAsString": "System.DateTime, System.Private.CoreLib",
+                      "type": "System.DateTime",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "endDate",
+                      "typeAsString": "System.DateTime, System.Private.CoreLib",
+                      "type": "System.DateTime",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Boolean",
+                    "typeSimple": "boolean"
+                  }
+                },
+                {
+                  "name": "CalculateCostAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "boothId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "boothTypeId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "startDate",
+                      "typeAsString": "System.DateTime, System.Private.CoreLib",
+                      "type": "System.DateTime",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "endDate",
+                      "typeAsString": "System.DateTime, System.Private.CoreLib",
+                      "type": "System.DateTime",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Decimal",
+                    "typeSimple": "number"
+                  }
+                },
+                {
+                  "name": "GetMaxExtensionDateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "boothId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "currentRentalEndDate",
+                      "typeAsString": "System.DateTime, System.Private.CoreLib",
+                      "type": "System.DateTime",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Rentals.MaxExtensionDateResponseDto",
+                    "typeSimple": "MP.Rentals.MaxExtensionDateResponseDto"
+                  }
+                },
+                {
+                  "name": "AdminManageBoothRentalAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Rentals.AdminManageBoothRentalDto, MP.Application.Contracts",
+                      "type": "MP.Rentals.AdminManageBoothRentalDto",
+                      "typeSimple": "MP.Rentals.AdminManageBoothRentalDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Rentals.RentalDto",
+                    "typeSimple": "MP.Rentals.RentalDto"
                   }
                 }
               ]
@@ -10330,6 +10463,43 @@
               "allowAnonymous": null,
               "implementFrom": "MP.Rentals.IRentalAppService"
             },
+            "GetActiveRentalForBoothAsyncByBoothId": {
+              "uniqueName": "GetActiveRentalForBoothAsyncByBoothId",
+              "name": "GetActiveRentalForBoothAsync",
+              "httpMethod": "GET",
+              "url": "api/app/rentals/active-for-booth/{boothId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "boothId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "boothId",
+                  "name": "boothId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Rentals.RentalDto",
+                "typeSimple": "MP.Rentals.RentalDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MP.Rentals.IRentalAppService"
+            },
             "GetBoothCalendarAsyncByInput": {
               "uniqueName": "GetBoothCalendarAsyncByInput",
               "name": "GetBoothCalendarAsync",
@@ -10363,6 +10533,274 @@
               "returnValue": {
                 "type": "MP.Rentals.BoothCalendarResponseDto",
                 "typeSimple": "MP.Rentals.BoothCalendarResponseDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MP.Rentals.IRentalAppService"
+            },
+            "CheckAvailabilityAsyncByBoothIdAndStartDateAndEndDate": {
+              "uniqueName": "CheckAvailabilityAsyncByBoothIdAndStartDateAndEndDate",
+              "name": "CheckAvailabilityAsync",
+              "httpMethod": "GET",
+              "url": "api/app/rentals/check-availability",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "boothId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "startDate",
+                  "typeAsString": "System.DateTime, System.Private.CoreLib",
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "endDate",
+                  "typeAsString": "System.DateTime, System.Private.CoreLib",
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "boothId",
+                  "name": "boothId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "startDate",
+                  "name": "startDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "endDate",
+                  "name": "endDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Boolean",
+                "typeSimple": "boolean"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MP.Rentals.IRentalAppService"
+            },
+            "CalculateCostAsyncByBoothIdAndBoothTypeIdAndStartDateAndEndDate": {
+              "uniqueName": "CalculateCostAsyncByBoothIdAndBoothTypeIdAndStartDateAndEndDate",
+              "name": "CalculateCostAsync",
+              "httpMethod": "GET",
+              "url": "api/app/rentals/calculate-cost",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "boothId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "boothTypeId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "startDate",
+                  "typeAsString": "System.DateTime, System.Private.CoreLib",
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "endDate",
+                  "typeAsString": "System.DateTime, System.Private.CoreLib",
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "boothId",
+                  "name": "boothId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "boothTypeId",
+                  "name": "boothTypeId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "startDate",
+                  "name": "startDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "endDate",
+                  "name": "endDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Decimal",
+                "typeSimple": "number"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MP.Rentals.IRentalAppService"
+            },
+            "GetMaxExtensionDateAsyncByBoothIdAndCurrentRentalEndDate": {
+              "uniqueName": "GetMaxExtensionDateAsyncByBoothIdAndCurrentRentalEndDate",
+              "name": "GetMaxExtensionDateAsync",
+              "httpMethod": "GET",
+              "url": "api/app/rentals/max-extension-date",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "boothId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "currentRentalEndDate",
+                  "typeAsString": "System.DateTime, System.Private.CoreLib",
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "boothId",
+                  "name": "boothId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "currentRentalEndDate",
+                  "name": "currentRentalEndDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Rentals.MaxExtensionDateResponseDto",
+                "typeSimple": "MP.Rentals.MaxExtensionDateResponseDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MP.Rentals.IRentalAppService"
+            },
+            "AdminManageBoothRentalAsyncByInput": {
+              "uniqueName": "AdminManageBoothRentalAsyncByInput",
+              "name": "AdminManageBoothRentalAsync",
+              "httpMethod": "POST",
+              "url": "api/app/rentals/admin-manage",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Rentals.AdminManageBoothRentalDto, MP.Application.Contracts",
+                  "type": "MP.Rentals.AdminManageBoothRentalDto",
+                  "typeSimple": "MP.Rentals.AdminManageBoothRentalDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Rentals.AdminManageBoothRentalDto",
+                  "typeSimple": "MP.Rentals.AdminManageBoothRentalDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Rentals.RentalDto",
+                "typeSimple": "MP.Rentals.RentalDto"
               },
               "allowAnonymous": null,
               "implementFrom": "MP.Rentals.IRentalAppService"
@@ -12305,6 +12743,698 @@
             }
           }
         },
+        "MP.Promotions.PromotionAppService": {
+          "controllerName": "Promotion",
+          "controllerGroupName": "Promotion",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "MP.Promotions.PromotionAppService",
+          "interfaces": [
+            {
+              "type": "MP.Promotions.IPromotionAppService",
+              "name": "IPromotionAppService",
+              "methods": [
+                {
+                  "name": "GetListAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Promotions.GetPromotionsInput, MP.Application.Contracts",
+                      "type": "MP.Promotions.GetPromotionsInput",
+                      "typeSimple": "MP.Promotions.GetPromotionsInput",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<MP.Promotions.PromotionDto>",
+                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<MP.Promotions.PromotionDto>"
+                  }
+                },
+                {
+                  "name": "GetAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Promotions.PromotionDto",
+                    "typeSimple": "MP.Promotions.PromotionDto"
+                  }
+                },
+                {
+                  "name": "CreateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Promotions.CreatePromotionDto, MP.Application.Contracts",
+                      "type": "MP.Promotions.CreatePromotionDto",
+                      "typeSimple": "MP.Promotions.CreatePromotionDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Promotions.PromotionDto",
+                    "typeSimple": "MP.Promotions.PromotionDto"
+                  }
+                },
+                {
+                  "name": "UpdateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Promotions.UpdatePromotionDto, MP.Application.Contracts",
+                      "type": "MP.Promotions.UpdatePromotionDto",
+                      "typeSimple": "MP.Promotions.UpdatePromotionDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Promotions.PromotionDto",
+                    "typeSimple": "MP.Promotions.PromotionDto"
+                  }
+                },
+                {
+                  "name": "DeleteAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "ActivateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Promotions.PromotionDto",
+                    "typeSimple": "MP.Promotions.PromotionDto"
+                  }
+                },
+                {
+                  "name": "DeactivateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Promotions.PromotionDto",
+                    "typeSimple": "MP.Promotions.PromotionDto"
+                  }
+                },
+                {
+                  "name": "GetActivePromotionsAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<MP.Promotions.PromotionDto>",
+                    "typeSimple": "[MP.Promotions.PromotionDto]"
+                  }
+                },
+                {
+                  "name": "ValidatePromoCodeAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Promotions.ValidatePromoCodeInput, MP.Application.Contracts",
+                      "type": "MP.Promotions.ValidatePromoCodeInput",
+                      "typeSimple": "MP.Promotions.ValidatePromoCodeInput",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Promotions.PromotionDto",
+                    "typeSimple": "MP.Promotions.PromotionDto"
+                  }
+                },
+                {
+                  "name": "CalculateDiscountAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Promotions.CalculateDiscountInput, MP.Application.Contracts",
+                      "type": "MP.Promotions.CalculateDiscountInput",
+                      "typeSimple": "MP.Promotions.CalculateDiscountInput",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Promotions.CalculateDiscountOutput",
+                    "typeSimple": "MP.Promotions.CalculateDiscountOutput"
+                  }
+                },
+                {
+                  "name": "ApplyPromotionToCartAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Promotions.ApplyPromotionToCartInput, MP.Application.Contracts",
+                      "type": "MP.Promotions.ApplyPromotionToCartInput",
+                      "typeSimple": "MP.Promotions.ApplyPromotionToCartInput",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RemovePromotionFromCartAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "GetListAsyncByInput": {
+              "uniqueName": "GetListAsyncByInput",
+              "name": "GetListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/promotion",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Promotions.GetPromotionsInput, MP.Application.Contracts",
+                  "type": "MP.Promotions.GetPromotionsInput",
+                  "typeSimple": "MP.Promotions.GetPromotionsInput",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "FilterText",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "IsActive",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Type",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Sorting",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "SkipCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "MaxResultCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "Volo.Abp.Application.Dtos.PagedResultDto<MP.Promotions.PromotionDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<MP.Promotions.PromotionDto>"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Promotions.IPromotionAppService"
+            },
+            "GetAsyncById": {
+              "uniqueName": "GetAsyncById",
+              "name": "GetAsync",
+              "httpMethod": "GET",
+              "url": "api/app/promotion/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Promotions.PromotionDto",
+                "typeSimple": "MP.Promotions.PromotionDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Promotions.IPromotionAppService"
+            },
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/promotion",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Promotions.CreatePromotionDto, MP.Application.Contracts",
+                  "type": "MP.Promotions.CreatePromotionDto",
+                  "typeSimple": "MP.Promotions.CreatePromotionDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Promotions.CreatePromotionDto",
+                  "typeSimple": "MP.Promotions.CreatePromotionDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Promotions.PromotionDto",
+                "typeSimple": "MP.Promotions.PromotionDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Promotions.IPromotionAppService"
+            },
+            "UpdateAsyncByIdAndInput": {
+              "uniqueName": "UpdateAsyncByIdAndInput",
+              "name": "UpdateAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/promotion/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Promotions.UpdatePromotionDto, MP.Application.Contracts",
+                  "type": "MP.Promotions.UpdatePromotionDto",
+                  "typeSimple": "MP.Promotions.UpdatePromotionDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Promotions.UpdatePromotionDto",
+                  "typeSimple": "MP.Promotions.UpdatePromotionDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Promotions.PromotionDto",
+                "typeSimple": "MP.Promotions.PromotionDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Promotions.IPromotionAppService"
+            },
+            "DeleteAsyncById": {
+              "uniqueName": "DeleteAsyncById",
+              "name": "DeleteAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/promotion/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Promotions.IPromotionAppService"
+            },
+            "ActivateAsyncById": {
+              "uniqueName": "ActivateAsyncById",
+              "name": "ActivateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/promotion/{id}/activate",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Promotions.PromotionDto",
+                "typeSimple": "MP.Promotions.PromotionDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Promotions.IPromotionAppService"
+            },
+            "DeactivateAsyncById": {
+              "uniqueName": "DeactivateAsyncById",
+              "name": "DeactivateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/promotion/{id}/deactivate",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Promotions.PromotionDto",
+                "typeSimple": "MP.Promotions.PromotionDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Promotions.IPromotionAppService"
+            },
+            "GetActivePromotionsAsync": {
+              "uniqueName": "GetActivePromotionsAsync",
+              "name": "GetActivePromotionsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/promotion/active-promotions",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<MP.Promotions.PromotionDto>",
+                "typeSimple": "[MP.Promotions.PromotionDto]"
+              },
+              "allowAnonymous": true,
+              "implementFrom": "MP.Promotions.IPromotionAppService"
+            },
+            "ValidatePromoCodeAsyncByInput": {
+              "uniqueName": "ValidatePromoCodeAsyncByInput",
+              "name": "ValidatePromoCodeAsync",
+              "httpMethod": "POST",
+              "url": "api/app/promotion/validate-promo-code",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Promotions.ValidatePromoCodeInput, MP.Application.Contracts",
+                  "type": "MP.Promotions.ValidatePromoCodeInput",
+                  "typeSimple": "MP.Promotions.ValidatePromoCodeInput",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Promotions.ValidatePromoCodeInput",
+                  "typeSimple": "MP.Promotions.ValidatePromoCodeInput",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Promotions.PromotionDto",
+                "typeSimple": "MP.Promotions.PromotionDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Promotions.IPromotionAppService"
+            },
+            "CalculateDiscountAsyncByInput": {
+              "uniqueName": "CalculateDiscountAsyncByInput",
+              "name": "CalculateDiscountAsync",
+              "httpMethod": "POST",
+              "url": "api/app/promotion/calculate-discount",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Promotions.CalculateDiscountInput, MP.Application.Contracts",
+                  "type": "MP.Promotions.CalculateDiscountInput",
+                  "typeSimple": "MP.Promotions.CalculateDiscountInput",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Promotions.CalculateDiscountInput",
+                  "typeSimple": "MP.Promotions.CalculateDiscountInput",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Promotions.CalculateDiscountOutput",
+                "typeSimple": "MP.Promotions.CalculateDiscountOutput"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Promotions.IPromotionAppService"
+            },
+            "ApplyPromotionToCartAsyncByInput": {
+              "uniqueName": "ApplyPromotionToCartAsyncByInput",
+              "name": "ApplyPromotionToCartAsync",
+              "httpMethod": "POST",
+              "url": "api/app/promotion/apply-promotion-to-cart",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Promotions.ApplyPromotionToCartInput, MP.Application.Contracts",
+                  "type": "MP.Promotions.ApplyPromotionToCartInput",
+                  "typeSimple": "MP.Promotions.ApplyPromotionToCartInput",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Promotions.ApplyPromotionToCartInput",
+                  "typeSimple": "MP.Promotions.ApplyPromotionToCartInput",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Promotions.IPromotionAppService"
+            },
+            "RemovePromotionFromCartAsync": {
+              "uniqueName": "RemovePromotionFromCartAsync",
+              "name": "RemovePromotionFromCartAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/promotion/promotion-from-cart",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Promotions.IPromotionAppService"
+            }
+          }
+        },
         "MP.Rentals.RentalAppService": {
           "controllerName": "Rental",
           "controllerGroupName": "Rental",
@@ -12520,6 +13650,23 @@
                   }
                 },
                 {
+                  "name": "GetActiveRentalForBoothAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "boothId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Rentals.RentalDto",
+                    "typeSimple": "MP.Rentals.RentalDto"
+                  }
+                },
+                {
                   "name": "GetMyRentalsAsync",
                   "parametersOnMethod": [
                     {
@@ -12609,6 +13756,122 @@
                   "returnValue": {
                     "type": "MP.Rentals.BoothCalendarResponseDto",
                     "typeSimple": "MP.Rentals.BoothCalendarResponseDto"
+                  }
+                },
+                {
+                  "name": "CheckAvailabilityAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "boothId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "startDate",
+                      "typeAsString": "System.DateTime, System.Private.CoreLib",
+                      "type": "System.DateTime",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "endDate",
+                      "typeAsString": "System.DateTime, System.Private.CoreLib",
+                      "type": "System.DateTime",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Boolean",
+                    "typeSimple": "boolean"
+                  }
+                },
+                {
+                  "name": "CalculateCostAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "boothId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "boothTypeId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "startDate",
+                      "typeAsString": "System.DateTime, System.Private.CoreLib",
+                      "type": "System.DateTime",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "endDate",
+                      "typeAsString": "System.DateTime, System.Private.CoreLib",
+                      "type": "System.DateTime",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Decimal",
+                    "typeSimple": "number"
+                  }
+                },
+                {
+                  "name": "GetMaxExtensionDateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "boothId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "currentRentalEndDate",
+                      "typeAsString": "System.DateTime, System.Private.CoreLib",
+                      "type": "System.DateTime",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Rentals.MaxExtensionDateResponseDto",
+                    "typeSimple": "MP.Rentals.MaxExtensionDateResponseDto"
+                  }
+                },
+                {
+                  "name": "AdminManageBoothRentalAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Rentals.AdminManageBoothRentalDto, MP.Application.Contracts",
+                      "type": "MP.Rentals.AdminManageBoothRentalDto",
+                      "typeSimple": "MP.Rentals.AdminManageBoothRentalDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Rentals.RentalDto",
+                    "typeSimple": "MP.Rentals.RentalDto"
                   }
                 }
               ]
@@ -13173,6 +14436,43 @@
               "allowAnonymous": false,
               "implementFrom": "MP.Rentals.IRentalAppService"
             },
+            "GetActiveRentalForBoothAsyncByBoothId": {
+              "uniqueName": "GetActiveRentalForBoothAsyncByBoothId",
+              "name": "GetActiveRentalForBoothAsync",
+              "httpMethod": "GET",
+              "url": "api/app/rental/active-rental-for-booth/{boothId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "boothId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "boothId",
+                  "name": "boothId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Rentals.RentalDto",
+                "typeSimple": "MP.Rentals.RentalDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Rentals.IRentalAppService"
+            },
             "GetMyRentalsAsyncByInput": {
               "uniqueName": "GetMyRentalsAsyncByInput",
               "name": "GetMyRentalsAsync",
@@ -13509,6 +14809,369 @@
               },
               "allowAnonymous": false,
               "implementFrom": "MP.Rentals.IRentalAppService"
+            },
+            "CheckAvailabilityAsyncByBoothIdAndStartDateAndEndDate": {
+              "uniqueName": "CheckAvailabilityAsyncByBoothIdAndStartDateAndEndDate",
+              "name": "CheckAvailabilityAsync",
+              "httpMethod": "POST",
+              "url": "api/app/rental/check-availability/{boothId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "boothId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "startDate",
+                  "typeAsString": "System.DateTime, System.Private.CoreLib",
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "endDate",
+                  "typeAsString": "System.DateTime, System.Private.CoreLib",
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "boothId",
+                  "name": "boothId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "startDate",
+                  "name": "startDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "endDate",
+                  "name": "endDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Boolean",
+                "typeSimple": "boolean"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Rentals.IRentalAppService"
+            },
+            "CalculateCostAsyncByBoothIdAndBoothTypeIdAndStartDateAndEndDate": {
+              "uniqueName": "CalculateCostAsyncByBoothIdAndBoothTypeIdAndStartDateAndEndDate",
+              "name": "CalculateCostAsync",
+              "httpMethod": "POST",
+              "url": "api/app/rental/calculate-cost",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "boothId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "boothTypeId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "startDate",
+                  "typeAsString": "System.DateTime, System.Private.CoreLib",
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "endDate",
+                  "typeAsString": "System.DateTime, System.Private.CoreLib",
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "boothId",
+                  "name": "boothId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "boothTypeId",
+                  "name": "boothTypeId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "startDate",
+                  "name": "startDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "endDate",
+                  "name": "endDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Decimal",
+                "typeSimple": "number"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Rentals.IRentalAppService"
+            },
+            "GetMaxExtensionDateAsyncByBoothIdAndCurrentRentalEndDate": {
+              "uniqueName": "GetMaxExtensionDateAsyncByBoothIdAndCurrentRentalEndDate",
+              "name": "GetMaxExtensionDateAsync",
+              "httpMethod": "GET",
+              "url": "api/app/rental/max-extension-date/{boothId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "boothId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "currentRentalEndDate",
+                  "typeAsString": "System.DateTime, System.Private.CoreLib",
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "boothId",
+                  "name": "boothId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "currentRentalEndDate",
+                  "name": "currentRentalEndDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Rentals.MaxExtensionDateResponseDto",
+                "typeSimple": "MP.Rentals.MaxExtensionDateResponseDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Rentals.IRentalAppService"
+            },
+            "AdminManageBoothRentalAsyncByInput": {
+              "uniqueName": "AdminManageBoothRentalAsyncByInput",
+              "name": "AdminManageBoothRentalAsync",
+              "httpMethod": "POST",
+              "url": "api/app/rental/admin-manage-booth-rental",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Rentals.AdminManageBoothRentalDto, MP.Application.Contracts",
+                  "type": "MP.Rentals.AdminManageBoothRentalDto",
+                  "typeSimple": "MP.Rentals.AdminManageBoothRentalDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Rentals.AdminManageBoothRentalDto",
+                  "typeSimple": "MP.Rentals.AdminManageBoothRentalDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Rentals.RentalDto",
+                "typeSimple": "MP.Rentals.RentalDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Rentals.IRentalAppService"
+            }
+          }
+        },
+        "MP.Tenants.TenantCurrencyAppService": {
+          "controllerName": "TenantCurrency",
+          "controllerGroupName": "TenantCurrency",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "MP.Tenants.TenantCurrencyAppService",
+          "interfaces": [
+            {
+              "type": "MP.Tenants.ITenantCurrencyAppService",
+              "name": "ITenantCurrencyAppService",
+              "methods": [
+                {
+                  "name": "GetTenantCurrencyAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "MP.Tenants.TenantCurrencyDto",
+                    "typeSimple": "MP.Tenants.TenantCurrencyDto"
+                  }
+                },
+                {
+                  "name": "UpdateTenantCurrencyAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Tenants.TenantCurrencyDto, MP.Application.Contracts",
+                      "type": "MP.Tenants.TenantCurrencyDto",
+                      "typeSimple": "MP.Tenants.TenantCurrencyDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "GetTenantCurrencyAsync": {
+              "uniqueName": "GetTenantCurrencyAsync",
+              "name": "GetTenantCurrencyAsync",
+              "httpMethod": "GET",
+              "url": "api/app/tenant-currency/tenant-currency",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "MP.Tenants.TenantCurrencyDto",
+                "typeSimple": "MP.Tenants.TenantCurrencyDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Tenants.ITenantCurrencyAppService"
+            },
+            "UpdateTenantCurrencyAsyncByInput": {
+              "uniqueName": "UpdateTenantCurrencyAsyncByInput",
+              "name": "UpdateTenantCurrencyAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/tenant-currency/tenant-currency",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Tenants.TenantCurrencyDto, MP.Application.Contracts",
+                  "type": "MP.Tenants.TenantCurrencyDto",
+                  "typeSimple": "MP.Tenants.TenantCurrencyDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Tenants.TenantCurrencyDto",
+                  "typeSimple": "MP.Tenants.TenantCurrencyDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Tenants.ITenantCurrencyAppService"
             }
           }
         }
@@ -22746,30 +24409,6 @@
           "regex": null
         },
         {
-          "name": "Currency",
-          "jsonName": null,
-          "type": "MP.Domain.Booths.Currency",
-          "typeSimple": "enum",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CurrencyDisplayName",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
           "name": "RentalStartDate",
           "jsonName": null,
           "type": "System.DateTime?",
@@ -22903,30 +24542,6 @@
           "jsonName": null,
           "type": "System.Decimal",
           "typeSimple": "number",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Currency",
-          "jsonName": null,
-          "type": "MP.Domain.Booths.Currency",
-          "typeSimple": "enum",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CurrencyDisplayName",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -23083,18 +24698,6 @@
           "minimum": "0.01",
           "maximum": "9999.99",
           "regex": null
-        },
-        {
-          "name": "Currency",
-          "jsonName": null,
-          "type": "MP.Domain.Booths.Currency",
-          "typeSimple": "enum",
-          "isRequired": true,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
         }
       ]
     },
@@ -23229,18 +24832,6 @@
           "maxLength": null,
           "minimum": "0.01",
           "maximum": "9999.99",
-          "regex": null
-        },
-        {
-          "name": "Currency",
-          "jsonName": null,
-          "type": "MP.Domain.Booths.Currency",
-          "typeSimple": "enum",
-          "isRequired": true,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
           "regex": null
         },
         {
@@ -23442,6 +25033,54 @@
           "regex": null
         },
         {
+          "name": "AppliedPromotionId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PromotionName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DiscountAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PromoCodeUsed",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "CreationTime",
           "jsonName": null,
           "type": "System.DateTime",
@@ -23583,6 +25222,30 @@
           "regex": null
         },
         {
+          "name": "DiscountAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FinalPrice",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "BoothNumber",
           "jsonName": null,
           "type": "System.String",
@@ -23623,6 +25286,30 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ReservationExpiresAt",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsExpired",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -24371,6 +26058,24 @@
         3,
         4,
         5
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
+    "MP.Domain.Rentals.RentalPaymentMethod": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Online",
+        "Cash",
+        "Terminal",
+        "Free"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2,
+        3
       ],
       "genericArguments": null,
       "properties": null
@@ -25557,7 +27262,7 @@
           "jsonName": null,
           "type": "System.Decimal",
           "typeSimple": "number",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": "0",
@@ -25623,7 +27328,7 @@
           "jsonName": null,
           "type": "System.Decimal",
           "typeSimple": "number",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": "0",
@@ -25763,18 +27468,6 @@
           "maxLength": null,
           "minimum": "0.01",
           "maximum": "1.7976931348623157E+308",
-          "regex": null
-        },
-        {
-          "name": "Currency",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
           "regex": null
         }
       ]
@@ -26120,13 +27813,1032 @@
           "minimum": "0.01",
           "maximum": "1.7976931348623157E+308",
           "regex": null
+        }
+      ]
+    },
+    "MP.Promotions.ApplyPromotionToCartInput": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PromoCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Promotions.CalculateDiscountInput": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PromotionId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         },
         {
-          "name": "Currency",
+          "name": "TotalAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0.01",
+          "maximum": "1.7976931348623157E+308",
+          "regex": null
+        }
+      ]
+    },
+    "MP.Promotions.CalculateDiscountOutput": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "DiscountAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FinalAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PromotionName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Promotions.CreatePromotionDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
           "isRequired": true,
+          "minLength": 0,
+          "maxLength": 200,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Type",
+          "jsonName": null,
+          "type": "MP.Promotions.PromotionType",
+          "typeSimple": "enum",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DisplayMode",
+          "jsonName": null,
+          "type": "MP.Promotions.PromotionDisplayMode",
+          "typeSimple": "enum",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ValidFrom",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ValidTo",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Priority",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0",
+          "maximum": "2147483647",
+          "regex": null
+        },
+        {
+          "name": "MinimumBoothsCount",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "1",
+          "maximum": "2147483647",
+          "regex": null
+        },
+        {
+          "name": "PromoCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DiscountType",
+          "jsonName": null,
+          "type": "MP.Promotions.DiscountType",
+          "typeSimple": "enum",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DiscountValue",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0.01",
+          "maximum": "1.7976931348623157E+308",
+          "regex": null
+        },
+        {
+          "name": "MaxDiscountAmount",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0.01",
+          "maximum": "1.7976931348623157E+308",
+          "regex": null
+        },
+        {
+          "name": "MaxUsageCount",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "1",
+          "maximum": "2147483647",
+          "regex": null
+        },
+        {
+          "name": "MaxUsagePerUser",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "1",
+          "maximum": "2147483647",
+          "regex": null
+        },
+        {
+          "name": "CustomerMessage",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ApplicableBoothTypeIds",
+          "jsonName": null,
+          "type": "[System.Guid]",
+          "typeSimple": "[string]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Promotions.DiscountType": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Percentage",
+        "FixedAmount"
+      ],
+      "enumValues": [
+        0,
+        1
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
+    "MP.Promotions.GetPromotionsInput": {
+      "baseType": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "FilterText",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Type",
+          "jsonName": null,
+          "type": "MP.Promotions.PromotionType?",
+          "typeSimple": "enum?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Promotions.PromotionDisplayMode": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "None",
+        "StickyBottomRight",
+        "StickyBottomLeft",
+        "Popup",
+        "Banner"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
+    "MP.Promotions.PromotionDto": {
+      "baseType": "Volo.Abp.Application.Dtos.FullAuditedEntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Type",
+          "jsonName": null,
+          "type": "MP.Promotions.PromotionType",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DisplayMode",
+          "jsonName": null,
+          "type": "MP.Promotions.PromotionDisplayMode",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ValidFrom",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ValidTo",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Priority",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MinimumBoothsCount",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PromoCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RequiresPromoCode",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DiscountType",
+          "jsonName": null,
+          "type": "MP.Promotions.DiscountType",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DiscountValue",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MaxDiscountAmount",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MaxUsageCount",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CurrentUsageCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MaxUsagePerUser",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CustomerMessage",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ApplicableBoothTypeIds",
+          "jsonName": null,
+          "type": "[System.Guid]",
+          "typeSimple": "[string]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Promotions.PromotionType": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Quantity",
+        "PromoCode",
+        "DateRange"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
+    "MP.Promotions.UpdatePromotionDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 200,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Type",
+          "jsonName": null,
+          "type": "MP.Promotions.PromotionType",
+          "typeSimple": "enum",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DisplayMode",
+          "jsonName": null,
+          "type": "MP.Promotions.PromotionDisplayMode",
+          "typeSimple": "enum",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ValidFrom",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ValidTo",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Priority",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0",
+          "maximum": "2147483647",
+          "regex": null
+        },
+        {
+          "name": "MinimumBoothsCount",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "1",
+          "maximum": "2147483647",
+          "regex": null
+        },
+        {
+          "name": "PromoCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DiscountType",
+          "jsonName": null,
+          "type": "MP.Promotions.DiscountType",
+          "typeSimple": "enum",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DiscountValue",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0.01",
+          "maximum": "1.7976931348623157E+308",
+          "regex": null
+        },
+        {
+          "name": "MaxDiscountAmount",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0.01",
+          "maximum": "1.7976931348623157E+308",
+          "regex": null
+        },
+        {
+          "name": "MaxUsageCount",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "1",
+          "maximum": "2147483647",
+          "regex": null
+        },
+        {
+          "name": "MaxUsagePerUser",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "1",
+          "maximum": "2147483647",
+          "regex": null
+        },
+        {
+          "name": "CustomerMessage",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ApplicableBoothTypeIds",
+          "jsonName": null,
+          "type": "[System.Guid]",
+          "typeSimple": "[string]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Promotions.ValidatePromoCodeInput": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PromoCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Rentals.AdminManageBoothRentalDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "BoothId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BoothTypeId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StartDate",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EndDate",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PaymentMethod",
+          "jsonName": null,
+          "type": "MP.Domain.Rentals.RentalPaymentMethod",
+          "typeSimple": "enum",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TerminalTransactionId",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TerminalReceiptNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Notes",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsExtension",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ExistingRentalId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OnlineTimeoutMinutes",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,
@@ -26398,14 +29110,16 @@
         "Reserved",
         "Occupied",
         "Unavailable",
-        "PastDate"
+        "PastDate",
+        "Historical"
       ],
       "enumValues": [
         0,
         1,
         2,
         3,
-        4
+        4,
+        5
       ],
       "genericArguments": null,
       "properties": null
@@ -26730,6 +29444,18 @@
       "genericArguments": null,
       "properties": [
         {
+          "name": "RentalId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "NewEndDate",
           "jsonName": null,
           "type": "System.DateTime",
@@ -26740,8 +29466,74 @@
           "minimum": null,
           "maximum": null,
           "regex": null
+        },
+        {
+          "name": "PaymentType",
+          "jsonName": null,
+          "type": "MP.Rentals.ExtensionPaymentType",
+          "typeSimple": "enum",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TerminalTransactionId",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TerminalReceiptNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OnlineTimeoutMinutes",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
         }
       ]
+    },
+    "MP.Rentals.ExtensionPaymentType": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Free",
+        "Cash",
+        "Terminal",
+        "Online"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "genericArguments": null,
+      "properties": null
     },
     "MP.Rentals.GetRentalListDto": {
       "baseType": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
@@ -26827,6 +29619,75 @@
           "jsonName": null,
           "type": "System.Boolean?",
           "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Rentals.MaxExtensionDateResponseDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "MaxExtensionDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HasBlockingRental",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "NextRentalId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "NextRentalStartDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Message",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -27001,6 +29862,18 @@
           "jsonName": null,
           "type": "System.Decimal",
           "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Currency",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -27414,6 +30287,27 @@
           "isRequired": false,
           "minLength": 0,
           "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Tenants.TenantCurrencyDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Currency",
+          "jsonName": null,
+          "type": "MP.Domain.Booths.Currency",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
           "minimum": null,
           "maximum": null,
           "regex": null

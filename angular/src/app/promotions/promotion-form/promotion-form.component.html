@@ -1,0 +1,346 @@
+<div class="card" style="max-width: 1200px; margin: 0 auto;">
+  <div class="card-header">
+    <h3>
+      {{ (isEditMode ? 'MP::Promotion:EditPromotion' : 'MP::Promotion:NewPromotion') | abpLocalization }}
+    </h3>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loading">
+      <!-- Basic Information -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h5>{{ 'MP::BasicInformation' | abpLocalization }}</h5>
+          <hr />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="name" class="form-label">
+            {{ 'MP::Promotion:Name' | abpLocalization }} <span class="text-danger">*</span>
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:NameHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <input
+            id="name"
+            type="text"
+            class="form-control"
+            formControlName="name"
+            [class.is-invalid]="form.get('name')?.invalid && form.get('name')?.touched"
+          />
+          <div class="invalid-feedback" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
+            {{ 'MP::FieldRequired' | abpLocalization }}
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="priority" class="form-label">
+            {{ 'MP::Promotion:Priority' | abpLocalization }} <span class="text-danger">*</span>
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:PriorityHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <input
+            id="priority"
+            type="number"
+            class="form-control"
+            formControlName="priority"
+            [class.is-invalid]="form.get('priority')?.invalid && form.get('priority')?.touched"
+          />
+        </div>
+
+        <div class="col-12 mb-3">
+          <label for="description" class="form-label">
+            {{ 'MP::Promotion:Description' | abpLocalization }}
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:DescriptionHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <textarea
+            id="description"
+            class="form-control"
+            formControlName="description"
+            rows="3"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Promotion Type & Display -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h5>{{ 'MP::PromotionConfiguration' | abpLocalization }}</h5>
+          <hr />
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="type" class="form-label">
+            {{ 'MP::Promotion:Type' | abpLocalization }} <span class="text-danger">*</span>
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:TypeHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <select id="type" class="form-select" formControlName="type">
+            <option *ngFor="let option of promotionTypeOptions" [ngValue]="option.value">
+              {{ 'MP::Enum:PromotionType:' + option.value | abpLocalization }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="displayMode" class="form-label">
+            {{ 'MP::Promotion:DisplayMode' | abpLocalization }} <span class="text-danger">*</span>
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:DisplayModeHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <select id="displayMode" class="form-select" formControlName="displayMode">
+            <option *ngFor="let option of displayModeOptions" [ngValue]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="promoCode" class="form-label">
+            {{ 'MP::Promotion:PromoCode' | abpLocalization }}
+            <span class="text-danger" *ngIf="isPromoCodeRequired">*</span>
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:PromoCodeHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <input
+            id="promoCode"
+            type="text"
+            class="form-control text-uppercase"
+            formControlName="promoCode"
+            [class.is-invalid]="form.get('promoCode')?.invalid && form.get('promoCode')?.touched"
+          />
+        </div>
+      </div>
+
+      <!-- Discount Configuration -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h5>{{ 'MP::DiscountConfiguration' | abpLocalization }}</h5>
+          <hr />
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="discountType" class="form-label">
+            {{ 'MP::Promotion:DiscountType' | abpLocalization }} <span class="text-danger">*</span>
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:DiscountTypeHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <select id="discountType" class="form-select" formControlName="discountType">
+            <option *ngFor="let option of discountTypeOptions" [ngValue]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="discountValue" class="form-label">
+            {{ 'MP::Promotion:DiscountValue' | abpLocalization }} <span class="text-danger">*</span>
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:DiscountValueHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <div class="input-group">
+            <input
+              id="discountValue"
+              type="number"
+              class="form-control"
+              formControlName="discountValue"
+              [class.is-invalid]="form.get('discountValue')?.invalid && form.get('discountValue')?.touched"
+              step="0.01"
+            />
+            <span class="input-group-text">{{ isPercentageDiscount ? '%' : 'PLN' }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3" *ngIf="isPercentageDiscount">
+          <label for="maxDiscountAmount" class="form-label">
+            {{ 'MP::Promotion:MaxDiscountAmount' | abpLocalization }}
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:MaxDiscountAmountHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <div class="input-group">
+            <input
+              id="maxDiscountAmount"
+              type="number"
+              class="form-control"
+              formControlName="maxDiscountAmount"
+              step="0.01"
+            />
+            <span class="input-group-text">PLN</span>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="minimumBoothsCount" class="form-label">
+            {{ 'MP::Promotion:MinimumBooths' | abpLocalization }}
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:MinimumBoothsCountHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <input
+            id="minimumBoothsCount"
+            type="number"
+            class="form-control"
+            formControlName="minimumBoothsCount"
+          />
+        </div>
+      </div>
+
+      <!-- Validity Period -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h5>{{ 'MP::ValidityPeriod' | abpLocalization }}</h5>
+          <hr />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="validFrom" class="form-label">
+            {{ 'MP::Promotion:ValidFrom' | abpLocalization }}
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:ValidFromHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <input
+            id="validFrom"
+            type="datetime-local"
+            class="form-control"
+            formControlName="validFrom"
+          />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="validTo" class="form-label">
+            {{ 'MP::Promotion:ValidTo' | abpLocalization }}
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:ValidToHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <input
+            id="validTo"
+            type="datetime-local"
+            class="form-control"
+            formControlName="validTo"
+          />
+        </div>
+      </div>
+
+      <!-- Usage Limits -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h5>{{ 'MP::UsageLimits' | abpLocalization }}</h5>
+          <hr />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="maxUsageCount" class="form-label">
+            {{ 'MP::Promotion:MaxUsageCount' | abpLocalization }}
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:MaxUsageCountHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <input
+            id="maxUsageCount"
+            type="number"
+            class="form-control"
+            formControlName="maxUsageCount"
+          />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="maxUsagePerUser" class="form-label">
+            {{ 'MP::Promotion:MaxUsagePerUser' | abpLocalization }}
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:MaxUsagePerUserHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <input
+            id="maxUsagePerUser"
+            type="number"
+            class="form-control"
+            formControlName="maxUsagePerUser"
+          />
+        </div>
+      </div>
+
+      <!-- Customer Message & Status -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h5>{{ 'MP::CustomerMessages' | abpLocalization }}</h5>
+          <hr />
+        </div>
+
+        <div class="col-md-8 mb-3">
+          <label for="customerMessage" class="form-label">
+            {{ 'MP::Promotion:CustomerMessage' | abpLocalization }}
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:CustomerMessageHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <textarea
+            id="customerMessage"
+            class="form-control"
+            formControlName="customerMessage"
+            rows="3"
+            [placeholder]="'MP::Promotion:CustomerMessageHelp' | abpLocalization"
+          ></textarea>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="isActive" class="form-label">
+            {{ 'MP::Promotion:IsActive' | abpLocalization }}
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:IsActiveHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <div class="form-check form-switch">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="isActive"
+              formControlName="isActive"
+            />
+            <label class="form-check-label" for="isActive">
+              {{ (form.get('isActive')?.value ? 'MP::Common:Active' : 'MP::Common:Inactive') | abpLocalization }}
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="row">
+        <div class="col-12">
+          <button
+            type="submit"
+            class="btn btn-primary me-2"
+            [disabled]="submitting"
+          >
+            <i class="fa fa-save" *ngIf="!submitting"></i>
+            <i class="fa fa-spinner fa-spin" *ngIf="submitting"></i>
+            {{ (isEditMode ? 'AbpUi::Save' : 'MP::Create') | abpLocalization }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="cancel()"
+            [disabled]="submitting"
+          >
+            {{ 'AbpUi::Cancel' | abpLocalization }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="loading" class="text-center py-5">
+      <i class="fa fa-spinner fa-spin fa-3x"></i>
+      <p class="mt-3">{{ 'MP::Loading' | abpLocalization }}</p>
+    </div>
+  </div>
+</div>

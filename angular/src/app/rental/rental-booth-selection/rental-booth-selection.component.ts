@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BoothService } from '../../services/booth.service';
+import { TenantCurrencyService } from '../../services/tenant-currency.service';
 import { BoothDto, GetBoothListDto, BoothStatus } from '../../shared/models/booth.model';
 import { MessageService } from 'primeng/api';
 import { PagedResultDto } from '@abp/ng.core';
@@ -18,14 +19,21 @@ export class RentalBoothSelectionComponent implements OnInit {
   pageSize = 12;
   totalCount = 0;
   searchFilter = '';
+  tenantCurrencyCode: string = 'PLN';
 
   constructor(
     private boothService: BoothService,
+    private tenantCurrencyService: TenantCurrencyService,
     public router: Router,
     private messageService: MessageService
   ) {}
 
   ngOnInit(): void {
+    // Load tenant currency
+    this.tenantCurrencyService.getCurrency().subscribe(result => {
+      this.tenantCurrencyCode = this.tenantCurrencyService.getCurrencyName(result.currency);
+    });
+
     this.loadBooths();
   }
 

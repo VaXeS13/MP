@@ -21,10 +21,6 @@ namespace MP.Booths
         [Display(Name = "Cena za dzień")]
         public decimal PricePerDay { get; set; }
 
-        [Required]
-        [Display(Name = "Waluta")]
-        public Currency Currency { get; set; }
-
         [Display(Name = "Status")]
         public BoothStatus Status { get; set; }
     }

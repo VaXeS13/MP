@@ -174,6 +174,20 @@ namespace MP.Controllers
             return _rentalAppService.CalculateCostAsync(boothId, boothTypeId, startDate, endDate);
         }
 
+        [HttpGet]
+        [Route("max-extension-date")]
+        public Task<MaxExtensionDateResponseDto> GetMaxExtensionDateAsync(Guid boothId, DateTime currentRentalEndDate)
+        {
+            return _rentalAppService.GetMaxExtensionDateAsync(boothId, currentRentalEndDate);
+        }
+
+        [HttpPost]
+        [Route("admin-manage")]
+        public Task<RentalDto> AdminManageBoothRentalAsync(AdminManageBoothRentalDto input)
+        {
+            return _rentalAppService.AdminManageBoothRentalAsync(input);
+        }
+
         // Nowe endpointy dla płatności
         [HttpPost]
         [Route("{id}/initiate-payment")]

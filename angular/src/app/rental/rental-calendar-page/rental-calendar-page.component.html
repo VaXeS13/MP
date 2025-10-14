@@ -1,0 +1,12 @@
+<!-- Wrapper component that combines rental-calendar and payment-selection for user mode -->
+<app-rental-calendar
+  [mode]="'user'"
+  [hideBoothInfo]="false"
+  [hideBoothTypeSelection]="false"
+  [hidePaymentActions]="false"
+  [hideCalendarNavigation]="false"
+  [hideLegend]="false">
+</app-rental-calendar>
+
+<!-- Payment Selection Dialog is handled internally by rental-calendar component -->
+<!-- This wrapper exists because PaymentSelectionComponent is in RentalModule, not RentalSharedModule -->

@@ -2,6 +2,7 @@ using System;
 using Volo.Abp;
 using Volo.Abp.Domain.Entities.Auditing;
 using MP.Carts;
+using MP.Domain.Booths;
 
 namespace MP.Domain.Carts
 {
@@ -15,10 +16,19 @@ namespace MP.Domain.Carts
         public DateTime EndDate { get; private set; }
 
         public decimal PricePerDay { get; private set; }
+        public Currency Currency { get; private set; }
         public string? Notes { get; private set; }
 
         public CartItemType ItemType { get; private set; }
         public Guid? ExtendedRentalId { get; private set; }
+        public Guid? RentalId { get; private set; } // Rental created by admin for online payment
+
+        /// <summary>
+        /// Reservation expiration time for this cart item
+        /// When user adds item to cart, booth is reserved for a limited time (e.g., 5 minutes)
+        /// When admin creates rental with online payment, timeout can be longer (e.g., 30 minutes)
+        /// </summary>
+        public DateTime? ReservationExpiresAt { get; private set; }
 
         // Navigation property
         public Cart Cart { get; set; } = null!;
@@ -33,8 +43,11 @@ namespace MP.Domain.Carts
             DateTime startDate,
             DateTime endDate,
             decimal pricePerDay,
+            Currency currency,
             CartItemType itemType = CartItemType.Rental,
             Guid? extendedRentalId = null,
+            Guid? rentalId = null,
+            DateTime? reservationExpiresAt = null,
             string? notes = null) : base(id)
         {
             CartId = cartId;
@@ -42,9 +55,39 @@ namespace MP.Domain.Carts
             BoothTypeId = boothTypeId;
             SetPeriod(startDate, endDate);
             SetPricePerDay(pricePerDay);
+            Currency = currency;
             ItemType = itemType;
             ExtendedRentalId = extendedRentalId;
+            RentalId = rentalId;
+            ReservationExpiresAt = reservationExpiresAt;
             Notes = notes?.Trim();
+        }
+
+        public void SetReservationExpiration(DateTime? expiresAt)
+        {
+            ReservationExpiresAt = expiresAt;
+        }
+
+        public bool IsReservationExpired()
+        {
+            return ReservationExpiresAt.HasValue && ReservationExpiresAt.Value < DateTime.Now;
+        }
+
+        public bool HasActiveReservation()
+        {
+            return ReservationExpiresAt.HasValue && ReservationExpiresAt.Value >= DateTime.Now;
+        }
+
+        /// <summary>
+        /// Releases the reservation without removing the cart item
+        /// Called when reservation expires - keeps item in cart but removes booth blocking
+        /// Removes RentalId (Draft Rental will be deleted) but keeps ReservationExpiresAt for historical tracking
+        /// </summary>
+        public void ReleaseReservation()
+        {
+            // Keep ReservationExpiresAt for historical tracking (shows when it expired)
+            // Remove RentalId because Draft Rental will be deleted
+            RentalId = null;
         }
 
         public void SetPeriod(DateTime startDate, DateTime endDate)

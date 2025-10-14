@@ -9,6 +9,8 @@ using Volo.Abp.MultiTenancy;
 using Volo.Abp;
 using MP.Domain.Booths;
 using MP.Rentals;
+using Volo.Abp.Settings;
+using MP.Domain.Settings;
 
 namespace MP.Domain.Rentals
 {
@@ -18,17 +20,20 @@ namespace MP.Domain.Rentals
         private readonly IBoothRepository _boothRepository;
         private readonly BoothTypes.IBoothTypeRepository _boothTypeRepository;
         private readonly ICurrentTenant _currentTenant;
+        private readonly ISettingProvider _settingProvider;
 
         public RentalManager(
             IRentalRepository rentalRepository,
             IBoothRepository boothRepository,
             BoothTypes.IBoothTypeRepository boothTypeRepository,
-            ICurrentTenant currentTenant)
+            ICurrentTenant currentTenant,
+            ISettingProvider settingProvider)
         {
             _rentalRepository = rentalRepository;
             _boothRepository = boothRepository;
             _boothTypeRepository = boothTypeRepository;
             _currentTenant = currentTenant;
+            _settingProvider = settingProvider;
         }
 
         public async Task<Rental> CreateRentalAsync(
@@ -59,10 +64,13 @@ namespace MP.Domain.Rentals
             var dailyRate = customDailyRate ?? booth.PricePerDay;
             var totalCost = CalculateTotalCost(period, dailyRate);
 
+            // Pobierz walutę tenanta
+            var currency = await GetTenantCurrencyAsync();
+
             // Oznacz stanowisko jako zarezerwowane
             booth.MarkAsReserved();
 
-            // Utwórz wynajęcie
+            // Utwórz wynajęcie z walutą tenanta
             var rental = new Rental(
                 GuidGenerator.Create(),
                 userId,
@@ -70,6 +78,7 @@ namespace MP.Domain.Rentals
                 boothTypeId,
                 period,
                 totalCost,
+                currency,
                 _currentTenant.Id
             );
 
@@ -91,6 +100,33 @@ namespace MP.Domain.Rentals
             {
                 throw new BusinessException("CANNOT_EXTEND_DUE_TO_EXISTING_RENTAL");
             }
+        }
+
+        public async Task ValidateGapRulesAsync(
+            Guid boothId,
+            DateTime startDate,
+            DateTime endDate,
+            Guid? excludeRentalId = null)
+        {
+            var period = new RentalPeriod(startDate, endDate);
+
+            // Check for conflicts
+            var hasConflict = await _rentalRepository.HasActiveRentalForBoothAsync(
+                boothId,
+                startDate,
+                endDate,
+                excludeRentalId);
+
+            if (hasConflict)
+            {
+                throw new BusinessException("BOOTH_ALREADY_RENTED_IN_PERIOD")
+                    .WithData("BoothId", boothId)
+                    .WithData("StartDate", startDate)
+                    .WithData("EndDate", endDate);
+            }
+
+            // Validate gap rules (no gaps between rentals)
+            await ValidateNoGapsAsync(boothId, period);
         }
 
         private async Task ValidateBoothAvailabilityAsync(Guid boothId, RentalPeriod newPeriod)
@@ -136,7 +172,7 @@ namespace MP.Domain.Rentals
                      {
                          throw new BusinessException("RENTAL_CANNOT_HAVE_GAPS")
                              .WithData("gapDays", gap.Days);
-                     }
+                     }tak
             }*/
             }
         }
@@ -157,6 +193,18 @@ namespace MP.Domain.Rentals
         private decimal CalculateTotalCost(RentalPeriod period, decimal dailyRate)
         {
             return period.GetDaysCount() * dailyRate;
+        }
+
+        private async Task<Currency> GetTenantCurrencyAsync()
+        {
+            var currencySetting = await _settingProvider.GetOrNullAsync(MPSettings.Tenant.Currency);
+            if (int.TryParse(currencySetting, out var currencyValue))
+            {
+                return (Currency)currencyValue;
+            }
+
+            // Default to PLN if setting not found
+            return Currency.PLN;
         }
     }
 }

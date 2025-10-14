@@ -1,6 +1,6 @@
 <div class="container-fluid" *ngIf="booth">
   <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-4" *ngIf="!hideBoothInfo">
     <h2 class="h3 mb-0">
       <i class="fas fa-calendar-alt me-2"></i>
       Rent Booth #{{ booth.number }}
@@ -16,7 +16,7 @@
   </div>
 
   <!-- Booth Info Card -->
-  <div class="card mb-4">
+  <div class="card mb-4" *ngIf="!hideBoothInfo">
     <div class="card-body">
       <div class="row g-3">
         <div class="col-md-6">
@@ -25,7 +25,7 @@
             Booth Details
           </h5>
           <p class="mb-2"><strong>Price per day:</strong>
-            <span class="text-success fw-bold">{{ booth.pricePerDay | currency:booth.currencyDisplayName:'symbol':'1.2-2' }}</span>
+            <span class="text-success fw-bold">{{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</span>
           </p>
           <p class="mb-0"><strong>Description:</strong> {{ booth.description || 'No description available' }}</p>
         </div>
@@ -46,7 +46,7 @@
               </tr>
               <tr class="table-success">
                 <td><strong>Total Price:</strong></td>
-                <td class="fw-bold">{{ calculatedPrice | currency:booth.currencyDisplayName:'symbol':'1.2-2' }}</td>
+                <td class="fw-bold">{{ calculatedPrice | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</td>
               </tr>
               <tr *ngIf="selectedBoothType">
                 <td><strong>Commission:</strong></td>
@@ -60,7 +60,7 @@
   </div>
 
   <!-- Booth Type Selection -->
-  <div class="card mb-4" *ngIf="boothTypes.length > 0">
+  <div class="card mb-4" *ngIf="boothTypes.length > 0 && !hideBoothTypeSelection">
     <div class="card-body">
       <h5 class="card-title">
         <i class="fas fa-tags me-2"></i>
@@ -87,8 +87,123 @@
     </div>
   </div>
 
+  <!-- Cart Items for This Booth -->
+  <div class="card mb-4" *ngIf="currentCartItems.length > 0 && mode === 'user' && !excludeCartId">
+    <div class="card-header bg-primary text-white">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <i class="pi pi-shopping-cart me-2"></i>
+          <strong>Your Reservations for Booth {{ booth?.number }}</strong>
+          <span class="badge bg-white text-primary ms-2">{{ currentCartItems.length }}</span>
+        </div>
+        <div>
+          <span class="badge bg-success me-2" *ngIf="activeReservationsCount > 0">
+            {{ activeReservationsCount }} Active
+          </span>
+          <span class="badge bg-warning text-dark" *ngIf="expiredReservationsCount > 0">
+            {{ expiredReservationsCount }} Expired
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="list-group list-group-flush">
+        <div *ngFor="let item of currentCartItems; trackBy: trackByCartItemId"
+             class="list-group-item cart-item-card"
+             [class.selected-item]="isCartItemSelected(item)"
+             [class.dimmed-item]="isCartItemDimmed(item)"
+             [class.border-start]="true"
+             [class.border-warning]="isReservationExpired(item)"
+             [class.border-success]="isReservationActive(item)"
+             [class.border-4]="true"
+             (click)="editCartItem(item)"
+             style="cursor: pointer;">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="flex-grow-1" style="pointer-events: none;">
+              <!-- Dates -->
+              <div class="fw-bold mb-1">
+                <i class="pi pi-calendar me-1"></i>
+                {{ item.startDate | date:'mediumDate' }} - {{ item.endDate | date:'mediumDate' }}
+                <span class="badge bg-secondary ms-2">{{ item.daysCount }} days</span>
+              </div>
+
+              <!-- Price -->
+              <div class="text-muted mb-1">
+                <i class="pi pi-tag me-1"></i>
+                {{ item.totalPrice | currency:item.currency }}
+              </div>
+
+              <!-- Reservation Status -->
+              <div class="mb-1">
+                <!-- Active Reservation -->
+                <small class="text-success fw-bold"
+                       *ngIf="isReservationActive(item)">
+                  <i class="pi pi-check-circle me-1"></i>
+                  Reserved until: <strong>{{ item.reservationExpiresAt | date:'short' }}</strong>
+                  <span class="ms-2 countdown-text">({{ getCountdown(item.id) }} remaining)</span>
+                </small>
+
+                <!-- Expired Reservation -->
+                <small class="text-warning fw-bold"
+                       *ngIf="isReservationExpired(item)">
+                  <i class="pi pi-exclamation-triangle me-1"></i>
+                  Reservation expired - booth may no longer be available
+                </small>
+
+                <!-- No Reservation (shouldn't happen normally) -->
+                <small class="text-muted" *ngIf="!item.reservationExpiresAt">
+                  <i class="pi pi-info-circle me-1"></i>
+                  No active reservation
+                </small>
+              </div>
+
+              <!-- Notes -->
+              <div class="text-muted small" *ngIf="item.notes">
+                <i class="pi pi-comment me-1"></i>
+                {{ item.notes }}
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="ms-3" style="pointer-events: auto;">
+              <button type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="$event.stopPropagation(); removeCartItem(item)"
+                      pTooltip="Remove from cart"
+                      tooltipPosition="left">
+                <i class="pi pi-trash me-1"></i>
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add New Period Button or Cancel Editing -->
+      <div class="card-footer bg-light">
+        <!-- Cancel Editing button when item is selected -->
+        <button type="button"
+                *ngIf="selectedCartItemId"
+                class="btn btn-outline-warning w-100"
+                (click)="cancelEditingCartItem()">
+          <i class="pi pi-times me-2"></i>
+          Cancel Editing
+        </button>
+
+        <!-- Add New Period button when no item is selected -->
+        <button type="button"
+                *ngIf="!selectedCartItemId"
+                class="btn btn-outline-success w-100"
+                (click)="startNewReservation()">
+          <i class="pi pi-plus me-2"></i>
+          Add New Period for This Booth
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Calendar Navigation -->
-  <div class="card mb-4">
+  <div class="card mb-4" *ngIf="!hideCalendarNavigation">
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <button class="btn btn-outline-secondary" (click)="prevMonth()">
@@ -111,6 +226,17 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- Simple Calendar Header (for admin mode) -->
+  <div class="d-flex justify-content-between align-items-center mb-3" *ngIf="hideCalendarNavigation">
+    <button class="btn btn-sm btn-outline-secondary" (click)="prevMonth()">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <h5 class="mb-0">{{ getMonthYear() }}</h5>
+    <button class="btn btn-sm btn-outline-secondary" (click)="nextMonth()">
+      <i class="fas fa-chevron-right"></i>
+    </button>
   </div>
 
   <!-- Calendar Grid -->
@@ -141,7 +267,7 @@
   </div>
 
   <!-- Calendar Legend -->
-  <div class="card mb-4" *ngIf="calendarLegend && getCalendarStatuses().length > 0">
+  <div class="card mb-4" *ngIf="calendarLegend && getCalendarStatuses().length > 0 && !hideLegend">
     <div class="card-body">
       <h5 class="card-title">
         <i class="fas fa-info-circle me-2"></i>
@@ -188,7 +314,7 @@
   </div>
 
   <!-- Booking Action -->
-  <div class="card" *ngIf="selectedStartDate && selectedEndDate && calculatedDays >= 7">
+  <div class="card" *ngIf="selectedStartDate && selectedEndDate && calculatedDays >= 7 && !hidePaymentActions">
     <div class="card-body">
       <h5 class="card-title">
         <i class="fas fa-credit-card me-2"></i>
@@ -206,12 +332,12 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>{{ calculatedDays }} days × {{ booth.pricePerDay | currency:booth.currencyDisplayName:'symbol':'1.2-2' }}</td>
-                  <td class="text-end">{{ calculatedPrice | currency:booth.currencyDisplayName:'symbol':'1.2-2' }}</td>
+                  <td>{{ calculatedDays }} days × {{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</td>
+                  <td class="text-end">{{ calculatedPrice | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</td>
                 </tr>
                 <tr class="table-success">
                   <td><strong>Total Amount</strong></td>
-                  <td class="text-end"><strong>{{ calculatedPrice | currency:booth.currencyDisplayName:'symbol':'1.2-2' }}</strong></td>
+                  <td class="text-end"><strong>{{ calculatedPrice | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</strong></td>
                 </tr>
               </tbody>
             </table>
@@ -236,14 +362,17 @@
                 rows="3"
                 placeholder="Add any additional notes or special requests..."></textarea>
             </div>
-            <button class="btn btn-success btn-lg w-100 mb-3"
+            <button class="btn btn-lg w-100 mb-3"
+                    [ngClass]="isEditingCartItem ? 'btn-warning' : 'btn-success'"
                     [disabled]="!canProceedToPayment()"
                     [pTooltip]="hasGapError ? gapErrorMessage : ''"
                     tooltipPosition="top"
                     [escape]="false"
                     (click)="addOrUpdateCart()">
               <i class="pi me-2" [ngClass]="isEditingCartItem ? 'pi-refresh' : 'pi-cart-plus'"></i>
-              {{ isEditingCartItem ? 'Update Cart' : 'Add to Cart' }}
+              <span *ngIf="isEditingCartItem">Update Selected Reservation</span>
+              <span *ngIf="!isEditingCartItem && currentCartItems.length > 0">Add Additional Period</span>
+              <span *ngIf="!isEditingCartItem && currentCartItems.length === 0">Add to Cart</span>
             </button>
             <div class="alert alert-danger mb-3" *ngIf="hasGapError">
               <i class="fas fa-exclamation-triangle me-2"></i>
@@ -277,11 +406,12 @@
   </div>
 </div>
 
-<!-- Payment Selection Dialog -->
+<!-- Payment Selection Dialog (only in user mode) -->
 <app-payment-selection
+  *ngIf="mode === 'user'"
   [visible]="showPaymentSelection"
   [amount]="calculatedPrice"
-  [currency]="booth?.currencyDisplayName || 'PLN'"
+  [currency]="tenantCurrencyCode"
   (paymentSelected)="onPaymentSelected($event)"
   (cancelled)="onPaymentCancelled()">
 </app-payment-selection>

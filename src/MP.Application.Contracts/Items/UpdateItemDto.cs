@@ -15,7 +15,6 @@ namespace MP.Items
         [Range(0.01, double.MaxValue)]
         public decimal Price { get; set; }
 
-        [Required]
-        public string Currency { get; set; } = "PLN";
+        // Note: Currency cannot be changed - items keep their original currency (historical data)
     }
 }

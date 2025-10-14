@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { MessageService } from 'primeng/api';
 import { RentalService } from '../services/rental.service';
+import { TenantCurrencyService } from '../services/tenant-currency.service';
 import { BoothDto } from '../shared/models/booth.model';
 import { FloorPlanDto } from '../shared/models/floor-plan.model';
 import { CreateRentalDto } from '../shared/models/rental.model';
@@ -26,7 +27,7 @@ import { addDays, format, isAfter, isBefore, isEqual, startOfDay } from 'date-fn
           <div class="col-6">
             <div class="flex align-items-center gap-2 mb-2">
               <i class="pi pi-money-bill text-primary"></i>
-              <span><strong>{{ booth.pricePerDay }} {{ booth.currencyDisplayName }}</strong> / dzień</span>
+              <span><strong>{{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</strong> / dzień</span>
             </div>
           </div>
           <div class="col-6">
@@ -73,7 +74,7 @@ import { addDays, format, isAfter, isBefore, isEqual, startOfDay } from 'date-fn
         <div *ngIf="totalAmount > 0" class="price-summary mb-4 p-3 border surface-border border-round">
           <div class="flex justify-content-between align-items-center mb-2">
             <span>Cena za dzień:</span>
-            <span>{{ booth.pricePerDay }} {{ booth.currencyDisplayName }}</span>
+            <span>{{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</span>
           </div>
           <div class="flex justify-content-between align-items-center mb-2">
             <span>Liczba dni:</span>
@@ -82,7 +83,7 @@ import { addDays, format, isAfter, isBefore, isEqual, startOfDay } from 'date-fn
           <p-divider></p-divider>
           <div class="flex justify-content-between align-items-center">
             <span class="font-bold">Łączna kwota:</span>
-            <span class="font-bold text-primary text-xl">{{ totalAmount }} {{ booth.currencyDisplayName }}</span>
+            <span class="font-bold text-primary text-xl">{{ totalAmount | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</span>
           </div>
         </div>
 
@@ -216,6 +217,7 @@ export class BoothBookingDialogComponent implements OnInit {
   acceptTerms = false;
   totalAmount = 0;
   submitting = false;
+  tenantCurrencyCode: string = 'PLN';
 
   minDate = new Date();
   maxDate = addDays(new Date(), 365); // 1 year ahead
@@ -227,6 +229,7 @@ export class BoothBookingDialogComponent implements OnInit {
     private ref: DynamicDialogRef,
     private config: DynamicDialogConfig,
     private rentalService: RentalService,
+    private tenantCurrencyService: TenantCurrencyService,
     private messageService: MessageService
   ) {
     this.booth = this.config.data.booth;
@@ -234,6 +237,11 @@ export class BoothBookingDialogComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Load tenant currency
+    this.tenantCurrencyService.getCurrency().subscribe(result => {
+      this.tenantCurrencyCode = this.tenantCurrencyService.getCurrencyName(result.currency);
+    });
+
     this.loadUnavailableDates();
     this.setupDateConstraints();
   }

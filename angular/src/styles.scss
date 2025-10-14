@@ -1,6 +1,9 @@
 
 // Import Bootstrap
-@import 'bootstrap/scss/bootstrap';
+@use 'bootstrap/scss/bootstrap';
+
+// Import animated dialog styles
+@use 'app/shared/styles/animated-dialog.scss';
 
 :root {
   --primary-color: var(--bs-primary);
@@ -34,9 +37,17 @@ body {
   background: #a8a8a8;
 }
 
-// Smooth transitions for all elements (excluding dropdowns)
+// Smooth transitions for all elements (excluding dropdowns and dialogs)
 * {
   transition: all 0.3s ease;
+}
+
+// Explicitly disable transitions for PrimeNG dialogs to allow animations to work
+.p-dialog,
+.p-dialog *,
+.p-dialog-mask,
+.p-component-overlay {
+  transition: none !important;
 }
 
 // Fix dropdown positioning to prevent animation from top-left

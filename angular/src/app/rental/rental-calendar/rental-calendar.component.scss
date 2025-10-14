@@ -397,6 +397,70 @@
   }
 }
 
+// Cart items list styling
+.cart-item-card {
+  transition: all 0.3s ease;
+  position: relative;
+
+  &.border-success {
+    border-left-color: var(--bs-success) !important;
+    border-left-width: 4px !important;
+  }
+
+  &.border-warning {
+    border-left-color: var(--bs-warning) !important;
+    border-left-width: 4px !important;
+    background-color: rgba(255, 193, 7, 0.05);
+  }
+
+  // Selected item - highlighted and active
+  &.selected-item {
+    background-color: rgba(13, 110, 253, 0.1) !important; // Primary color with low opacity
+    border: 2px solid var(--bs-primary) !important;
+    border-left-width: 5px !important;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+    transform: scale(1.02);
+    z-index: 10;
+
+    &:hover {
+      background-color: rgba(13, 110, 253, 0.15) !important;
+    }
+  }
+
+  // Dimmed items - when another item is selected
+  &.dimmed-item {
+    opacity: 0.5;
+    filter: grayscale(50%);
+    pointer-events: auto; // Still clickable
+
+    &:hover {
+      opacity: 0.7;
+      filter: grayscale(30%);
+    }
+  }
+
+  // Hover effect (only when not dimmed)
+  &:not(.dimmed-item):hover {
+    background-color: rgba(0, 0, 0, 0.02);
+    border-color: var(--bs-primary) !important;
+  }
+}
+
+// Button group vertical spacing
+.btn-group-vertical .btn {
+  margin-bottom: 4px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Countdown text animation
+.countdown-text {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+}
+
 // Print styles
 @media print {
   .btn,

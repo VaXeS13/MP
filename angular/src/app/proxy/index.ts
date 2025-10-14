@@ -7,5 +7,7 @@ import * as FloorPlans from './floor-plans';
 import * as HttpApi from './http-api';
 import * as Items from './items';
 import * as Microsoft from './microsoft';
+import * as Promotions from './promotions';
 import * as Rentals from './rentals';
-export { Application, Booths, Carts, Controllers, Domain, FloorPlans, HttpApi, Items, Microsoft, Rentals };
+import * as Tenants from './tenants';
+export { Application, Booths, Carts, Controllers, Domain, FloorPlans, HttpApi, Items, Microsoft, Promotions, Rentals, Tenants };

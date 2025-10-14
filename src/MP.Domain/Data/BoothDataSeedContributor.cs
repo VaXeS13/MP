@@ -32,15 +32,14 @@ namespace MP.Domain.Data
             // Dodaj przykładowe stanowiska
             var testBooths = new[]
             {
-                new { Number = "A01", Price = 25.00m, Currency = Currency.PLN },
+                new { Number = "A01", Price = 25.00m },
             };
 
             foreach (var testBooth in testBooths)
             {
                 var booth = await _boothManager.CreateAsync(
                     testBooth.Number,
-                    testBooth.Price,
-                    testBooth.Currency
+                    testBooth.Price
                 );
 
                 await _boothRepository.InsertAsync(booth, autoSave: true);

@@ -95,12 +95,19 @@
               [pTooltip]="'::Booth:ManualReservationTooltip' | abpLocalization">
             </p-button>
             <p-button
+              *abpPermission="'MP.Rentals.Manage'"
+              icon="pi pi-calendar-plus"
+              class="p-button-text p-button-success p-button-sm"
+              (click)="openAdminRentalDialog(booth, 'new')"
+              [pTooltip]="'::Rental:AdminCreateRental' | abpLocalization">
+            </p-button>
+            <p-button
               *ngIf="hasActiveRental(booth)"
-              [abpPermission]="'MP.Rentals.Extend'"
-              icon="pi pi-clock"
-              class="p-button-text p-button-primary p-button-sm"
-              (click)="openExtendDialog(booth)"
-              pTooltip="Extend Rental">
+              [abpPermission]="'MP.Rentals.Manage'"
+              icon="pi pi-calendar-plus"
+              class="p-button-text p-button-warning p-button-sm"
+              (click)="openAdminRentalDialog(booth, 'extend')"
+              [pTooltip]="'::Rental:AdminExtendRental' | abpLocalization">
             </p-button>
             <p-button
               *ngIf="booth.status === 1"
@@ -138,7 +145,7 @@
 
           <div class="booth-info-row">
             <span class="label">{{ '::Booth:PricePerDay' | abpLocalization }}:</span>
-            <span class="price">{{ booth.pricePerDay | currency:booth.currencyDisplayName:'symbol':'1.2-2':currentLocale }}</span>
+            <span class="price">{{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}</span>
           </div>
 
           <div class="booth-info-row" *ngIf="booth.currentRentalUserName && booth.status === 2">
@@ -208,7 +215,7 @@
               </p-tag>
             </td>
             <td>
-              <strong class="price-cell">{{ booth.pricePerDay | currency:booth.currencyDisplayName:'symbol':'1.2-2':currentLocale }}</strong>
+              <strong class="price-cell">{{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}</strong>
             </td>
             <td>
               <div *ngIf="booth.currentRentalUserName && (booth.status === 2 || booth.status === 3)" class="renter-info">
@@ -239,12 +246,20 @@
                 </p-button>
 
                 <p-button
+                  *abpPermission="'MP.Rentals.Manage'"
+                  icon="pi pi-calendar-plus"
+                  class="p-button-text p-button-success p-button-sm"
+                  (click)="openAdminRentalDialog(booth, 'new')"
+                  [pTooltip]="'::Rental:AdminCreateRental' | abpLocalization">
+                </p-button>
+
+                <p-button
                   *ngIf="hasActiveRental(booth)"
-                  [abpPermission]="'MP.Rentals.Extend'"
-                  icon="pi pi-clock"
-                  class="p-button-text p-button-primary p-button-sm"
-                  (click)="openExtendDialog(booth)"
-                  pTooltip="Extend Rental">
+                  [abpPermission]="'MP.Rentals.Manage'"
+                  icon="pi pi-calendar-plus"
+                  class="p-button-text p-button-warning p-button-sm"
+                  (click)="openAdminRentalDialog(booth, 'extend')"
+                  [pTooltip]="'::Rental:AdminExtendRental' | abpLocalization">
                 </p-button>
 
                 <p-button
@@ -432,6 +447,14 @@
   [boothId]="selectedBoothIdForExtension"
   (rentalExtended)="onRentalExtended()">
 </app-extend-rental-dialog>
+
+<!-- Admin Booth Rental Dialog (Unified Create/Extend) -->
+<app-admin-booth-rental-dialog
+  [(visible)]="displayAdminRentalDialog"
+  [boothId]="selectedBooth?.id"
+  [mode]="rentalManagementMode"
+  (rentalCreatedOrExtended)="onAdminRentalCreatedOrExtended()">
+</app-admin-booth-rental-dialog>
 
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>

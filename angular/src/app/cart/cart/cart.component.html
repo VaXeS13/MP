@@ -66,13 +66,28 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let item of cart.items; trackBy: trackByCartItemId" [class.table-danger]="hasItemError(item.id)">
+                <tr *ngFor="let item of cart.items; trackBy: trackByCartItemId"
+                    [class.table-danger]="hasItemError(item.id)"
+                    [class.expiring-soon]="isReservationExpiring(item)">
                   <td>
                     <strong>{{ item.boothNumber }}</strong>
                     <br>
                     <small class="text-muted">{{ item.boothDescription }}</small>
                     <br>
-                    <small class="text-danger" *ngIf="hasItemError(item.id)">
+                    <!-- Reservation countdown -->
+                    <small class="reservation-countdown" *ngIf="hasReservation(item) && !item.isExpired">
+                      <i class="pi pi-clock me-1"></i>
+                      <span [class.text-danger]="isReservationExpiring(item)" [class.text-warning]="!isReservationExpiring(item)">
+                        {{ '::Cart:ReservationExpires' | abpLocalization }}: <strong>{{ getCountdown(item.id) }}</strong>
+                      </span>
+                    </small>
+                    <!-- Expired message -->
+                    <small class="text-info" *ngIf="item.isExpired">
+                      <i class="pi pi-info-circle me-1"></i>
+                      {{ '::Cart:ReservationExpiredWarning' | abpLocalization }}
+                    </small>
+                    <!-- Validation errors -->
+                    <small class="text-danger" *ngIf="hasItemError(item.id) && !item.isExpired">
                       <i class="pi pi-exclamation-triangle me-1"></i>
                       {{ getItemError(item.id) }}
                     </small>
@@ -93,7 +108,17 @@
                     <span class="badge bg-secondary">{{ getDuration(item) }}</span>
                   </td>
                   <td class="fw-bold">
-                    {{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}
+                    <div *ngIf="item.discountAmount > 0" class="price-with-discount">
+                      <div class="original-price">
+                        {{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}
+                      </div>
+                      <div class="discounted-price">
+                        {{ item.finalPrice | currency:item.currency:'symbol':'1.2-2' }}
+                      </div>
+                    </div>
+                    <div *ngIf="item.discountAmount === 0">
+                      {{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}
+                    </div>
                   </td>
                   <td class="text-end">
                     <div class="btn-group btn-group-sm">
@@ -140,11 +165,100 @@
             <strong>{{ cart.totalDays }}</strong>
           </div>
           <hr>
-          <div class="summary-row total-row">
+
+          <!-- Promo Code Section -->
+          <div class="promo-code-section">
+            <label class="form-label small text-muted mb-2">
+              <i class="pi pi-tag me-1"></i>
+              {{ 'MP::PromoCodeLabel' | abpLocalization }}
+            </label>
+
+            <!-- Applied Promo Code Display -->
+            <div *ngIf="hasPromoCode()" class="applied-promo-code animate-slide-in">
+              <div class="d-flex justify-content-between align-items-center p-2 bg-success bg-opacity-10 rounded border border-success">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center">
+                    <i class="pi pi-check-circle text-success me-2"></i>
+                    <div>
+                      <div class="fw-bold text-success">{{ cart.promoCodeUsed }}</div>
+                      <small class="text-muted" *ngIf="cart.promotionName">{{ cart.promotionName }}</small>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="removePromoCode()"
+                  [pTooltip]="'MP::RemovePromoCode' | abpLocalization"
+                  tooltipPosition="top">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Promo Code Input -->
+            <div *ngIf="!hasPromoCode()" class="promo-code-input">
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control text-uppercase"
+                  [(ngModel)]="promoCode"
+                  [placeholder]="'MP::EnterPromoCode' | abpLocalization"
+                  [disabled]="applyingPromoCode"
+                  (keyup.enter)="applyPromoCode()"
+                />
+                <button
+                  class="btn btn-outline-primary"
+                  type="button"
+                  (click)="applyPromoCode()"
+                  [disabled]="applyingPromoCode || !promoCode">
+                  <i class="pi pi-spin pi-spinner" *ngIf="applyingPromoCode"></i>
+                  <span *ngIf="!applyingPromoCode">{{ 'MP::Apply' | abpLocalization }}</span>
+                  <span *ngIf="applyingPromoCode">{{ 'MP::Applying' | abpLocalization }}</span>
+                </button>
+              </div>
+              <small class="text-danger mt-1 d-block" *ngIf="promoCodeError">
+                <i class="pi pi-exclamation-triangle me-1"></i>
+                {{ promoCodeError }}
+              </small>
+              <small class="text-success mt-1 d-block" *ngIf="promoCodeSuccess">
+                <i class="pi pi-check me-1"></i>
+                {{ promoCodeSuccess }}
+              </small>
+            </div>
+          </div>
+
+          <hr>
+
+          <!-- Pricing Breakdown -->
+          <div class="summary-row" *ngIf="!hasPromoCode()">
             <span>{{ '::Cart:TotalAmount' | abpLocalization }}:</span>
             <strong class="text-primary fs-4">
-              {{ cart.totalAmount | currency:'PLN':'symbol':'1.2-2' }}
+              {{ cart.totalAmount | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
             </strong>
+          </div>
+
+          <div *ngIf="hasPromoCode()">
+            <div class="summary-row">
+              <span>{{ '::Cart:Subtotal' | abpLocalization }}:</span>
+              <span>{{ cart.totalAmount | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="summary-row text-success">
+              <span>
+                <i class="pi pi-tag me-1"></i>
+                {{ 'MP::DiscountLabel' | abpLocalization }}:
+              </span>
+              <span class="fw-bold">
+                -{{ getDiscountAmount() | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
+              </span>
+            </div>
+            <hr>
+            <div class="summary-row total-row">
+              <span>{{ '::Cart:FinalAmount' | abpLocalization }}:</span>
+              <strong class="text-primary fs-4">
+                {{ getFinalAmount() | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
+              </strong>
+            </div>
           </div>
         </div>
         <div class="card-footer">

@@ -36,7 +36,7 @@ export class CartIconComponent implements OnInit {
   }
 
   get totalAmount(): number {
-    return this.cartService.totalAmount;
+    return this.cartService.finalAmount;
   }
 
   get currency(): string {

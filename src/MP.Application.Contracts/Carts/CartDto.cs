@@ -21,6 +21,12 @@ namespace MP.Carts
         public string? UserName { get; set; }
         public string? UserEmail { get; set; }
 
+        // Promotion fields
+        public Guid? AppliedPromotionId { get; set; }
+        public string? PromotionName { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public string? PromoCodeUsed { get; set; }
+
         public DateTime CreationTime { get; set; }
         public DateTime? LastModificationTime { get; set; }
     }

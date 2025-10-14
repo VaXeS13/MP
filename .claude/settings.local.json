@@ -42,7 +42,12 @@
       "mcp__linear-server__create_comment",
       "Bash(git branch:*)",
       "Bash(Remove-Item \"C:\\Users\\mhinc\\source\\repos\\MP\\MP\\src\\MP.Domain.Shared\\Rentals\\PaymentMethod.cs\" -Force)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(curl:*)",
+      "Bash(Select-String -Pattern \"error|warning CS\")",
+      "Bash(Select-Object -First 20)",
+      "Bash(Remove-Item \"C:\\Users\\mhinc\\source\\repos\\MP\\MP\\angular\\src\\app\\shared\\animations\\dialog.animations.ts\" -Force)",
+      "Bash(Select-String -Pattern \"animated-dialog\")"
     ],
     "deny": [],
     "ask": []

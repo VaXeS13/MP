@@ -5,6 +5,7 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { NgxValidateCoreModule } from '@ngx-validate/core';
 import { NotificationBellComponent } from './components/notification-bell/notification-bell.component';
 import { ChatIconComponent } from './components/chat-icon/chat-icon.component';
+import { PromotionNotificationWidgetComponent } from './components/promotion-notification-widget/promotion-notification-widget.component';
 import { ButtonModule } from 'primeng/button';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { TooltipModule } from 'primeng/tooltip';
@@ -15,7 +16,8 @@ import { FormsModule } from '@angular/forms';
 @NgModule({
   declarations: [
     NotificationBellComponent,
-    ChatIconComponent
+    ChatIconComponent,
+    PromotionNotificationWidgetComponent
   ],
   imports: [
     CommonModule,
@@ -30,12 +32,15 @@ import { FormsModule } from '@angular/forms';
     BadgeModule
   ],
   exports: [
+    CommonModule,
+    FormsModule,
     CoreModule,
     ThemeSharedModule,
     NgbDropdownModule,
     NgxValidateCoreModule,
     NotificationBellComponent,
-    ChatIconComponent
+    ChatIconComponent,
+    PromotionNotificationWidgetComponent
   ],
   providers: []
 })

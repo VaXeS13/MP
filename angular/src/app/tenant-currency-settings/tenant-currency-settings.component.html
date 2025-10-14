@@ -1,0 +1,82 @@
+<div class="tenant-currency-settings-container">
+  <p-toast></p-toast>
+
+  <div class="grid">
+    <div class="col-12">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="p-3">
+            <h2 class="m-0">Tenant Currency Settings</h2>
+            <p class="text-600 m-0">Configure the default currency for your tenant. This will be used for all new rentals and items.</p>
+          </div>
+        </ng-template>
+
+        <div *ngIf="isLoading" class="flex justify-content-center p-4">
+          <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+        </div>
+
+        <form *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="save()">
+          <div class="grid">
+            <!-- Current Currency Info -->
+            <div *ngIf="currentCurrency !== null" class="col-12">
+              <div class="surface-100 border-round p-3 mb-3">
+                <div class="flex align-items-center">
+                  <i class="pi pi-info-circle mr-2"></i>
+                  <span>Current tenant currency: <strong>{{ getCurrencyName(currentCurrency) }}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Currency Selection -->
+            <div class="col-12 md:col-6">
+              <div class="field">
+                <label for="currency">Currency *</label>
+                <p-select
+                  id="currency"
+                  formControlName="currency"
+                  [options]="currencyOptions"
+                  optionLabel="key"
+                  optionValue="value"
+                  placeholder="Select currency"
+                  [style]="{ width: '100%' }"
+                ></p-select>
+                <small
+                  *ngIf="form.get('currency')?.touched && form.get('currency')?.errors?.['required']"
+                  class="p-error"
+                >
+                  Currency is required
+                </small>
+              </div>
+            </div>
+
+            <!-- Warning about historical data -->
+            <div class="col-12">
+              <div class="surface-yellow-100 border-round p-3">
+                <div class="flex align-items-start">
+                  <i class="pi pi-exclamation-triangle mr-2 mt-1" style="color: var(--yellow-700)"></i>
+                  <div>
+                    <strong>Important:</strong> Changing the currency will only affect new rentals and items.
+                    Existing rentals and items will keep their original currency to preserve historical data accuracy.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Button -->
+          <div class="flex gap-2 justify-content-end mt-3">
+            <button
+              pButton
+              type="submit"
+              [disabled]="isSaving || form.invalid"
+            >
+              <i class="pi pi-save" *ngIf="!isSaving"></i>
+              <i *ngIf="isSaving" class="pi pi-spin pi-spinner"></i>
+              <span class="ml-2">Update Currency</span>
+            </button>
+          </div>
+        </form>
+      </p-card>
+    </div>
+  </div>
+</div>
