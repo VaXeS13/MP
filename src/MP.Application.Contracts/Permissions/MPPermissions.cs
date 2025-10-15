@@ -95,6 +95,16 @@ public static class MPPermissions
         public const string Manage = Default + ".Manage"; // Activate/Deactivate promotions
     }
 
+    // HomePage Content Management permissions
+    public static class HomePageContent
+    {
+        public const string Default = GroupName + ".HomePageContent";
+        public const string Create = Default + ".Create";
+        public const string Edit = Default + ".Edit";
+        public const string Delete = Default + ".Delete";
+        public const string Manage = Default + ".Manage"; // Activate/Deactivate/Reorder sections
+    }
+
     //Add your own permission names. Example:
     //public const string MyPermission1 = GroupName + ".MyPermission1";
 }

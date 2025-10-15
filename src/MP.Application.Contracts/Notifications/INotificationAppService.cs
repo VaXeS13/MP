@@ -22,14 +22,49 @@ namespace MP.Application.Contracts.Notifications
         Task SendToTenantAsync(NotificationMessageDto notification);
 
         /// <summary>
-        /// Get user's unread notifications
+        /// Get paginated notifications for current user
         /// </summary>
-        Task<List<NotificationMessageDto>> GetUnreadNotificationsAsync();
+        Task<NotificationListDto> GetListAsync(GetNotificationsInput input);
+
+        /// <summary>
+        /// Get unread notifications for current user
+        /// </summary>
+        Task<NotificationListDto> GetUnreadAsync(GetNotificationsInput input);
+
+        /// <summary>
+        /// Get all notifications for current user
+        /// </summary>
+        Task<NotificationListDto> GetAllAsync(GetNotificationsInput input);
 
         /// <summary>
         /// Mark notification as read
         /// </summary>
         Task MarkAsReadAsync(Guid notificationId);
+
+        /// <summary>
+        /// Mark multiple notifications as read
+        /// </summary>
+        Task MarkMultipleAsReadAsync(List<Guid> notificationIds);
+
+        /// <summary>
+        /// Mark all notifications as read
+        /// </summary>
+        Task MarkAllAsReadAsync();
+
+        /// <summary>
+        /// Get notification statistics
+        /// </summary>
+        Task<NotificationStatsDto> GetStatsAsync();
+
+        /// <summary>
+        /// Delete notification
+        /// </summary>
+        Task DeleteAsync(Guid notificationId);
+
+        /// <summary>
+        /// Delete expired notifications
+        /// </summary>
+        Task<int> DeleteExpiredNotificationsAsync();
 
         /// <summary>
         /// Get user's notification count

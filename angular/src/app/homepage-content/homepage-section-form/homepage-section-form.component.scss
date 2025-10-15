@@ -1,0 +1,53 @@
+.card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+
+    h3 {
+      margin: 0;
+      color: #495057;
+      font-size: 1.5rem;
+    }
+  }
+}
+
+.form-label.required::after {
+  content: ' *';
+  color: #dc3545;
+}
+
+.gap-2 {
+  gap: 0.5rem !important;
+}
+
+::ng-deep {
+  .p-editor-container {
+    .ql-toolbar {
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-bottom: none;
+    }
+
+    .ql-container {
+      border: 1px solid #dee2e6;
+      font-family: inherit;
+    }
+  }
+
+  .p-calendar {
+    width: 100%;
+
+    input {
+      width: 100%;
+    }
+  }
+
+  .p-colorpicker {
+    .p-colorpicker-preview {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+  }
+}

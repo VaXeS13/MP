@@ -81,6 +81,13 @@ public class MPPermissionDefinitionProvider : PermissionDefinitionProvider
         promotionsPermission.AddChild(MPPermissions.Promotions.Edit, L("Permission:Promotions.Edit"));
         promotionsPermission.AddChild(MPPermissions.Promotions.Delete, L("Permission:Promotions.Delete"));
         promotionsPermission.AddChild(MPPermissions.Promotions.Manage, L("Permission:Promotions.Manage"));
+
+        // HomePage Content Management permissions
+        var homePageContentPermission = myGroup.AddPermission(MPPermissions.HomePageContent.Default, L("Permission:HomePageContent"));
+        homePageContentPermission.AddChild(MPPermissions.HomePageContent.Create, L("Permission:HomePageContent.Create"));
+        homePageContentPermission.AddChild(MPPermissions.HomePageContent.Edit, L("Permission:HomePageContent.Edit"));
+        homePageContentPermission.AddChild(MPPermissions.HomePageContent.Delete, L("Permission:HomePageContent.Delete"));
+        homePageContentPermission.AddChild(MPPermissions.HomePageContent.Manage, L("Permission:HomePageContent.Manage"));
     }
 
     private static LocalizableString L(string name)

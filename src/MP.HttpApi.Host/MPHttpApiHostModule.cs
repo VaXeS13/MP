@@ -5,7 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
@@ -293,6 +296,7 @@ public class MPHttpApiHostModule : AbpModule
         app.UseRouting();
         app.MapAbpStaticAssets();
         app.UseAbpStudioLink();
+        // Enhanced XSS protection - configure ABP security headers instead of custom ones
         app.UseAbpSecurityHeaders();
         app.UseCors();
 
@@ -421,6 +425,8 @@ public class MPHttpApiHostModule : AbpModule
     }
     private void ConfigureAuthentication(ServiceConfigurationContext context)
     {
+        var configuration = context.Services.GetConfiguration();
+
         context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
@@ -495,6 +501,42 @@ public class MPHttpApiHostModule : AbpModule
                 return Task.CompletedTask;
             };
         });
+
+        // Configure External Authentication Providers
+        ConfigureExternalAuthenticationProviders(context, configuration);
+    }
+
+    private void ConfigureExternalAuthenticationProviders(ServiceConfigurationContext context, IConfiguration configuration)
+    {
+        var services = context.Services;
+
+        // Google Authentication
+        var googleClientId = configuration["Authentication:Google:ClientId"];
+        var googleClientSecret = configuration["Authentication:Google:ClientSecret"];
+
+        if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+        {
+            services.AddAuthentication()
+                .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+                {
+                    options.ClientId = googleClientId;
+                    options.ClientSecret = googleClientSecret;
+                });
+        }
+
+        // Facebook Authentication
+        var facebookAppId = configuration["Authentication:Facebook:AppId"];
+        var facebookAppSecret = configuration["Authentication:Facebook:AppSecret"];
+
+        if (!string.IsNullOrWhiteSpace(facebookAppId) && !string.IsNullOrWhiteSpace(facebookAppSecret))
+        {
+            services.AddAuthentication()
+                .AddFacebook(FacebookDefaults.AuthenticationScheme, options =>
+                {
+                    options.AppId = facebookAppId;
+                    options.AppSecret = facebookAppSecret;
+                });
+        }
     }
 
     // Helper method for extracting subdomain during login flow

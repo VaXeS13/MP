@@ -25,3 +25,83 @@
     height: 100% !important;
   }
 }
+
+/* Homepage Sections Styles */
+.homepage-section {
+  &.hero-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    min-height: 400px;
+
+    .btn-primary {
+      background-color: white;
+      color: #667eea;
+      border: none;
+
+      &:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+
+  &.promotion-cards {
+    .card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+
+  &.announcement {
+    .alert {
+      border-left: 4px solid #0dcaf0;
+      background-color: #cff4fc;
+      border-color: #0dcaf0;
+    }
+  }
+
+  &.feature-highlights {
+    background-color: #f8f9fa;
+
+    .feature-box {
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  &.custom-html {
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+  }
+
+  &.image-gallery {
+    .gallery-item {
+      img {
+        transition: transform 0.3s ease;
+        cursor: pointer;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+    }
+  }
+}
+
+.shadow {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-sm {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}

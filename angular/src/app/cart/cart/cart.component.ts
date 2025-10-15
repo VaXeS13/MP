@@ -40,6 +40,7 @@ export class CartComponent implements OnInit, OnDestroy {
   applyingPromoCode = false;
   promoCodeError: string = '';
   promoCodeSuccess: string = '';
+  showBubbleAnimation = false;
 
   constructor(
     public cartService: CartService,
@@ -500,7 +501,16 @@ export class CartComponent implements OnInit, OnDestroy {
           summary: this.localization.instant('::Messages:Success'),
           detail: this.localization.instant('MP::PromoCodeAppliedSuccess')
         });
-        this.loadCart(); // Reload cart to get updated prices
+
+        // Get updated cart data without loading indicator
+        this.cartService.getMyCart().subscribe({
+          next: (updatedCart) => {
+            this.cart = updatedCart;
+            // Trigger neon border animation after price update
+            this.triggerNeonBorder();
+          }
+        });
+
         this.applyingPromoCode = false;
       },
       error: (error) => {
@@ -528,7 +538,15 @@ export class CartComponent implements OnInit, OnDestroy {
           summary: this.localization.instant('::Messages:Removed'),
           detail: this.localization.instant('MP::PromoCodeRemovedSuccess')
         });
-        this.loadCart(); // Reload cart to get updated prices
+
+        // Get updated cart data without loading indicator
+        this.cartService.getMyCart().subscribe({
+          next: (updatedCart) => {
+            this.cart = updatedCart;
+            // Trigger neon border animation after price update
+            this.triggerNeonBorder();
+          }
+        });
       },
       error: (error) => {
         console.error('Error removing promo code:', error);
@@ -551,5 +569,15 @@ export class CartComponent implements OnInit, OnDestroy {
 
   getFinalAmount(): number {
     return (this.cart?.totalAmount || 0) - (this.cart?.discountAmount || 0);
+  }
+
+  triggerNeonBorder(): void {
+    // Show neon border animation
+    this.showBubbleAnimation = true;
+
+    // Hide animation after completion
+    setTimeout(() => {
+      this.showBubbleAnimation = false;
+    }, 1500);
   }
 }

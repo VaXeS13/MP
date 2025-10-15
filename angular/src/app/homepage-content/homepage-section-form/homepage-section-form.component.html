@@ -1,0 +1,334 @@
+<div class="card">
+  <div class="card-header">
+    <h3>
+      {{
+        (isEditMode ? 'MP::HomePageSection:EditSection' : 'MP::HomePageSection:NewSection') | abpLocalization
+      }}
+    </h3>
+  </div>
+  <div class="card-body">
+    <!-- Loading Spinner -->
+    <div *ngIf="loading" class="text-center py-5">
+      <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
+      <p class="mt-3">{{ 'MP::Common:Loading' | abpLocalization }}</p>
+    </div>
+
+    <!-- Form -->
+    <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="save()">
+      <div class="row">
+        <!-- Section Type -->
+        <div class="col-md-6 mb-3">
+          <label for="sectionType" class="form-label required">
+            {{ 'MP::HomePageSection:SectionType' | abpLocalization }}
+          </label>
+          <select
+            id="sectionType"
+            class="form-select"
+            formControlName="sectionType"
+            [class.is-invalid]="isFieldInvalid('sectionType')"
+          >
+            <option *ngFor="let option of sectionTypeOptions" [value]="option.value">
+              {{ 'MP::HomePageSectionType:' + option.key | abpLocalization }}
+            </option>
+          </select>
+          <div *ngIf="isFieldInvalid('sectionType')" class="invalid-feedback d-block">
+            {{ getFieldError('sectionType') | abpLocalization }}
+          </div>
+        </div>
+
+        <!-- Is Active -->
+        <div class="col-md-6 mb-3 d-flex align-items-end">
+          <div class="form-check form-switch">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="isActive"
+              formControlName="isActive"
+            />
+            <label class="form-check-label" for="isActive">
+              {{ 'MP::HomePageSection:IsActive' | abpLocalization }}
+            </label>
+            <small class="form-text text-muted d-block">
+              {{ 'MP::HomePageSection:IsActiveHelp' | abpLocalization }}
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Title -->
+        <div class="col-md-12 mb-3">
+          <label for="title" class="form-label required">
+            {{ 'MP::HomePageSection:SectionTitle' | abpLocalization }}
+          </label>
+          <input
+            type="text"
+            id="title"
+            class="form-control"
+            formControlName="title"
+            [class.is-invalid]="isFieldInvalid('title')"
+            [placeholder]="'MP::HomePageSection:TitlePlaceholder' | abpLocalization"
+            maxlength="200"
+          />
+          <div *ngIf="isFieldInvalid('title')" class="invalid-feedback d-block">
+            {{ getFieldError('title') | abpLocalization }}
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Subtitle -->
+        <div class="col-md-12 mb-3">
+          <label for="subtitle" class="form-label">
+            {{ 'MP::HomePageSection:Subtitle' | abpLocalization }}
+          </label>
+          <input
+            type="text"
+            id="subtitle"
+            class="form-control"
+            formControlName="subtitle"
+            [class.is-invalid]="isFieldInvalid('subtitle')"
+            [placeholder]="'MP::HomePageSection:SubtitlePlaceholder' | abpLocalization"
+            maxlength="500"
+          />
+          <div *ngIf="isFieldInvalid('subtitle')" class="invalid-feedback d-block">
+            {{ getFieldError('subtitle') | abpLocalization }}
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Content (Textarea) -->
+        <div class="col-md-12 mb-3">
+          <label for="content" class="form-label">
+            {{ 'MP::HomePageSection:Content' | abpLocalization }}
+          </label>
+          <textarea
+            pInputTextarea
+            id="content"
+            class="form-control"
+            formControlName="content"
+            [class.is-invalid]="isFieldInvalid('content')"
+            [placeholder]="'MP::HomePageSection:ContentPlaceholder' | abpLocalization"
+            rows="10"
+            maxlength="10000"
+          ></textarea>
+          <small class="form-text text-muted">
+            {{ 'MP::HomePageSection:ContentPlaceholder' | abpLocalization }}
+          </small>
+          <div *ngIf="isFieldInvalid('content')" class="invalid-feedback d-block">
+            {{ getFieldError('content') | abpLocalization }}
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Image Upload -->
+        <div class="col-md-12 mb-3">
+          <label for="imageFile" class="form-label">
+            {{ 'MP::HomePageSection:Image' | abpLocalization }}
+          </label>
+
+          <!-- Current Image Preview (for edit mode) -->
+          <div *ngIf="currentImageUrl" class="mb-3">
+            <div class="card" style="max-width: 300px;">
+              <img [src]="currentImageUrl" class="card-img-top" alt="Current image" />
+              <div class="card-body">
+                <small class="text-muted">{{ 'MP::HomePageSection:CurrentImage' | abpLocalization }}</small>
+                <button type="button" class="btn btn-sm btn-danger ms-2" (click)="removeImage()">
+                  <i class="fa fa-trash"></i> {{ 'MP::Common:Remove' | abpLocalization }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- File Upload Input -->
+          <div class="input-group">
+            <input
+              type="file"
+              class="form-control"
+              id="imageFile"
+              accept="image/*"
+              (change)="onFileSelected($event)"
+              [disabled]="uploading"
+            />
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              *ngIf="selectedFile"
+              (click)="clearFileSelection()"
+              [disabled]="uploading"
+            >
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+
+          <!-- File Upload Progress -->
+          <div *ngIf="uploading" class="mt-2">
+            <div class="progress">
+              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%">
+                {{ 'MP::Common:Uploading' | abpLocalization }}...
+              </div>
+            </div>
+          </div>
+
+          <!-- New Image Preview -->
+          <div *ngIf="imagePreview && !uploading" class="mt-3">
+            <div class="card" style="max-width: 300px;">
+              <img [src]="imagePreview" class="card-img-top" alt="Preview" />
+              <div class="card-body">
+                <small class="text-muted">{{ selectedFile?.name }}</small>
+                <br />
+                <small class="text-muted">{{ formatFileSize(selectedFile?.size) }}</small>
+              </div>
+            </div>
+          </div>
+
+          <small class="form-text text-muted d-block mt-2">
+            {{ 'MP::HomePageSection:ImageHelp' | abpLocalization }}
+          </small>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Link URL -->
+        <div class="col-md-6 mb-3">
+          <label for="linkUrl" class="form-label">
+            {{ 'MP::HomePageSection:LinkUrl' | abpLocalization }}
+          </label>
+          <input
+            type="text"
+            id="linkUrl"
+            class="form-control"
+            formControlName="linkUrl"
+            [class.is-invalid]="isFieldInvalid('linkUrl')"
+            [placeholder]="'MP::HomePageSection:LinkUrlPlaceholder' | abpLocalization"
+            maxlength="2000"
+          />
+          <div *ngIf="isFieldInvalid('linkUrl')" class="invalid-feedback d-block">
+            {{ getFieldError('linkUrl') | abpLocalization }}
+          </div>
+        </div>
+
+        <!-- Link Text -->
+        <div class="col-md-6 mb-3">
+          <label for="linkText" class="form-label">
+            {{ 'MP::HomePageSection:LinkText' | abpLocalization }}
+          </label>
+          <input
+            type="text"
+            id="linkText"
+            class="form-control"
+            formControlName="linkText"
+            [class.is-invalid]="isFieldInvalid('linkText')"
+            [placeholder]="'MP::HomePageSection:LinkTextPlaceholder' | abpLocalization"
+            maxlength="100"
+          />
+          <div *ngIf="isFieldInvalid('linkText')" class="invalid-feedback d-block">
+            {{ getFieldError('linkText') | abpLocalization }}
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Valid From -->
+        <div class="col-md-6 mb-3">
+          <label for="validFrom" class="form-label">
+            {{ 'MP::HomePageSection:ValidFrom' | abpLocalization }}
+          </label>
+          <p-calendar
+            id="validFrom"
+            formControlName="validFrom"
+            [showTime]="true"
+            [showSeconds]="false"
+            dateFormat="yy-mm-dd"
+            [style]="{ width: '100%' }"
+            inputId="validFrom"
+          ></p-calendar>
+          <small class="form-text text-muted">
+            {{ 'MP::HomePageSection:ValidFromHelp' | abpLocalization }}
+          </small>
+        </div>
+
+        <!-- Valid To -->
+        <div class="col-md-6 mb-3">
+          <label for="validTo" class="form-label">
+            {{ 'MP::HomePageSection:ValidTo' | abpLocalization }}
+          </label>
+          <p-calendar
+            id="validTo"
+            formControlName="validTo"
+            [showTime]="true"
+            [showSeconds]="false"
+            dateFormat="yy-mm-dd"
+            [style]="{ width: '100%' }"
+            inputId="validTo"
+          ></p-calendar>
+          <small class="form-text text-muted">
+            {{ 'MP::HomePageSection:ValidToHelp' | abpLocalization }}
+          </small>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Background Color -->
+        <div class="col-md-6 mb-3">
+          <label for="backgroundColor" class="form-label">
+            {{ 'MP::HomePageSection:BackgroundColor' | abpLocalization }}
+          </label>
+          <div class="d-flex align-items-center">
+            <input
+              type="text"
+              id="backgroundColor"
+              class="form-control me-2"
+              formControlName="backgroundColor"
+              [placeholder]="'MP::HomePageSection:BackgroundColorPlaceholder' | abpLocalization"
+              maxlength="50"
+            />
+            <p-colorPicker formControlName="backgroundColor"></p-colorPicker>
+          </div>
+        </div>
+
+        <!-- Text Color -->
+        <div class="col-md-6 mb-3">
+          <label for="textColor" class="form-label">
+            {{ 'MP::HomePageSection:TextColor' | abpLocalization }}
+          </label>
+          <div class="d-flex align-items-center">
+            <input
+              type="text"
+              id="textColor"
+              class="form-control me-2"
+              formControlName="textColor"
+              [placeholder]="'MP::HomePageSection:TextColorPlaceholder' | abpLocalization"
+              maxlength="50"
+            />
+            <p-colorPicker formControlName="textColor"></p-colorPicker>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="row mt-4">
+        <div class="col-md-12 d-flex justify-content-end gap-2">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="cancel()"
+            [disabled]="saving"
+          >
+            <i class="fa fa-times"></i> {{ 'MP::Common:Cancel' | abpLocalization }}
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="saving || form.invalid"
+          >
+            <i class="fa" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+            {{ 'MP::Common:Save' | abpLocalization }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

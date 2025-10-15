@@ -140,7 +140,7 @@
               </h6>
             </li>
             <li>
-              <a class="dropdown-item" href="#" (click)="closeAllDropdowns(); closeMobileMenu(); $event.preventDefault()">
+              <a class="dropdown-item" [routerLink]="['/profile']" (click)="closeAllDropdowns(); closeMobileMenu()">
                 <i class="fas fa-user-edit me-2"></i>
                 {{ '::Menu:Profile' | abpLocalization }}
               </a>

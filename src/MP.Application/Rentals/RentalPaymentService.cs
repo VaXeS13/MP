@@ -74,7 +74,7 @@ namespace MP.Application.Rentals
                     Description = $"Wypożyczenie stanowiska {rental.BoothId} na okres {rental.Period.StartDate:dd.MM.yyyy} - {rental.Period.EndDate:dd.MM.yyyy}",
                     Email = _currentUser.Email ?? "",
                     ClientName = _currentUser.Name ?? "Klient",
-                    UrlReturn = _configuration["App:ClientUrl"] + "/rentals/payment-success",
+                    UrlReturn = _configuration["App:ClientUrl"] + $"/rentals/payment-success/{sessionId}",
                     UrlStatus = _configuration["App:ApiUrl"] + "/api/rentals/payment-callback"
                 };
 

@@ -302,7 +302,6 @@ namespace MP.Carts
 
                 // Create all rentals or use existing ones
                 var rentalIds = new List<Guid>();
-                decimal totalAmount = 0;
 
                 foreach (var item in cart.Items)
                 {
@@ -339,8 +338,10 @@ namespace MP.Carts
                     }
 
                     rentalIds.Add(rental.Id);
-                    totalAmount += rental.Payment.TotalAmount;
                 }
+
+                // Use final amount from cart (includes promotion discount)
+                decimal totalAmount = cart.GetFinalAmount();
 
                 // Force save rentals before payment
                 await UnitOfWorkManager.Current!.SaveChangesAsync();

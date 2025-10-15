@@ -5238,10 +5238,10 @@ karma-source-map-support@1.4.0:
   dependencies:
     source-map-support "^0.5.5"
 
-karma@*, karma@^6.3.0, karma@^6.4.0, karma@>=0.9, karma@~6.3.0:
-  version "6.3.20"
-  resolved "https://registry.npmjs.org/karma/-/karma-6.3.20.tgz"
-  integrity sha512-HRNQhMuKOwKpjYlWiJP0DUrJOh+QjaI/DTaD8b9rEm4Il3tJ8MijutVZH4ts10LuUFst/CedwTS6vieCN8yTSw==
+karma@*, karma@^6.3.0, karma@^6.4.0, karma@^6.4.4, karma@>=0.9:
+  version "6.4.4"
+  resolved "https://registry.npmjs.org/karma/-/karma-6.4.4.tgz"
+  integrity sha512-LrtUxbdvt1gOpo3gxG+VAJlJAEMhbWlM4YrFQgql98FwF7+K8K12LYO4hnDdUkNjeztYrOXEMqgTajSWgmtI/w==
   dependencies:
     "@colors/colors" "1.5.0"
     body-parser "^1.19.0"
@@ -5262,7 +5262,7 @@ karma@*, karma@^6.3.0, karma@^6.4.0, karma@>=0.9, karma@~6.3.0:
     qjobs "^1.2.0"
     range-parser "^1.2.1"
     rimraf "^3.0.2"
-    socket.io "^4.4.1"
+    socket.io "^4.7.2"
     source-map "^0.6.1"
     tmp "^0.2.1"
     ua-parser-js "^0.7.30"
@@ -7124,7 +7124,7 @@ socket.io-parser@~4.2.4:
     "@socket.io/component-emitter" "~3.1.0"
     debug "~4.3.1"
 
-socket.io@^4.4.1:
+socket.io@^4.7.2:
   version "4.8.1"
   resolved "https://registry.npmjs.org/socket.io/-/socket.io-4.8.1.tgz"
   integrity sha512-oZ7iUCxph8WYRHHcjBEc9unw3adt5CmSNlppj/5Q4k2RIrhl8Z5yY2Xr4j9zj0+wzVZ0bxmYoGSzKJnRl6A4yg==

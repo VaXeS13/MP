@@ -476,6 +476,97 @@ namespace MP.Migrations
                     b.ToTable("AppChatMessages", (string)null);
                 });
 
+            modelBuilder.Entity("MP.Domain.Files.UploadedFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)")
+                        .HasComment("Binary content of the file");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("MIME type of the file");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasComment("Optional description");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasComment("Original filename");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint")
+                        .HasComment("File size in bytes");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentType")
+                        .HasDatabaseName("IX_UploadedFiles_ContentType");
+
+                    b.HasIndex("CreationTime")
+                        .HasDatabaseName("IX_UploadedFiles_CreationTime");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_UploadedFiles_TenantId");
+
+                    b.ToTable("AppUploadedFiles", (string)null);
+                });
+
             modelBuilder.Entity("MP.Domain.FiscalPrinters.TenantFiscalPrinterSettings", b =>
                 {
                     b.Property<Guid>("Id")
@@ -870,6 +961,162 @@ namespace MP.Migrations
                         .HasDatabaseName("IX_FloorPlanElements_FloorPlanId_ElementType");
 
                     b.ToTable("AppFloorPlanElements", (string)null);
+                });
+
+            modelBuilder.Entity("MP.Domain.HomePageContent.HomePageSection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BackgroundColor")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Background color (hex code)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<string>("Content")
+                        .HasMaxLength(10000)
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("HTML content for the section");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<Guid?>("ImageFileId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("ID of the uploaded image file");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasComment("Whether the section is active/published");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<string>("LinkText")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Text for CTA button/link");
+
+                    b.Property<string>("LinkUrl")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)")
+                        .HasComment("URL for CTA link");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int")
+                        .HasComment("Display order (lower = displayed first)");
+
+                    b.Property<int>("SectionType")
+                        .HasColumnType("int")
+                        .HasComment("Type of homepage section");
+
+                    b.Property<string>("Subtitle")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasComment("Section subtitle");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
+                    b.Property<string>("TextColor")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Text color (hex code)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasComment("Section title");
+
+                    b.Property<DateTime?>("ValidFrom")
+                        .HasColumnType("datetime2")
+                        .HasComment("Start date for scheduled publishing");
+
+                    b.Property<DateTime?>("ValidTo")
+                        .HasColumnType("datetime2")
+                        .HasComment("End date for scheduled publishing");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImageFileId")
+                        .HasDatabaseName("IX_HomePageSections_ImageFileId");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_HomePageSections_IsActive");
+
+                    b.HasIndex("Order")
+                        .HasDatabaseName("IX_HomePageSections_Order");
+
+                    b.HasIndex("SectionType")
+                        .HasDatabaseName("IX_HomePageSections_SectionType");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_HomePageSections_TenantId");
+
+                    b.HasIndex("IsActive", "ValidFrom", "ValidTo")
+                        .HasDatabaseName("IX_HomePageSections_Active_Validity");
+
+                    b.HasIndex("TenantId", "IsActive", "Order")
+                        .HasDatabaseName("IX_HomePageSections_TenantId_IsActive_Order");
+
+                    b.ToTable("AppHomePageSections", (string)null);
+                });
+
+            modelBuilder.Entity("MP.Domain.Identity.UserProfile", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BankAccountNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("AppUserProfiles", (string)null);
                 });
 
             modelBuilder.Entity("MP.Domain.Items.Item", b =>
@@ -4420,6 +4667,25 @@ namespace MP.Migrations
                         .HasForeignKey("FloorPlanId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("MP.Domain.HomePageContent.HomePageSection", b =>
+                {
+                    b.HasOne("MP.Domain.Files.UploadedFile", null)
+                        .WithMany()
+                        .HasForeignKey("ImageFileId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("MP.Domain.Identity.UserProfile", b =>
+                {
+                    b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
+                        .WithOne()
+                        .HasForeignKey("MP.Domain.Identity.UserProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MP.Domain.Items.Item", b =>

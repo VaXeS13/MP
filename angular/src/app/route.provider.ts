@@ -167,6 +167,14 @@ function configureRoutes() {
         requiredPolicy: 'MP.Tenant.ManageCurrency',
       },
       {
+        path: '/homepage-content',
+        name: '::Menu:HomePageContent',
+        parentName: '::Menu:Administration',
+        iconClass: 'fas fa-home',
+        order: 8,
+        requiredPolicy: 'MP.HomePageContent',
+      },
+      {
         path: '/seller-checkout',
         name: 'Seller Checkout',
         iconClass: 'fas fa-shopping-cart',

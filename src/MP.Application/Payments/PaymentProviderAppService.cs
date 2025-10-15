@@ -282,7 +282,7 @@ namespace MP.Application.Payments
                     ClientName = _currentUser.Name ?? "Klient",
                     Country = "PL",
                     Language = "pl",
-                    UrlReturn = string.Format(_configuration["App:ClientUrl"]!, _currentTenant.Name ?? "default") + "/rentals/payment-success",
+                    UrlReturn = string.Format(_configuration["App:ClientUrl"]!, _currentTenant.Name ?? "default") + $"/rentals/payment-success/{localSessionId}",
                     UrlStatus = _configuration["App:ApiUrl"] + "/api/app/rentals/payment/notification"
                 };
 

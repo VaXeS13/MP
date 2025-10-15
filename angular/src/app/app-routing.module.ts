@@ -79,6 +79,14 @@ const routes: Routes = [
     }
   },
   {
+    path: 'homepage-content',
+    loadChildren: () => import('./homepage-content/homepage-content.module').then(m => m.HomepageContentModule),
+    canActivate: [AuthGuard, permissionGuard],
+    data: {
+      requiredPolicy: 'MP.HomePageContent'
+    }
+  },
+  {
     path: 'dashboard',
     loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule),
     canActivate: [AuthGuard, permissionGuard],
@@ -93,6 +101,10 @@ const routes: Routes = [
     data: {
       requiredPolicy: 'MP.Rentals'
     }
+  },
+  {
+    path: 'rentals/payment-success/:transactionId',
+    loadComponent: () => import('./payment-success/payment-success.component').then(m => m.PaymentSuccessComponent)
   },
   {
     path: 'booth-types',
@@ -127,6 +139,11 @@ const routes: Routes = [
   {
     path: 'items',
     loadChildren: () => import('./items/items.module').then(m => m.ItemsModule),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./profile/profile.component').then(m => m.ProfileComponent),
     canActivate: [authGuard]
   },
   /*{

@@ -12,6 +12,9 @@ using MP.Domain.Notifications;
 using MP.Domain.Settlements;
 using MP.Domain.Chat;
 using MP.Domain.Items;
+using MP.Domain.Identity;
+using MP.Domain.HomePageContent;
+using MP.Domain.Files;
 using MP.Carts;
 using System;
 using System.Collections.Generic;
@@ -1710,6 +1713,154 @@ namespace MP.EntityFrameworkCore
 
                 b.HasIndex(x => x.CreationTime)
                     .HasDatabaseName("IX_PromotionUsages_CreationTime");
+            });
+
+            // Configure UserProfile
+            builder.Entity<UserProfile>(b =>
+            {
+                b.ToTable(MPConsts.DbTablePrefix + "UserProfiles", MPConsts.DbSchema);
+                b.ConfigureByConvention();
+
+                // Configure UserId as primary key and foreign key
+                b.HasKey(x => x.UserId);
+
+                // Configure the BankAccountNumber property
+                b.Property(x => x.BankAccountNumber)
+                    .HasMaxLength(50)
+                    .IsRequired(false);
+
+                // Configure relationship with IdentityUser
+                b.HasOne(x => x.User)
+                    .WithOne() // IdentityUser doesn't have navigation back to UserProfile
+                    .HasForeignKey<UserProfile>(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Konfiguracja tabeli HomePageSections
+            builder.Entity<HomePageSection>(b =>
+            {
+                b.ToTable(MPConsts.DbTablePrefix + "HomePageSections", MPConsts.DbSchema);
+                b.ConfigureByConvention();
+
+                b.Property(x => x.SectionType)
+                    .IsRequired()
+                    .HasComment("Type of homepage section");
+
+                b.Property(x => x.Title)
+                    .IsRequired()
+                    .HasMaxLength(200)
+                    .HasComment("Section title");
+
+                b.Property(x => x.Subtitle)
+                    .HasMaxLength(500)
+                    .HasComment("Section subtitle");
+
+                b.Property(x => x.Content)
+                    .HasMaxLength(10000)
+                    .HasComment("HTML content for the section");
+
+                b.Property(x => x.ImageFileId)
+                    .HasComment("ID of the uploaded image file");
+
+                b.Property(x => x.LinkUrl)
+                    .HasMaxLength(2000)
+                    .HasComment("URL for CTA link");
+
+                b.Property(x => x.LinkText)
+                    .HasMaxLength(100)
+                    .HasComment("Text for CTA button/link");
+
+                b.Property(x => x.Order)
+                    .IsRequired()
+                    .HasComment("Display order (lower = displayed first)");
+
+                b.Property(x => x.IsActive)
+                    .IsRequired()
+                    .HasDefaultValue(false)
+                    .HasComment("Whether the section is active/published");
+
+                b.Property(x => x.ValidFrom)
+                    .HasColumnType("datetime2")
+                    .HasComment("Start date for scheduled publishing");
+
+                b.Property(x => x.ValidTo)
+                    .HasColumnType("datetime2")
+                    .HasComment("End date for scheduled publishing");
+
+                b.Property(x => x.BackgroundColor)
+                    .HasMaxLength(50)
+                    .HasComment("Background color (hex code)");
+
+                b.Property(x => x.TextColor)
+                    .HasMaxLength(50)
+                    .HasComment("Text color (hex code)");
+
+                // Indeksy
+                b.HasIndex(x => x.TenantId)
+                    .HasDatabaseName("IX_HomePageSections_TenantId");
+
+                b.HasIndex(x => x.IsActive)
+                    .HasDatabaseName("IX_HomePageSections_IsActive");
+
+                b.HasIndex(x => x.Order)
+                    .HasDatabaseName("IX_HomePageSections_Order");
+
+                b.HasIndex(x => new { x.TenantId, x.IsActive, x.Order })
+                    .HasDatabaseName("IX_HomePageSections_TenantId_IsActive_Order");
+
+                b.HasIndex(x => x.SectionType)
+                    .HasDatabaseName("IX_HomePageSections_SectionType");
+
+                b.HasIndex(x => new { x.IsActive, x.ValidFrom, x.ValidTo })
+                    .HasDatabaseName("IX_HomePageSections_Active_Validity");
+
+                b.HasIndex(x => x.ImageFileId)
+                    .HasDatabaseName("IX_HomePageSections_ImageFileId");
+
+                // Relacja z UploadedFile (opcjonalna)
+                b.HasOne<UploadedFile>()
+                    .WithMany()
+                    .HasForeignKey(x => x.ImageFileId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Konfiguracja tabeli UploadedFiles
+            builder.Entity<UploadedFile>(b =>
+            {
+                b.ToTable(MPConsts.DbTablePrefix + "UploadedFiles", MPConsts.DbSchema);
+                b.ConfigureByConvention();
+
+                b.Property(x => x.FileName)
+                    .IsRequired()
+                    .HasMaxLength(255)
+                    .HasComment("Original filename");
+
+                b.Property(x => x.ContentType)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasComment("MIME type of the file");
+
+                b.Property(x => x.FileSize)
+                    .IsRequired()
+                    .HasComment("File size in bytes");
+
+                b.Property(x => x.Content)
+                    .IsRequired()
+                    .HasComment("Binary content of the file");
+
+                b.Property(x => x.Description)
+                    .HasMaxLength(500)
+                    .HasComment("Optional description");
+
+                // Indeksy
+                b.HasIndex(x => x.TenantId)
+                    .HasDatabaseName("IX_UploadedFiles_TenantId");
+
+                b.HasIndex(x => x.ContentType)
+                    .HasDatabaseName("IX_UploadedFiles_ContentType");
+
+                b.HasIndex(x => x.CreationTime)
+                    .HasDatabaseName("IX_UploadedFiles_CreationTime");
             });
         }
     }

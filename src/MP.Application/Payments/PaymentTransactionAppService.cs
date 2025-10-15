@@ -1,0 +1,336 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Volo.Abp;
+using Volo.Abp.Application.Dtos;
+using Volo.Abp.Application.Services;
+using Volo.Abp.Domain.Repositories;
+using MP.Domain.Payments;
+using MP.Domain.Rentals;
+using MP.Payments;
+using MP.Rentals;
+
+namespace MP.Application.Payments
+{
+    [Authorize]
+    public class PaymentTransactionAppService : ApplicationService, IPaymentTransactionAppService
+    {
+        private readonly IRepository<P24Transaction, Guid> _p24TransactionRepository;
+        private readonly IRepository<Rental, Guid> _rentalRepository;
+        private readonly IP24TransactionRepository _customP24TransactionRepository;
+
+        public PaymentTransactionAppService(
+            IRepository<P24Transaction, Guid> p24TransactionRepository,
+            IRepository<Rental, Guid> rentalRepository,
+            IP24TransactionRepository customP24TransactionRepository)
+        {
+            _p24TransactionRepository = p24TransactionRepository;
+            _rentalRepository = rentalRepository;
+            _customP24TransactionRepository = customP24TransactionRepository;
+        }
+
+        public async Task<PagedResultDto<PaymentTransactionDto>> GetListAsync(GetPaymentTransactionListDto input)
+        {
+            var queryable = await _p24TransactionRepository.GetQueryableAsync();
+
+            // Apply filters
+            if (!string.IsNullOrWhiteSpace(input.Filter))
+            {
+                queryable = queryable.Where(x =>
+                    x.Email.Contains(input.Filter) ||
+                    x.Description.Contains(input.Filter) ||
+                    x.SessionId.Contains(input.Filter));
+            }
+
+            if (!string.IsNullOrWhiteSpace(input.Status))
+            {
+                queryable = queryable.Where(x => x.Status == input.Status);
+            }
+
+            if (input.StartDate.HasValue)
+            {
+                queryable = queryable.Where(x => x.CreationTime >= input.StartDate.Value);
+            }
+
+            if (input.EndDate.HasValue)
+            {
+                queryable = queryable.Where(x => x.CreationTime <= input.EndDate.Value);
+            }
+
+            if (input.MinAmount.HasValue)
+            {
+                queryable = queryable.Where(x => x.Amount >= input.MinAmount.Value);
+            }
+
+            if (input.MaxAmount.HasValue)
+            {
+                queryable = queryable.Where(x => x.Amount <= input.MaxAmount.Value);
+            }
+
+            if (input.RentalId.HasValue)
+            {
+                queryable = queryable.Where(x => x.RentalId == input.RentalId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(input.Email))
+            {
+                queryable = queryable.Where(x => x.Email.Contains(input.Email));
+            }
+
+            // Apply sorting
+            if (!string.IsNullOrWhiteSpace(input.Sorting))
+            {
+                // Basic sorting to avoid errors - you can extend this as needed
+                if (input.Sorting.Contains("CreationTime"))
+                {
+                    queryable = input.Sorting.Contains("desc")
+                        ? queryable.OrderByDescending(x => x.CreationTime)
+                        : queryable.OrderBy(x => x.CreationTime);
+                }
+                else if (input.Sorting.Contains("Amount"))
+                {
+                    queryable = input.Sorting.Contains("desc")
+                        ? queryable.OrderByDescending(x => x.Amount)
+                        : queryable.OrderBy(x => x.Amount);
+                }
+                else if (input.Sorting.Contains("Email"))
+                {
+                    queryable = input.Sorting.Contains("desc")
+                        ? queryable.OrderByDescending(x => x.Email)
+                        : queryable.OrderBy(x => x.Email);
+                }
+                else
+                {
+                    queryable = queryable.OrderByDescending(x => x.CreationTime);
+                }
+            }
+            else
+            {
+                queryable = queryable.OrderByDescending(x => x.CreationTime);
+            }
+
+            // Get total count
+            var totalCount = await AsyncExecuter.CountAsync(queryable);
+
+            // Get paged results
+            var items = await AsyncExecuter.ToListAsync(
+                queryable.Skip(input.SkipCount).Take(input.MaxResultCount));
+
+            var dtos = ObjectMapper.Map<List<P24Transaction>, List<PaymentTransactionDto>>(items);
+
+            // Set computed properties
+            foreach (var dto in dtos)
+            {
+                dto.StatusDisplayName = GetStatusDisplayName(dto.Status);
+                dto.IsCompleted = IsCompletedStatus(dto.Status);
+                dto.IsFailed = IsFailedStatus(dto.Status);
+                dto.IsPending = IsPendingStatus(dto.Status);
+                dto.FormattedAmount = dto.Amount.ToString("N2") + " " + dto.Currency;
+                dto.FormattedCreatedAt = dto.CreationTime.ToString("yyyy-MM-dd HH:mm");
+                dto.FormattedCompletedAt = dto.LastStatusCheck?.ToString("yyyy-MM-dd HH:mm");
+            }
+
+            return new PagedResultDto<PaymentTransactionDto>(totalCount, dtos);
+        }
+
+        [AllowAnonymous]
+        public async Task<PaymentSuccessViewModel> GetPaymentSuccessViewModelAsync(string sessionId)
+        {
+            var transaction = await _customP24TransactionRepository.FindBySessionIdAsync(sessionId);
+
+            if (transaction == null)
+            {
+                throw new BusinessException("MP:PaymentTransactionNotFound")
+                    .WithData("sessionId", sessionId);
+            }
+
+            var transactionDto = ObjectMapper.Map<P24Transaction, PaymentTransactionDto>(transaction);
+
+            // Set computed properties
+            transactionDto.StatusDisplayName = GetStatusDisplayName(transactionDto.Status);
+            transactionDto.IsCompleted = IsCompletedStatus(transactionDto.Status);
+            transactionDto.IsFailed = IsFailedStatus(transactionDto.Status);
+            transactionDto.IsPending = IsPendingStatus(transactionDto.Status);
+            transactionDto.FormattedAmount = transactionDto.Amount.ToString("N2") + " " + transactionDto.Currency;
+            transactionDto.FormattedCreatedAt = transactionDto.CreationTime.ToString("yyyy-MM-dd HH:mm");
+            transactionDto.FormattedCompletedAt = transactionDto.LastStatusCheck?.ToString("yyyy-MM-dd HH:mm");
+
+            // Get related rentals
+            var rentals = new List<RentalDto>();
+            if (transaction.RentalId.HasValue)
+            {
+                var rental = await _rentalRepository.GetAsync(transaction.RentalId.Value);
+                rentals.Add(ObjectMapper.Map<Rental, RentalDto>(rental));
+            }
+            else
+            {
+                // For cart checkout, check ExtraProperties for rental IDs
+                if (!string.IsNullOrEmpty(transaction.ExtraProperties))
+                {
+                    try
+                    {
+                        var extraProps = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(transaction.ExtraProperties);
+                        if (extraProps?.ContainsKey("RentalIds") == true)
+                        {
+                            var rentalIds = extraProps["RentalIds"].ToString().Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            foreach (var rentalId in rentalIds)
+                            {
+                                if (Guid.TryParse(rentalId.Trim(), out var id))
+                                {
+                                    var rental = await _rentalRepository.GetAsync(id);
+                                    rentals.Add(ObjectMapper.Map<Rental, RentalDto>(rental));
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore JSON parsing errors
+                    }
+                }
+            }
+
+            var viewModel = new PaymentSuccessViewModel
+            {
+                Transaction = transactionDto,
+                Rentals = rentals,
+                Success = transactionDto.IsCompleted,
+                Message = GetSuccessMessage(transactionDto.Status),
+                NextStepUrl = "/rentals/my-rentals",
+                NextStepText = L["PaymentSuccess:ViewMyRentals"],
+                TotalAmount = transactionDto.Amount,
+                Currency = transactionDto.Currency,
+                PaymentDate = transactionDto.LastStatusCheck ?? transactionDto.CreationTime,
+                PaymentMethod = "Przelewy24",
+                FormattedPaymentDate = (transactionDto.LastStatusCheck ?? transactionDto.CreationTime).ToString("yyyy-MM-dd HH:mm"),
+                FormattedTotalAmount = transactionDto.Amount.ToString("N2") + " " + transactionDto.Currency,
+                OrderId = transactionDto.OrderId,
+                PaymentProvider = "Przelewy24",
+                IsVerified = transactionDto.Verified,
+                Method = transactionDto.Method
+            };
+
+            return viewModel;
+        }
+
+        public async Task<PaymentTransactionDto> GetAsync(Guid id)
+        {
+            var transaction = await _p24TransactionRepository.GetAsync(id);
+            var dto = ObjectMapper.Map<P24Transaction, PaymentTransactionDto>(transaction);
+
+            // Set computed properties
+            dto.StatusDisplayName = GetStatusDisplayName(dto.Status);
+            dto.IsCompleted = IsCompletedStatus(dto.Status);
+            dto.IsFailed = IsFailedStatus(dto.Status);
+            dto.IsPending = IsPendingStatus(dto.Status);
+            dto.FormattedAmount = dto.Amount.ToString("N2") + " " + dto.Currency;
+            dto.FormattedCreatedAt = dto.CreationTime.ToString("yyyy-MM-dd HH:mm");
+            dto.FormattedCompletedAt = dto.LastStatusCheck?.ToString("yyyy-MM-dd HH:mm");
+
+            return dto;
+        }
+
+        public async Task<PaymentTransactionDto> CreateAsync(CreatePaymentTransactionDto input)
+        {
+            var transaction = new P24Transaction(
+                GuidGenerator.Create(),
+                input.SessionId,
+                input.MerchantId,
+                input.PosId,
+                input.Amount,
+                input.Currency,
+                input.Email,
+                input.Description,
+                input.Sign,
+                CurrentTenant.Id);
+
+            transaction.Method = input.Method;
+            transaction.TransferLabel = input.TransferLabel;
+            transaction.OrderId = input.OrderId;
+            transaction.ReturnUrl = input.ReturnUrl;
+            transaction.Statement = input.Statement;
+            transaction.ExtraProperties = input.ExtraProperties;
+            transaction.RentalId = input.RentalId;
+
+            await _p24TransactionRepository.InsertAsync(transaction);
+
+            return ObjectMapper.Map<P24Transaction, PaymentTransactionDto>(transaction);
+        }
+
+        public async Task<PaymentTransactionDto> UpdateAsync(Guid id, UpdatePaymentTransactionDto input)
+        {
+            var transaction = await _p24TransactionRepository.GetAsync(id);
+
+            transaction.Description = input.Description;
+            transaction.LastStatusCheck = input.LastStatusCheck;
+            transaction.Method = input.Method;
+            transaction.TransferLabel = input.TransferLabel;
+            transaction.ReturnUrl = input.ReturnUrl;
+            transaction.Statement = input.Statement;
+            transaction.ExtraProperties = input.ExtraProperties;
+
+            if (input.Status != null)
+            {
+                transaction.SetStatus(input.Status);
+            }
+
+            if (input.Verified.HasValue)
+            {
+                transaction.SetVerified(input.Verified.Value);
+            }
+
+            await _p24TransactionRepository.UpdateAsync(transaction);
+
+            return ObjectMapper.Map<P24Transaction, PaymentTransactionDto>(transaction);
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            await _p24TransactionRepository.DeleteAsync(id);
+        }
+
+        private string GetStatusDisplayName(string status)
+        {
+            return status switch
+            {
+                "completed" => L["PaymentStatus:Completed"],
+                "paid" => L["PaymentStatus:Paid"],
+                "pending" => L["PaymentStatus:Pending"],
+                "processing" => L["PaymentStatus:Processing"],
+                "failed" => L["PaymentStatus:Failed"],
+                "cancelled" => L["PaymentStatus:Cancelled"],
+                "rejected" => L["PaymentStatus:Rejected"],
+                "refunded" => L["PaymentStatus:Refunded"],
+                _ => L["PaymentStatus:Unknown"]
+            };
+        }
+
+        private bool IsCompletedStatus(string status)
+        {
+            return status is "completed" or "paid";
+        }
+
+        private bool IsFailedStatus(string status)
+        {
+            return status is "failed" or "cancelled" or "rejected";
+        }
+
+        private bool IsPendingStatus(string status)
+        {
+            return status is "pending" or "processing";
+        }
+
+        private string GetSuccessMessage(string status)
+        {
+            return status switch
+            {
+                "completed" => L["PaymentSuccess:MessageCompleted"],
+                "paid" => L["PaymentSuccess:MessagePaid"],
+                "processing" => L["PaymentSuccess:MessageProcessing"],
+                _ => L["PaymentSuccess:MessagePending"]
+            };
+        }
+    }
+}

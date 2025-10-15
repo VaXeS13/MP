@@ -27,6 +27,9 @@ using MP.Domain.Settlements;
 using MP.Domain.Chat;
 using MP.Domain.Items;
 using MP.Domain.Promotions;
+using MP.Domain.Identity;
+using MP.Domain.HomePageContent;
+using MP.Domain.Files;
 
 namespace MP.EntityFrameworkCore;
 
@@ -89,6 +92,9 @@ public class MPDbContext :
     public DbSet<ItemSheetItem> ItemSheetItems { get; set; }
     public DbSet<Promotion> Promotions { get; set; }
     public DbSet<PromotionUsage> PromotionUsages { get; set; }
+    public DbSet<HomePageSection> HomePageSections { get; set; }
+    public DbSet<UserProfile> UserProfiles { get; set; }
+    public DbSet<UploadedFile> UploadedFiles { get; set; }
 
     #endregion
 

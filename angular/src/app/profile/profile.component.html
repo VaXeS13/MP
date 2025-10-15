@@ -1,0 +1,151 @@
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title mb-0">
+        <i class="fas fa-user me-2"></i>
+        Mój Profil
+      </h2>
+    </div>
+    <div class="card-body">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Ładowanie...</span>
+        </div>
+        <p class="mt-2">Ładowanie danych profilu...</p>
+      </div>
+
+      <!-- Profile Form -->
+      <form *ngIf="!isLoading" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+        <!-- Username (Read-only) -->
+        <div class="field-group mb-3">
+          <label for="username" class="form-label">
+            <i class="fas fa-user me-1"></i>
+            Nazwa użytkownika
+          </label>
+          <input
+            type="text"
+            id="username"
+            class="form-control"
+            [value]="username"
+            readonly
+            disabled
+          />
+          <small class="form-text text-muted">Nazwa użytkownika nie może być zmieniona</small>
+        </div>
+
+        <!-- Email (Read-only) -->
+        <div class="field-group mb-3">
+          <label for="email" class="form-label">
+            <i class="fas fa-envelope me-1"></i>
+            Adres e-mail
+          </label>
+          <input
+            type="email"
+            id="email"
+            class="form-control"
+            formControlName="email"
+            readonly
+            disabled
+          />
+          <small class="form-text text-muted">Zmiana adresu e-mail wymaga potwierdzenia</small>
+        </div>
+
+        <!-- Name -->
+        <div class="field-group mb-3">
+          <label for="name" class="form-label">
+            <i class="fas fa-user-tag me-1"></i>
+            Imię
+          </label>
+          <input
+            type="text"
+            id="name"
+            class="form-control"
+            formControlName="name"
+            placeholder="Wprowadź imię"
+            [ngClass]="{'is-invalid': profileForm.get('name')?.touched && profileForm.get('name')?.invalid}"
+          />
+          <div class="invalid-feedback" *ngIf="profileForm.get('name')?.touched && profileForm.get('name')?.invalid">
+            {{ getErrorMessage('name') }}
+          </div>
+        </div>
+
+        <!-- Surname -->
+        <div class="field-group mb-3">
+          <label for="surname" class="form-label">
+            <i class="fas fa-user me-1"></i>
+            Nazwisko
+          </label>
+          <input
+            type="text"
+            id="surname"
+            class="form-control"
+            formControlName="surname"
+            placeholder="Wprowadź nazwisko"
+            [ngClass]="{'is-invalid': profileForm.get('surname')?.touched && profileForm.get('surname')?.invalid}"
+          />
+          <div class="invalid-feedback" *ngIf="profileForm.get('surname')?.touched && profileForm.get('surname')?.invalid">
+            {{ getErrorMessage('surname') }}
+          </div>
+        </div>
+
+        <!-- Bank Account Number -->
+        <div class="field-group mb-4">
+          <label for="bankAccountNumber" class="form-label">
+            <i class="fas fa-university me-1"></i>
+            Numer konta bankowego
+          </label>
+          <input
+            type="text"
+            id="bankAccountNumber"
+            class="form-control"
+            formControlName="bankAccountNumber"
+            placeholder="PLXXXXXXXXXXXXXXXXXXXXXXXXXX lub IBAN"
+            [ngClass]="{'is-invalid': profileForm.get('bankAccountNumber')?.touched && profileForm.get('bankAccountNumber')?.invalid}"
+          />
+          <small class="form-text text-muted">
+            Wprowadź numer konta w formacie 26 cyfr (np. PL12345678901234567890123456) lub standardowego IBAN
+          </small>
+          <div class="invalid-feedback" *ngIf="profileForm.get('bankAccountNumber')?.touched && profileForm.get('bankAccountNumber')?.invalid">
+            {{ getErrorMessage('bankAccountNumber') }}
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-between">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            routerLink="/"
+          >
+            <i class="fas fa-times me-2"></i>
+            Anuluj
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="profileForm.invalid || isSaving"
+          >
+            <i class="fas fa-save me-2" *ngIf="!isSaving"></i>
+            <i class="fas fa-spinner fa-spin me-2" *ngIf="isSaving"></i>
+            {{ isSaving ? 'Zapisywanie...' : 'Zapisz zmiany' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Success/Error Messages -->
+<div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+  <i class="fas fa-check-circle me-2"></i>
+  {{ successMessage }}
+  <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+</div>
+
+<div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+  <i class="fas fa-exclamation-circle me-2"></i>
+  {{ errorMessage }}
+  <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+</div>

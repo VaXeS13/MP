@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { PromotionService } from '../../../proxy/promotions/promotion.service';
 import { PromotionDto } from '../../../proxy/promotions/models';
 import { PromotionDisplayMode } from '../../../proxy/promotions/promotion-display-mode.enum';
+import { PromotionDismissalService } from '../../services/promotion-dismissal.service';
 import { Subject, takeUntil, timer } from 'rxjs';
 
 @Component({
@@ -21,7 +22,10 @@ export class PromotionNotificationWidgetComponent implements OnInit, OnDestroy {
 
   PromotionDisplayMode = PromotionDisplayMode;
 
-  constructor(private promotionService: PromotionService) {}
+  constructor(
+    private promotionService: PromotionService,
+    private promotionDismissalService: PromotionDismissalService
+  ) {}
 
   ngOnInit(): void {
     this.loadActivePromotions();
@@ -36,9 +40,10 @@ export class PromotionNotificationWidgetComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.promotionService.getActivePromotions().subscribe({
       next: (promotions) => {
-        // Filter promotions with visible display modes
+        // Filter promotions with visible display modes and not dismissed
         this.promotions = promotions.filter(
-          p => p.displayMode !== PromotionDisplayMode.None
+          p => p.displayMode !== PromotionDisplayMode.None &&
+               !this.promotionDismissalService.isPromotionDismissed(p.id)
         );
 
         if (this.promotions.length > 0) {
@@ -87,7 +92,26 @@ export class PromotionNotificationWidgetComponent implements OnInit, OnDestroy {
   }
 
   close(): void {
-    this.visible = false;
+    const currentPromotion = this.currentPromotion;
+    if (currentPromotion) {
+      // Mark promotion as dismissed for 1 hour
+      this.promotionDismissalService.dismissPromotion(currentPromotion.id);
+
+      // Remove the dismissed promotion from the list
+      this.promotions = this.promotions.filter(p => p.id !== currentPromotion.id);
+
+      // Adjust current index if needed
+      if (this.currentPromotionIndex >= this.promotions.length) {
+        this.currentPromotionIndex = Math.max(0, this.promotions.length - 1);
+      }
+
+      // Hide widget if no promotions left
+      if (this.promotions.length === 0) {
+        this.visible = false;
+      }
+    } else {
+      this.visible = false;
+    }
   }
 
   nextPromotion(): void {

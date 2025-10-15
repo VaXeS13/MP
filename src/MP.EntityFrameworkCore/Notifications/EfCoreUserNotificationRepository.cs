@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 
-namespace MP.Notifications
+namespace MP.EntityFrameworkCore.Notifications
 {
     public class EfCoreUserNotificationRepository : EfCoreRepository<MPDbContext, UserNotification, Guid>, IUserNotificationRepository
     {

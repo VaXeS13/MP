@@ -243,20 +243,22 @@
               <span>{{ '::Cart:Subtotal' | abpLocalization }}:</span>
               <span>{{ cart.totalAmount | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</span>
             </div>
-            <div class="summary-row text-success">
+            <div class="summary-row text-success neon-border-container">
               <span>
                 <i class="pi pi-tag me-1"></i>
                 {{ 'MP::DiscountLabel' | abpLocalization }}:
               </span>
-              <span class="fw-bold">
+              <span class="fw-bold price-with-neon-border">
                 -{{ getDiscountAmount() | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
+                <div class="neon-border-animation" *ngIf="showBubbleAnimation"></div>
               </span>
             </div>
             <hr>
-            <div class="summary-row total-row">
+            <div class="summary-row total-row neon-border-container">
               <span>{{ '::Cart:FinalAmount' | abpLocalization }}:</span>
-              <strong class="text-primary fs-4">
+              <strong class="text-primary fs-4 price-with-neon-border">
                 {{ getFinalAmount() | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
+                <div class="neon-border-animation" *ngIf="showBubbleAnimation"></div>
               </strong>
             </div>
           </div>

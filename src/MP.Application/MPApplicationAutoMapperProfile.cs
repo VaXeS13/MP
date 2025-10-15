@@ -15,10 +15,15 @@ using MP.Domain.Notifications;
 using MP.Domain.Settlements;
 using MP.Domain.Items;
 using MP.Domain.Promotions;
+using MP.Domain.HomePageContent;
+using MP.Domain.Files;
 using MP.Rentals;
 using MP.FloorPlans;
 using MP.Items;
 using MP.Promotions;
+using MP.Application.Contracts.HomePageContent;
+using MP.Application.Contracts.Files;
+using MP.Application.Contracts.Notifications;
 
 namespace MP;
 
@@ -199,6 +204,21 @@ public class MPApplicationAutoMapperProfile : Profile
                 opt => opt.MapFrom(src => src.ApplicableBoothTypeIds.ToList()));
         CreateMap<CreatePromotionDto, Promotion>();
         CreateMap<UpdatePromotionDto, Promotion>();
+
+        // HOMEPAGE CONTENT MAPPINGS
+        CreateMap<HomePageSection, HomePageSectionDto>()
+            .ForMember(dest => dest.IsValidForDisplay,
+                opt => opt.MapFrom(src => src.IsValidForDisplay()));
+        CreateMap<CreateHomePageSectionDto, HomePageSection>();
+        CreateMap<UpdateHomePageSectionDto, HomePageSection>();
+
+        // FILE MAPPINGS
+        CreateMap<UploadedFile, UploadedFileDto>()
+            .ForMember(dest => dest.ContentBase64, opt => opt.Ignore()); // Populated manually when needed
+
+        // NOTIFICATION MAPPINGS
+        CreateMap<UserNotification, NotificationDto>()
+            .ForMember(dest => dest.Severity, opt => opt.MapFrom(src => src.Severity));
     }
 
     private static string GetBoothStatusDisplayName(BoothStatus status)

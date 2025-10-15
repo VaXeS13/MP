@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { NotificationService, NotificationMessage } from '../../../services/notification.service';
+import { OverlayPanel } from 'primeng/overlaypanel';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-notification-bell',
@@ -10,25 +11,25 @@ import { NotificationService, NotificationMessage } from '../../../services/noti
   standalone: false
 })
 export class NotificationBellComponent implements OnInit, OnDestroy {
-  notifications: NotificationMessage[] = [];
+  @ViewChild('notificationPanel') notificationPanel!: OverlayPanel;
+
   unreadCount = 0;
   private destroy$ = new Subject<void>();
 
   constructor(private notificationService: NotificationService) {}
 
   ngOnInit(): void {
-    // Subscribe to incoming notifications
-    this.notificationService.notifications
+    // Subscribe to unread count changes
+    this.notificationService.unreadNotificationCount
       .pipe(takeUntil(this.destroy$))
-      .subscribe(notification => {
-        this.notifications.unshift(notification);
-        this.unreadCount = this.notificationService.unreadNotificationCount;
-
-        // Keep only last 20 notifications
-        if (this.notifications.length > 20) {
-          this.notifications = this.notifications.slice(0, 20);
-        }
+      .subscribe(count => {
+        this.unreadCount = count;
       });
+
+    // Initialize unread count
+    this.notificationService.refreshUnreadCount()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
   }
 
   ngOnDestroy(): void {
@@ -37,48 +38,33 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   }
 
   togglePanel(event: Event): void {
-    // Panel toggle is handled by p-overlayPanel
+    this.notificationPanel.toggle(event);
   }
 
-  onNotificationClick(notification: NotificationMessage): void {
-    this.notificationService.markAsRead(notification.id);
+  hidePanel(): void {
+    this.notificationPanel.hide();
+  }
 
-    if (notification.actionUrl) {
-      // Navigate to action URL if provided
-      window.location.href = notification.actionUrl;
+  // Icon styling methods
+  getBellIconClass(): string {
+    return this.unreadCount > 0 ? 'pi pi-bell text-primary' : 'pi pi-bell text-color-secondary';
+  }
+
+  getBadgeSeverity(): string {
+    if (this.unreadCount > 10) {
+      return 'danger';
+    } else if (this.unreadCount > 5) {
+      return 'warning';
+    } else if (this.unreadCount > 0) {
+      return 'info';
     }
+    return 'secondary';
   }
 
-  dismissNotification(notification: NotificationMessage, event: Event): void {
-    event.stopPropagation();
-
-    const index = this.notifications.indexOf(notification);
-    if (index > -1) {
-      this.notifications.splice(index, 1);
-      this.notificationService.markAsRead(notification.id);
+  getBadgeValue(): string {
+    if (this.unreadCount > 99) {
+      return '99+';
     }
-  }
-
-  clearAll(): void {
-    this.notifications.forEach(n => this.notificationService.markAsRead(n.id));
-    this.notifications = [];
-    this.notificationService.clearUnreadCount();
-  }
-
-  getIconClass(severity: string): string {
-    switch (severity) {
-      case 'success':
-        return 'pi pi-check-circle text-green-500';
-      case 'error':
-        return 'pi pi-times-circle text-red-500';
-      case 'warn':
-        return 'pi pi-exclamation-triangle text-orange-500';
-      default:
-        return 'pi pi-info-circle text-blue-500';
-    }
-  }
-
-  trackByNotificationId(index: number, notification: NotificationMessage): string {
-    return notification.id;
+    return this.unreadCount.toString();
   }
 }

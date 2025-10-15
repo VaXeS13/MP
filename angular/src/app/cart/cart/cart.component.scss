@@ -10,6 +10,12 @@
 .cart-summary {
   position: sticky;
   top: 1rem;
+  overflow: visible;
+
+  .card, .card-body {
+    position: relative;
+    overflow: visible;
+  }
 }
 
 .summary-row {
@@ -198,5 +204,192 @@ tr {
 
   &:hover .bg-success {
     background-color: rgba(25, 135, 84, 0.15) !important;
+  }
+}
+
+// Neon Border Animation for prices
+.neon-border-container {
+  position: relative;
+  overflow: visible;
+}
+
+.price-with-neon-border {
+  position: relative;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  animation: price-change 0.5s ease-in-out;
+}
+
+.neon-border-animation {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid;
+  border-radius: 8px;
+  pointer-events: none;
+  animation: neon-border-glow 1.5s ease-out forwards;
+  z-index: 10;
+}
+
+// Text-success neon border
+.text-success .neon-border-animation {
+  border-color: #25d366;
+  box-shadow:
+    0 0 10px rgba(37, 211, 102, 0.8),
+    0 0 20px rgba(37, 211, 102, 0.6),
+    0 0 30px rgba(37, 211, 102, 0.4),
+    inset 0 0 10px rgba(37, 211, 102, 0.2);
+  animation: neon-border-glow-success 1.5s ease-out forwards;
+}
+
+// Text-primary neon border for final amount
+.text-primary .neon-border-animation {
+  border-color: #0066cc;
+  box-shadow:
+    0 0 10px rgba(0, 102, 204, 0.8),
+    0 0 20px rgba(0, 102, 204, 0.6),
+    0 0 30px rgba(0, 102, 204, 0.4),
+    inset 0 0 10px rgba(0, 102, 204, 0.2);
+  animation: neon-border-glow-primary 1.5s ease-out forwards;
+}
+
+@keyframes neon-border-glow {
+  0% {
+    opacity: 0;
+    border-width: 0px;
+    box-shadow: none;
+  }
+  20% {
+    opacity: 0.8;
+    border-width: 4px;
+    box-shadow:
+      0 0 5px currentColor,
+      0 0 10px currentColor,
+      0 0 15px currentColor,
+      inset 0 0 5px currentColor;
+  }
+  40% {
+    opacity: 1;
+    border-width: 2px;
+    box-shadow:
+      0 0 8px currentColor,
+      0 0 16px currentColor,
+      0 0 24px currentColor,
+      inset 0 0 8px currentColor;
+  }
+  60% {
+    opacity: 1;
+    border-width: 3px;
+    box-shadow:
+      0 0 12px currentColor,
+      0 0 25px currentColor,
+      0 0 37px currentColor,
+      inset 0 0 12px currentColor;
+  }
+  80% {
+    opacity: 0.9;
+    border-width: 2px;
+    box-shadow:
+      0 0 10px currentColor,
+      0 0 20px currentColor,
+      0 0 30px currentColor,
+      inset 0 0 10px currentColor;
+  }
+  100% {
+    opacity: 0;
+    border-width: 1px;
+    box-shadow:
+      0 0 5px currentColor,
+      0 0 10px currentColor,
+      0 0 15px currentColor,
+      inset 0 0 5px currentColor;
+  }
+}
+
+@keyframes neon-border-glow-success {
+  0% {
+    opacity: 0;
+    border-color: #25d366;
+    box-shadow: none;
+  }
+  100% {
+    opacity: 1;
+    border-color: #25d366;
+    box-shadow:
+      0 0 10px rgba(37, 211, 102, 0.8),
+      0 0 20px rgba(37, 211, 102, 0.6),
+      0 0 30px rgba(37, 211, 102, 0.4),
+      inset 0 0 10px rgba(37, 211, 102, 0.2);
+  }
+}
+
+@keyframes neon-border-glow-primary {
+  0% {
+    opacity: 0;
+    border-color: #0066cc;
+    box-shadow: none;
+  }
+  100% {
+    opacity: 1;
+    border-color: #0066cc;
+    box-shadow:
+      0 0 10px rgba(0, 102, 204, 0.8),
+      0 0 20px rgba(0, 102, 204, 0.6),
+      0 0 30px rgba(0, 102, 204, 0.4),
+      inset 0 0 10px rgba(0, 102, 204, 0.2);
+  }
+}
+
+// Confetti particles
+.confetti-particle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  pointer-events: none;
+  animation: confetti-fall 1s ease-out forwards;
+  z-index: 1001;
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rotation));
+  }
+}
+
+// Enhanced price change with extra emphasis
+.price-with-discount .discounted-price {
+  animation: pulse-success 0.6s ease-in-out,
+             glow-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(25, 135, 84, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(25, 135, 84, 0.6);
+  }
+}
+
+// Add shimmer effect to discount amount in summary
+.summary-row.text-success {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.3);
   }
 }
