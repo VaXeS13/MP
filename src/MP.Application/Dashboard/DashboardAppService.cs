@@ -20,7 +20,6 @@ using MP.Rentals;
 namespace MP.Application.Dashboard
 {
     [Authorize(MPPermissions.Dashboard.Default)]
-    [RemoteService(false)]
     public class DashboardAppService : ApplicationService, IDashboardAppService
     {
         private readonly IRepository<Rental, Guid> _rentalRepository;

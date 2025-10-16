@@ -1,6 +1,7 @@
 import * as BoothTypes from './booth-types';
 import * as Chat from './chat';
 import * as CustomerDashboard from './customer-dashboard';
+import * as Dashboard from './dashboard';
 import * as Files from './files';
 import * as HomePageContent from './home-page-content';
 import * as Notifications from './notifications';
@@ -9,4 +10,4 @@ import * as Payments from './payments';
 import * as Sellers from './sellers';
 import * as SignalR from './signal-r';
 import * as Terminals from './terminals';
-export { BoothTypes, Chat, CustomerDashboard, Files, HomePageContent, Notifications, PaymentProviders, Payments, Sellers, SignalR, Terminals };
+export { BoothTypes, Chat, CustomerDashboard, Dashboard, Files, HomePageContent, Notifications, PaymentProviders, Payments, Sellers, SignalR, Terminals };

@@ -62,7 +62,9 @@
       "mcp__chrome-devtools__take_screenshot",
       "mcp__chrome-devtools__list_console_messages",
       "mcp__chrome-devtools__evaluate_script",
-      "Read(//c/tmp/**)"
+      "Read(//c/tmp/**)",
+      "Read(//c/Users/vaxes/Downloads/**)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

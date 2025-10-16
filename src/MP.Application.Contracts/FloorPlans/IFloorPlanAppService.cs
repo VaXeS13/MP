@@ -12,8 +12,6 @@ namespace MP.FloorPlans
 
         Task<PagedResultDto<FloorPlanDto>> GetListAsync(GetFloorPlanListDto input);
 
-        Task<List<FloorPlanDto>> GetListByTenantAsync(Guid? tenantId, bool? isActive = null);
-
         Task<FloorPlanDto> CreateAsync(CreateFloorPlanDto input);
 
         Task<FloorPlanDto> UpdateAsync(Guid id, UpdateFloorPlanDto input);

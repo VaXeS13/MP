@@ -20,7 +20,7 @@ export class BoothTypeService {
   getList(input: GetBoothTypeListDto): Observable<PagedResultDto<BoothTypeDto>> {
     return this.rest.request<any, PagedResultDto<BoothTypeDto>>({
       method: 'GET',
-      url: '/api/app/booth-types',
+      url: '/api/app/booth-type',
       params: input
     });
   }
@@ -28,14 +28,14 @@ export class BoothTypeService {
   get(id: string): Observable<BoothTypeDto> {
     return this.rest.request<any, BoothTypeDto>({
       method: 'GET',
-      url: `/api/app/booth-types/${id}`
+      url: `/api/app/booth-type/${id}`
     });
   }
 
   create(input: CreateBoothTypeDto): Observable<BoothTypeDto> {
     return this.rest.request<CreateBoothTypeDto, BoothTypeDto>({
       method: 'POST',
-      url: '/api/app/booth-types',
+      url: '/api/app/booth-type',
       body: input
     });
   }
@@ -43,7 +43,7 @@ export class BoothTypeService {
   update(id: string, input: UpdateBoothTypeDto): Observable<BoothTypeDto> {
     return this.rest.request<UpdateBoothTypeDto, BoothTypeDto>({
       method: 'PUT',
-      url: `/api/app/booth-types/${id}`,
+      url: `/api/app/booth-type/${id}`,
       body: input
     });
   }
@@ -51,28 +51,28 @@ export class BoothTypeService {
   delete(id: string): Observable<void> {
     return this.rest.request<any, void>({
       method: 'DELETE',
-      url: `/api/app/booth-types/${id}`
+      url: `/api/app/booth-type/${id}`
     });
   }
 
   getActiveTypes(): Observable<BoothTypeDto[]> {
     return this.rest.request<any, BoothTypeDto[]>({
       method: 'GET',
-      url: '/api/app/booth-types/active'
+      url: '/api/app/booth-type/active'
     });
   }
 
   activate(id: string): Observable<BoothTypeDto> {
     return this.rest.request<any, BoothTypeDto>({
       method: 'POST',
-      url: `/api/app/booth-types/${id}/activate`
+      url: `/api/app/booth-type/${id}/activate`
     });
   }
 
   deactivate(id: string): Observable<BoothTypeDto> {
     return this.rest.request<any, BoothTypeDto>({
       method: 'POST',
-      url: `/api/app/booth-types/${id}/deactivate`
+      url: `/api/app/booth-type/${id}/deactivate`
     });
   }
 }

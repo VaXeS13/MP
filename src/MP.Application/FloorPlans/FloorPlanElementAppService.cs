@@ -12,7 +12,6 @@ using Volo.Abp.Application.Services;
 namespace MP.FloorPlans
 {
     [Authorize(MPPermissions.FloorPlans.Default)]
-    [RemoteService(false)]
     public class FloorPlanElementAppService : ApplicationService, IFloorPlanElementAppService
     {
         private readonly IFloorPlanElementRepository _floorPlanElementRepository;

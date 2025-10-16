@@ -15,7 +15,7 @@ export class BoothService {
   getList(input: GetBoothListDto): Observable<PagedResultDto<BoothListDto>> {
     return this.rest.request<any, PagedResultDto<BoothListDto>>({
       method: 'GET',
-      url: '/api/app/booths',
+      url: '/api/app/booth',
       params: input
     });
   }
@@ -23,14 +23,14 @@ export class BoothService {
   get(id: string): Observable<BoothDto> {
     return this.rest.request<any, BoothDto>({
       method: 'GET',
-      url: `/api/app/booths/${id}`
+      url: `/api/app/booth/${id}`
     });
   }
 
   create(input: CreateBoothDto): Observable<BoothDto> {
     return this.rest.request<CreateBoothDto, BoothDto>({
       method: 'POST',
-      url: '/api/app/booths',
+      url: '/api/app/booth',
       body: input
     });
   }
@@ -38,7 +38,7 @@ export class BoothService {
   update(id: string, input: UpdateBoothDto): Observable<BoothDto> {
     return this.rest.request<UpdateBoothDto, BoothDto>({
       method: 'PUT',
-      url: `/api/app/booths/${id}`,
+      url: `/api/app/booth/${id}`,
       body: input
     });
   }
@@ -46,28 +46,28 @@ export class BoothService {
   delete(id: string): Observable<void> {
     return this.rest.request<any, void>({
       method: 'DELETE',
-      url: `/api/app/booths/${id}`
+      url: `/api/app/booth/${id}`
     });
   }
 
   getAvailableBooths(): Observable<BoothDto[]> {
     return this.rest.request<any, BoothDto[]>({
       method: 'GET',
-      url: '/api/app/booths/available'
+      url: '/api/app/booth/available'
     });
   }
 
   changeStatus(id: string, newStatus: BoothStatus): Observable<BoothDto> {
     return this.rest.request<any, BoothDto>({
       method: 'PUT',
-      url: `/api/app/booths/${id}/change-status?newStatus=${newStatus}`
+      url: `/api/app/booth/${id}/change-status?newStatus=${newStatus}`
     });
   }
 
   getMyBooths(input: GetBoothListDto): Observable<PagedResultDto<BoothListDto>> {
     return this.rest.request<any, PagedResultDto<BoothListDto>>({
       method: 'GET',
-      url: '/api/app/booths/my-booths',
+      url: '/api/app/booth/my-booths',
       params: input
     });
   }
@@ -75,7 +75,7 @@ export class BoothService {
   createManualReservation(input: any): Observable<BoothDto> {
     return this.rest.request<any, BoothDto>({
       method: 'POST',
-      url: '/api/app/booths/manual-reservation',
+      url: '/api/app/booth/manual-reservation',
       body: input
     });
   }

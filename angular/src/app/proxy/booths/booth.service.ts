@@ -57,7 +57,7 @@ export class BoothService {
   getAvailableBooths = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, BoothDto[]>({
       method: 'GET',
-      url: '/api/app/booth/available-booths',
+      url: '/api/app/booth/available',
     },
     { apiName: this.apiName,...config });
   

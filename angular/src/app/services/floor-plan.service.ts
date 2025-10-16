@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { RestService } from '@abp/ng.core';
 import { Observable } from 'rxjs';
 import { PagedResultDto } from '@abp/ng.core';
+import { map } from 'rxjs/operators';
 import {
   FloorPlanDto,
   FloorPlanBoothDto,
@@ -26,8 +27,11 @@ export class FloorPlanService {
     });
   }
 
-  getListByTenant(tenantId?: string, isActive?: boolean): Observable<FloorPlanDto[]> {
-    const params: any = {};
+  getListByTenant(tenantId?: string, isActive?: boolean): Observable<any> {
+    const params: any = {
+      skipCount: 0,
+      maxResultCount: 1000
+    };
     if (isActive !== undefined) {
       params.isActive = isActive;
     }
@@ -35,11 +39,14 @@ export class FloorPlanService {
       params.tenantId = tenantId;
     }
 
-    return this.rest.request<any, FloorPlanDto[]>({
+    return this.rest.request<any, any>({
       method: 'GET',
-      url: '/api/app/floor-plan/by-tenant',
+      url: '/api/app/floor-plan',
       params
-    });
+    }).pipe(
+      // Extract items from PagedResultDto
+      map(response => response.items || [])
+    );
   }
 
   get(id: string): Observable<FloorPlanDto> {
