@@ -1,5 +1,6 @@
 ﻿using AutoMapper.Internal.Mappers;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MP.Domain.Booths;
 using MP.Domain.Rentals;
@@ -49,6 +50,7 @@ namespace MP.Booths
             return ObjectMapper.Map<Booth, BoothDto>(booth);
         }
 
+        [HttpGet]
         public async Task<PagedResultDto<BoothListDto>> GetListAsync(GetBoothListDto input)
         {
             var totalCount = await _boothRepository.GetCountAsync(input.Filter, input.Status);
@@ -105,6 +107,7 @@ namespace MP.Booths
         }
 
         [Authorize(MPPermissions.Booths.Create)]
+        [HttpPost]
         public async Task<BoothDto> CreateAsync(CreateBoothDto input)
         {
             var booth = await _boothManager.CreateAsync(
@@ -118,6 +121,7 @@ namespace MP.Booths
             return ObjectMapper.Map<Booth, BoothDto>(booth);
         }
 
+        [NonAction]
         [Authorize(MPPermissions.Booths.Edit)]
         public async Task<BoothDto> UpdateAsync(Guid id, UpdateBoothDto input)
         {
@@ -148,6 +152,7 @@ namespace MP.Booths
             return ObjectMapper.Map<Booth, BoothDto>(booth);
         }
 
+        [NonAction]
         [Authorize(MPPermissions.Booths.Delete)]
         public async Task DeleteAsync(Guid id)
         {
@@ -162,6 +167,7 @@ namespace MP.Booths
             await _boothRepository.DeleteAsync(booth);
         }
 
+        [HttpGet("available")]
         public async Task<List<BoothDto>> GetAvailableBoothsAsync()
         {
             var booths = await _boothRepository.GetAvailableBoothsAsync();
@@ -190,7 +196,8 @@ namespace MP.Booths
             return ObjectMapper.Map<Booth, BoothDto>(booth);
         }
 
-        public async Task<PagedResultDto<BoothListDto>> GetMyBoothsAsync(GetBoothListDto input)
+        [HttpGet("my-booths")]
+        public async Task<PagedResultDto<BoothListDto>> GetMyBoothsAsync([FromQuery] GetBoothListDto input)
         {
             var totalCount = await _boothRepository.GetCountAsync(input.Filter, input.Status);
             var items = await _boothRepository.GetListWithActiveRentalsAsync(
