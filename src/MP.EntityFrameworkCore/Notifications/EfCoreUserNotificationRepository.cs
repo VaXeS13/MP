@@ -22,6 +22,7 @@ namespace MP.EntityFrameworkCore.Notifications
             Guid userId,
             bool? isRead = null,
             bool includeExpired = false,
+            int skipCount = 0,
             int maxResultCount = 50,
             CancellationToken cancellationToken = default)
         {
@@ -36,14 +37,39 @@ namespace MP.EntityFrameworkCore.Notifications
 
             if (!includeExpired)
             {
-                var now = DateTime.Now;
+                var now = DateTime.UtcNow;
                 query = query.Where(n => n.ExpiresAt == null || n.ExpiresAt > now);
             }
 
             return await query
                 .OrderByDescending(n => n.CreationTime)
+                .Skip(skipCount)
                 .Take(maxResultCount)
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<int> GetTotalCountAsync(
+            Guid userId,
+            bool? isRead = null,
+            bool includeExpired = false,
+            CancellationToken cancellationToken = default)
+        {
+            var dbContext = await GetDbContextAsync();
+            var query = dbContext.UserNotifications
+                .Where(n => n.UserId == userId);
+
+            if (isRead.HasValue)
+            {
+                query = query.Where(n => n.IsRead == isRead.Value);
+            }
+
+            if (!includeExpired)
+            {
+                var now = DateTime.UtcNow;
+                query = query.Where(n => n.ExpiresAt == null || n.ExpiresAt > now);
+            }
+
+            return await query.CountAsync(cancellationToken);
         }
 
         public async Task<int> GetUnreadCountAsync(
@@ -51,7 +77,7 @@ namespace MP.EntityFrameworkCore.Notifications
             CancellationToken cancellationToken = default)
         {
             var dbContext = await GetDbContextAsync();
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
 
             return await dbContext.UserNotifications
                 .Where(n => n.UserId == userId &&
@@ -65,7 +91,6 @@ namespace MP.EntityFrameworkCore.Notifications
             CancellationToken cancellationToken = default)
         {
             var dbContext = await GetDbContextAsync();
-            var now = DateTime.Now;
 
             var notifications = await dbContext.UserNotifications
                 .Where(n => n.UserId == userId && !n.IsRead)
@@ -85,7 +110,7 @@ namespace MP.EntityFrameworkCore.Notifications
             CancellationToken cancellationToken = default)
         {
             var dbContext = await GetDbContextAsync();
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
 
             return await dbContext.UserNotifications
                 .Where(n => n.ExpiresAt != null && n.ExpiresAt < now)
