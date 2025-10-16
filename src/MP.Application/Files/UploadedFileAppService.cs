@@ -59,6 +59,7 @@ namespace MP.Application.Files
             return ObjectMapper.Map<UploadedFile, UploadedFileDto>(uploadedFile);
         }
 
+        [AllowAnonymous]
         public async Task<UploadedFileDto> GetAsync(Guid id)
         {
             var file = await _repository.GetAsync(id);

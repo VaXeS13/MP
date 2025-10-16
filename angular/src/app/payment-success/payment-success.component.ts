@@ -4,8 +4,8 @@ import { MessageService } from 'primeng/api';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { LocalizationService } from '@abp/ng.core';
-import { PaymentTransactionsService } from '../proxy/controllers/payment-transactions.service';
-import { PaymentSuccessViewModel } from '../proxy/payments/models';
+import { PaymentTransactionService } from '../proxy/application/payments/payment-transaction.service';
+import type { PaymentSuccessViewModel } from '../proxy/payments/models';
 import { CommonModule } from '@angular/common';
 import { CoreModule } from '@abp/ng.core';
 import { ButtonModule } from 'primeng/button';
@@ -35,16 +35,22 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
   error = false;
   sessionId: string | null = null;
 
+  // Retry configuration
+  private retryCount = 0;
+  private maxRetries = 3;
+  private retryDelayMs = 2000;
+  private retryBackoffMultiplier = 1.5;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private paymentTransactionService: PaymentTransactionsService,
+    private paymentTransactionService: PaymentTransactionService,
     private messageService: MessageService,
     private localization: LocalizationService
   ) {}
 
   ngOnInit(): void {
-    this.sessionId = this.route.snapshot.paramMap.get('sessionId');
+    this.sessionId = this.route.snapshot.paramMap.get('transactionId');
 
     if (!this.sessionId) {
       this.showError('PaymentSuccess:InvalidSessionId');
@@ -62,7 +68,12 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
   private loadPaymentSuccessData(): void {
     this.loading = true;
     this.error = false;
+    this.retryCount = 0;
 
+    this.loadPaymentSuccessDataWithRetry();
+  }
+
+  private loadPaymentSuccessDataWithRetry(): void {
     this.paymentTransactionService.getPaymentSuccessViewModel(this.sessionId!)
       .pipe(
         takeUntil(this.destroy$),
@@ -71,6 +82,7 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (viewModel) => {
           this.viewModel = viewModel;
+          this.retryCount = 0;
 
           if (viewModel.success) {
             this.showSuccessMessage(viewModel.message || '');
@@ -79,9 +91,27 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('Error loading payment success data:', error);
-          this.error = true;
-          this.showError('PaymentSuccess:LoadError');
+          console.error(`Error loading payment success data (attempt ${this.retryCount + 1}):`, error);
+
+          if (this.retryCount < this.maxRetries) {
+            // Calculate delay with exponential backoff
+            const delayMs = this.retryDelayMs * Math.pow(this.retryBackoffMultiplier, this.retryCount);
+            this.retryCount++;
+
+            console.warn(`Retrying after ${delayMs}ms... (attempt ${this.retryCount}/${this.maxRetries})`);
+            this.showWarningMessage(`PaymentSuccess:RetryingMessage`);
+
+            // Retry with exponential backoff
+            setTimeout(() => {
+              this.loadPaymentSuccessDataWithRetry();
+            }, delayMs);
+          } else {
+            // Max retries exceeded
+            this.error = true;
+            this.loading = false;
+            console.error('Max retries exceeded for payment success data');
+            this.showError('PaymentSuccess:LoadError');
+          }
         }
       });
   }

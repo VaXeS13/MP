@@ -10,6 +10,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Users;
 using Volo.Abp.Uow;
+using Volo.Abp.EventBus.Local;
 using MP.Permissions;
 using MP.Domain.Carts;
 using MP.Domain.Booths;
@@ -17,6 +18,7 @@ using MP.Domain.Rentals;
 using MP.Domain.BoothTypes;
 using MP.Rentals;
 using MP.Domain.Promotions;
+using MP.Domain.Payments.Events;
 
 namespace MP.Carts
 {
@@ -31,6 +33,7 @@ namespace MP.Carts
         private readonly IRentalRepository _rentalRepository;
         private readonly MP.Domain.Promotions.IPromotionRepository _promotionRepository;
         private readonly PromotionManager _promotionManager;
+        private readonly ILocalEventBus _localEventBus;
 
         public CartAppService(
             ICartRepository cartRepository,
@@ -40,7 +43,8 @@ namespace MP.Carts
             RentalManager rentalManager,
             IRentalRepository rentalRepository,
             MP.Domain.Promotions.IPromotionRepository promotionRepository,
-            PromotionManager promotionManager)
+            PromotionManager promotionManager,
+            ILocalEventBus localEventBus)
         {
             _cartRepository = cartRepository;
             _boothRepository = boothRepository;
@@ -50,6 +54,7 @@ namespace MP.Carts
             _rentalRepository = rentalRepository;
             _promotionRepository = promotionRepository;
             _promotionManager = promotionManager;
+            _localEventBus = localEventBus;
         }
 
         public async Task<CartDto> GetMyCartAsync()
@@ -388,6 +393,20 @@ namespace MP.Carts
                 // Mark cart as checked out
                 cart.MarkAsCheckedOut();
                 await _cartRepository.UpdateAsync(cart);
+
+                // Publish PaymentInitiated event for notification
+                await _localEventBus.PublishAsync(new PaymentInitiatedEvent
+                {
+                    UserId = userId,
+                    TransactionId = paymentResult.TransactionId ?? string.Empty,
+                    Amount = totalAmount,
+                    Currency = currency,
+                    RentalIds = rentalIds,
+                    InitiatedAt = DateTime.UtcNow
+                });
+
+                Logger.LogInformation("Published PaymentInitiatedEvent for user {UserId}, transaction {TransactionId}",
+                    userId, paymentResult.TransactionId);
 
                 return new CheckoutResultDto
                 {

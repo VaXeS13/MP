@@ -10,8 +10,23 @@ import {
 import { Subscription } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Canvas, Rect, Text, Group, Shadow, FabricImage } from 'fabric';
-import { FloorPlanElementType } from '../proxy/domain/floor-plans/floor-plan-element-type.enum';
 import { ElementPosition } from '../shared/models/floor-plan.model';
+
+// Local enum definition for FloorPlanElementType
+enum FloorPlanElementType {
+  Wall = 0,
+  Door = 1,
+  Window = 2,
+  Pillar = 3,
+  Checkout = 4,
+  Restroom = 5,
+  InfoDesk = 6,
+  EmergencyExit = 7,
+  Storage = 8,
+  Stairs = 9,
+  Zone = 10,
+  TextLabel = 11
+}
 import { MessageService } from 'primeng/api';
 import { FloorPlanService } from '../services/floor-plan.service';
 import { TenantService } from '../services/tenant.service';

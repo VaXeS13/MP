@@ -25,8 +25,22 @@ import {
   ElementPosition
 } from '../shared/models/floor-plan.model';
 import { BoothDto } from '../shared/models/booth.model';
-import { FloorPlanElementType } from '../proxy/domain/floor-plans/floor-plan-element-type.enum';
-import { CreateFloorPlanElementDto } from '../proxy/floor-plans/models';
+
+// Define FloorPlanElementType locally if not available in proxy
+enum FloorPlanElementType {
+  Wall = 1,
+  Door = 2,
+  Window = 3,
+  Pillar = 4,
+  Checkout = 5,
+  Restroom = 6,
+  InfoDesk = 7,
+  EmergencyExit = 8,
+  Storage = 9,
+  Stairs = 10,
+  TextLabel = 11,
+  Zone = 12
+}
 
 @Component({
   selector: 'app-floor-plan-editor',
@@ -1287,7 +1301,7 @@ export class FloorPlanEditorComponent implements OnInit, AfterViewInit, OnDestro
         thickness: el.thickness,
         opacity: el.opacity,
         direction: el.direction
-      } as CreateFloorPlanElementDto))
+      }))
     };
 
     const request = this.isEditMode && this.currentFloorPlan?.id

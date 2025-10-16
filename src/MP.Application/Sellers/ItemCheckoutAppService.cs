@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.EventBus.Local;
 using MP.Application.Contracts.Sellers;
 using MP.Application.Contracts.Services;
 using MP.Application.Terminals;
@@ -15,6 +16,7 @@ using MP.Domain.Rentals;
 using MP.Domain.Terminals;
 using MP.Domain.FiscalPrinters;
 using MP.Domain.Items;
+using MP.Domain.Items.Events;
 using MP.Rentals;
 
 namespace MP.Application.Sellers
@@ -29,6 +31,7 @@ namespace MP.Application.Sellers
         private readonly IFiscalPrinterProviderFactory _fiscalPrinterFactory;
         private readonly ISignalRNotificationService _signalRNotificationService;
         private readonly ILogger<ItemCheckoutAppService> _logger;
+        private readonly ILocalEventBus _localEventBus;
 
         public ItemCheckoutAppService(
             IRepository<ItemSheetItem, Guid> itemSheetItemRepository,
@@ -38,7 +41,8 @@ namespace MP.Application.Sellers
             ITerminalPaymentProviderFactory terminalFactory,
             IFiscalPrinterProviderFactory fiscalPrinterFactory,
             ISignalRNotificationService signalRNotificationService,
-            ILogger<ItemCheckoutAppService> logger)
+            ILogger<ItemCheckoutAppService> logger,
+            ILocalEventBus localEventBus)
         {
             _itemSheetItemRepository = itemSheetItemRepository;
             _itemRepository = itemRepository;
@@ -48,6 +52,7 @@ namespace MP.Application.Sellers
             _fiscalPrinterFactory = fiscalPrinterFactory;
             _signalRNotificationService = signalRNotificationService;
             _logger = logger;
+            _localEventBus = localEventBus;
         }
 
         public async Task<ItemForCheckoutDto?> FindItemByBarcodeAsync(FindItemByBarcodeDto input)
@@ -230,16 +235,37 @@ namespace MP.Application.Sellers
                 itemSheetItem.MarkAsSold(DateTime.UtcNow);
                 await _itemSheetItemRepository.UpdateAsync(itemSheetItem);
 
-                // Send real-time notification to customer
+                // Send real-time notification to customer via SignalR (legacy)
+                Guid? rentalId = null;
+                Guid userId = Guid.Empty;
+
                 if (itemSheetItem.ItemSheet.RentalId.HasValue)
                 {
                     var rental = await _rentalRepository.GetAsync(itemSheetItem.ItemSheet.RentalId.Value);
+                    userId = rental.UserId;
+                    rentalId = rental.Id;
+
                     await _signalRNotificationService.SendItemSoldNotificationAsync(
                         rental.UserId,
                         itemSheetItem.Id,
                         itemSheetItem.Item.Name ?? "Item",
                         input.Amount
                     );
+
+                    // Publish ItemSoldEvent for persistent notification
+                    await _localEventBus.PublishAsync(new ItemSoldEvent
+                    {
+                        UserId = rental.UserId,
+                        ItemId = itemSheetItem.Id,
+                        ItemName = itemSheetItem.Item.Name ?? "Item",
+                        Price = input.Amount,
+                        Currency = "PLN",
+                        SoldAt = DateTime.UtcNow,
+                        RentalId = rental.Id
+                    });
+
+                    _logger.LogInformation("Published ItemSoldEvent for user {UserId}, item {ItemId}",
+                        rental.UserId, itemSheetItem.Id);
                 }
 
                 // Refresh dashboard for admins

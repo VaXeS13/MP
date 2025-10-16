@@ -13,8 +13,7 @@ export class NotificationService {
   delete = (notificationId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'DELETE',
-      url: '/api/app/notification',
-      params: { notificationId },
+      url: `/api/app/notification/${notificationId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -22,7 +21,7 @@ export class NotificationService {
   deleteExpiredNotifications = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, number>({
       method: 'DELETE',
-      url: '/api/app/notification/expired-notifications',
+      url: '/api/app/notification/expired',
     },
     { apiName: this.apiName,...config });
   
@@ -30,7 +29,7 @@ export class NotificationService {
   getAll = (input: GetNotificationsInput, config?: Partial<Rest.Config>) =>
     this.restService.request<any, NotificationListDto>({
       method: 'GET',
-      url: '/api/app/notification',
+      url: '/api/app/notification/all',
       params: { isRead: input.isRead, severity: input.severity, type: input.type, startDate: input.startDate, endDate: input.endDate, includeExpired: input.includeExpired, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
@@ -81,7 +80,7 @@ export class NotificationService {
   markAsRead = (notificationId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/notification/mark-as-read/${notificationId}`,
+      url: `/api/app/notification/${notificationId}/mark-as-read`,
     },
     { apiName: this.apiName,...config });
   
@@ -107,7 +106,8 @@ export class NotificationService {
   sendToUser = (userId: string, notification: NotificationMessageDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/notification/send-to-user/${userId}`,
+      url: '/api/app/notification/send-to-user',
+      params: { userId },
       body: notification,
     },
     { apiName: this.apiName,...config });

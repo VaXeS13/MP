@@ -15,7 +15,14 @@ namespace MP.Domain.Notifications
             Guid userId,
             bool? isRead = null,
             bool includeExpired = false,
+            int skipCount = 0,
             int maxResultCount = 50,
+            CancellationToken cancellationToken = default);
+
+        Task<int> GetTotalCountAsync(
+            Guid userId,
+            bool? isRead = null,
+            bool includeExpired = false,
             CancellationToken cancellationToken = default);
 
         Task<int> GetUnreadCountAsync(

@@ -125,25 +125,54 @@ namespace MP.Application.Notifications
                     try
                     {
                         var daysUntilExpiry = (rental.Period.EndDate.Date - now.Date).Days;
-                        var isUrgent = daysUntilExpiry <= 1;
+
+                        // Determine urgency and notification type
+                        bool isUrgent = daysUntilExpiry <= 1;
+                        string title;
+                        string message;
+                        string severity;
+
+                        if (daysUntilExpiry <= 1)
+                        {
+                            // 1 day or less - URGENT
+                            title = "⚠️ PILNE: Wynajem wygasa jutro!";
+                            message = $"Twój wynajem stanowiska {rental.Booth.Number} wygasa jutro ({rental.Period.EndDate:dd.MM.yyyy} o {rental.Period.EndDate:HH:mm}). " +
+                                     $"Przedłuż wynajem już dziś, aby zachować stanowisko!";
+                            severity = "warning";
+                        }
+                        else if (daysUntilExpiry == 2)
+                        {
+                            // 2 days
+                            title = "Wynajem wygasa za 2 dni";
+                            message = $"Twój wynajem stanowiska {rental.Booth.Number} wygasa za 2 dni ({rental.Period.EndDate:dd.MM.yyyy}). " +
+                                     $"Pamiętaj o przedłużeniu wynajmu w odpowiednim czasie.";
+                            severity = "info";
+                        }
+                        else
+                        {
+                            // 3 days
+                            title = "📅 Wynajem wygasa za 3 dni";
+                            message = $"Twój wynajem stanowiska {rental.Booth.Number} wygasa za 3 dni ({rental.Period.EndDate:dd.MM.yyyy}). " +
+                                     $"Możesz przedłużyć wynajem w panelu.";
+                            severity = "info";
+                        }
 
                         var notification = new NotificationMessageDto
                         {
                             Id = Guid.NewGuid(),
-                            Type = isUrgent ? NotificationTypes.RentalExpiring : NotificationTypes.RentalExpiring,
-                            Title = isUrgent ? "Wynajem wygasa jutro!" : "Wynajem wygasa wkrótce",
-                            Message = $"Twój wynajem stanowiska {rental.Booth.Number} wygasa {rental.Period.EndDate:dd.MM.yyyy} ({daysUntilExpiry} dni). " +
-                                     $"Możesz przedłużyć wynajem w panelu.",
-                            Severity = isUrgent ? "warning" : "info",
-                            ActionUrl = $"/rentals/{rental.Id}/extend",
+                            Type = NotificationTypes.RentalExpiring,
+                            Title = title,
+                            Message = message,
+                            Severity = severity,
+                            ActionUrl = $"/rentals/{rental.Id}",
                             CreatedAt = now
                         };
 
                         await notificationAppService.SendToUserAsync(rental.UserId, notification);
                         notificationCount++;
 
-                        _logger.LogDebug("NotificationReminderWorker: Sent rental expiry reminder for rental {RentalId} to user {UserId}",
-                            rental.Id, rental.UserId);
+                        _logger.LogDebug("NotificationReminderWorker: Sent rental expiry reminder ({Days} days) for rental {RentalId} to user {UserId}",
+                            daysUntilExpiry, rental.Id, rental.UserId);
                     }
                     catch (Exception ex)
                     {

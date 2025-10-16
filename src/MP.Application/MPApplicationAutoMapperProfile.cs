@@ -24,6 +24,8 @@ using MP.Promotions;
 using MP.Application.Contracts.HomePageContent;
 using MP.Application.Contracts.Files;
 using MP.Application.Contracts.Notifications;
+using MP.Domain.Payments;
+using MP.Payments;
 
 namespace MP;
 
@@ -218,7 +220,21 @@ public class MPApplicationAutoMapperProfile : Profile
 
         // NOTIFICATION MAPPINGS
         CreateMap<UserNotification, NotificationDto>()
-            .ForMember(dest => dest.Severity, opt => opt.MapFrom(src => src.Severity));
+            .ForMember(dest => dest.Severity, opt => opt.MapFrom(src => MapNotificationSeverity(src.Severity)));
+
+        // PAYMENT TRANSACTION MAPPINGS
+        CreateMap<P24Transaction, PaymentTransactionDto>();
+    }
+
+    private static Application.Contracts.Notifications.NotificationSeverity MapNotificationSeverity(Domain.Notifications.NotificationSeverity severity)
+    {
+        return severity switch
+        {
+            Domain.Notifications.NotificationSeverity.Success => Application.Contracts.Notifications.NotificationSeverity.Success,
+            Domain.Notifications.NotificationSeverity.Warning => Application.Contracts.Notifications.NotificationSeverity.Warning,
+            Domain.Notifications.NotificationSeverity.Error => Application.Contracts.Notifications.NotificationSeverity.Error,
+            _ => Application.Contracts.Notifications.NotificationSeverity.Info
+        };
     }
 
     private static string GetBoothStatusDisplayName(BoothStatus status)

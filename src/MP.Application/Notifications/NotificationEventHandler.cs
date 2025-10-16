@@ -10,7 +10,9 @@ using MP.Domain.Rentals.Events;
 using MP.Domain.Notifications;
 using MP.Domain.Rentals;
 using MP.Domain.Items;
+using MP.Domain.Items.Events;
 using MP.Domain.Payments;
+using MP.Domain.Payments.Events;
 using MP.Domain.Settlements;
 using Volo.Abp.EventBus;
 using MP.Application.Contracts.Notifications;
@@ -25,11 +27,10 @@ namespace MP.Application.Notifications
         ILocalEventHandler<RentalCompletedEvent>,
         ILocalEventHandler<RentalCancelledEvent>,
         ILocalEventHandler<RentalExtendedEvent>,
-        IDistributedEventHandler<ItemSoldEvent>,
-        IDistributedEventHandler<PaymentCompletedEvent>,
-        IDistributedEventHandler<PaymentFailedEvent>,
-        IDistributedEventHandler<SettlementReadyEvent>,
-        IDistributedEventHandler<SettlementPaidEvent>,
+        ILocalEventHandler<PaymentInitiatedEvent>,
+        ILocalEventHandler<PaymentCompletedEvent>,
+        ILocalEventHandler<PaymentFailedEvent>,
+        ILocalEventHandler<ItemSoldEvent>,
         ITransientDependency
     {
         private readonly INotificationAppService _notificationAppService;
@@ -150,78 +151,108 @@ namespace MP.Application.Notifications
             }
         }
 
-        public async Task HandleEventAsync(ItemSoldEvent eventData)
+        public async Task HandleEventAsync(PaymentInitiatedEvent eventData)
         {
-            // This will be implemented when ItemSoldEvent is created
-            // For now, this is a placeholder
-            _logger.LogInformation("ItemSoldEvent received but not yet implemented for notifications");
+            try
+            {
+                var notification = new NotificationMessageDto
+                {
+                    Id = Guid.NewGuid(),
+                    Type = NotificationTypes.PaymentReceived, // Using existing type temporarily
+                    Title = "Rozpoczęto proces płatności",
+                    Message = $"Rozpoczęto proces płatności za wynajem {eventData.RentalIds.Count} stanowisk o wartości {eventData.Amount:F2} {eventData.Currency}. Numer transakcji: {eventData.TransactionId}",
+                    Severity = "info",
+                    ActionUrl = $"/rentals/my-rentals",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _notificationAppService.SendToUserAsync(eventData.UserId, notification);
+                _logger.LogInformation("Created payment initiated notification for user {UserId}, transaction {TransactionId}",
+                    eventData.UserId, eventData.TransactionId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create payment initiated notification for transaction {TransactionId}",
+                    eventData.TransactionId);
+            }
         }
 
         public async Task HandleEventAsync(PaymentCompletedEvent eventData)
         {
-            // This will be implemented when PaymentCompletedEvent is created
-            // For now, this is a placeholder
-            _logger.LogInformation("PaymentCompletedEvent received but not yet implemented for notifications");
+            try
+            {
+                var notification = new NotificationMessageDto
+                {
+                    Id = Guid.NewGuid(),
+                    Type = NotificationTypes.PaymentReceived,
+                    Title = "Płatność zakończona sukcesem!",
+                    Message = $"✅ Płatność za wynajem {eventData.RentalIds.Count} stanowisk o wartości {eventData.Amount:F2} {eventData.Currency} została potwierdzona. Twoje stanowiska są teraz aktywne. Numer transakcji: {eventData.TransactionId}",
+                    Severity = "success",
+                    ActionUrl = $"/rentals/my-rentals",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _notificationAppService.SendToUserAsync(eventData.UserId, notification);
+                _logger.LogInformation("Created payment completed notification for user {UserId}, transaction {TransactionId}",
+                    eventData.UserId, eventData.TransactionId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create payment completed notification for transaction {TransactionId}",
+                    eventData.TransactionId);
+            }
         }
 
         public async Task HandleEventAsync(PaymentFailedEvent eventData)
         {
-            // This will be implemented when PaymentFailedEvent is created
-            // For now, this is a placeholder
-            _logger.LogInformation("PaymentFailedEvent received but not yet implemented for notifications");
+            try
+            {
+                var notification = new NotificationMessageDto
+                {
+                    Id = Guid.NewGuid(),
+                    Type = NotificationTypes.PaymentFailed,
+                    Title = "Płatność nie powiodła się",
+                    Message = $"❌ Płatność za wynajem stanowisk nie została ukończona. Powód: {eventData.Reason}. Stanowiska zostały zwolnione. Możesz spróbować ponownie.",
+                    Severity = "error",
+                    ActionUrl = $"/booths",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _notificationAppService.SendToUserAsync(eventData.UserId, notification);
+                _logger.LogInformation("Created payment failed notification for user {UserId}, transaction {TransactionId}",
+                    eventData.UserId, eventData.TransactionId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create payment failed notification for transaction {TransactionId}",
+                    eventData.TransactionId);
+            }
         }
 
-        public async Task HandleEventAsync(SettlementReadyEvent eventData)
+        public async Task HandleEventAsync(ItemSoldEvent eventData)
         {
-            // This will be implemented when SettlementReadyEvent is created
-            // For now, this is a placeholder
-            _logger.LogInformation("SettlementReadyEvent received but not yet implemented for notifications");
+            try
+            {
+                var notification = new NotificationMessageDto
+                {
+                    Id = Guid.NewGuid(),
+                    Type = NotificationTypes.ItemSold,
+                    Title = "Przedmiot sprzedany!",
+                    Message = $"💰 Twój przedmiot '{eventData.ItemName}' został sprzedany za {eventData.Price:F2} {eventData.Currency}",
+                    Severity = "success",
+                    ActionUrl = eventData.RentalId.HasValue ? $"/rentals/{eventData.RentalId}" : "/dashboard",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _notificationAppService.SendToUserAsync(eventData.UserId, notification);
+                _logger.LogInformation("Created item sold notification for user {UserId}, item {ItemId}",
+                    eventData.UserId, eventData.ItemId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create item sold notification for item {ItemId}",
+                    eventData.ItemId);
+            }
         }
-
-        public async Task HandleEventAsync(SettlementPaidEvent eventData)
-        {
-            // This will be implemented when SettlementPaidEvent is created
-            // For now, this is a placeholder
-            _logger.LogInformation("SettlementPaidEvent received but not yet implemented for notifications");
-        }
-    }
-
-    // Placeholder events that need to be created in the respective domain modules
-    public class ItemSoldEvent
-    {
-        public Guid ItemId { get; set; }
-        public Guid UserId { get; set; }
-        public string ItemName { get; set; }
-        public decimal Price { get; set; }
-    }
-
-    public class PaymentCompletedEvent
-    {
-        public Guid PaymentId { get; set; }
-        public Guid UserId { get; set; }
-        public decimal Amount { get; set; }
-        public string PaymentMethod { get; set; }
-    }
-
-    public class PaymentFailedEvent
-    {
-        public Guid PaymentId { get; set; }
-        public Guid UserId { get; set; }
-        public decimal Amount { get; set; }
-        public string Reason { get; set; }
-    }
-
-    public class SettlementReadyEvent
-    {
-        public Guid SettlementId { get; set; }
-        public Guid UserId { get; set; }
-        public decimal Amount { get; set; }
-    }
-
-    public class SettlementPaidEvent
-    {
-        public Guid SettlementId { get; set; }
-        public Guid UserId { get; set; }
-        public decimal Amount { get; set; }
     }
 }

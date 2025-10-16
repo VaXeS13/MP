@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using MP.Hubs;
 using MP.Application.Contracts.SignalR;
 using MP.Application.Contracts.Services;
+using MP.Application.Contracts.Notifications;
 using Volo.Abp.DependencyInjection;
 
 namespace MP.Services
@@ -91,6 +92,20 @@ namespace MP.Services
             await _dashboardHub.Clients
                 .Group($"dashboard:tenant:{tenantId}")
                 .SendAsync("DashboardRefreshNeeded");
+        }
+
+        public async Task SendNotificationToUserAsync(Guid userId, NotificationDto notification)
+        {
+            await _notificationHub.Clients
+                .Group($"user:{userId}")
+                .SendAsync("ReceiveNotification", notification);
+        }
+
+        public async Task SendUnreadCountUpdateAsync(Guid userId, int unreadCount)
+        {
+            await _notificationHub.Clients
+                .Group($"user:{userId}")
+                .SendAsync("UnreadCountUpdated", unreadCount);
         }
     }
 }

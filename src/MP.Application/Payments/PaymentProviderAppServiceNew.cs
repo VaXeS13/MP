@@ -271,14 +271,21 @@ namespace MP.Application.Payments
                     // NOTE: StoreTransactionRecordAsync also updates all rentals with SessionId
                     try
                     {
-                        _logger.LogInformation("PaymentProviderAppService: Storing transaction record and updating rentals...");
+                        _logger.LogInformation("PaymentProviderAppService: Starting transaction record storage for {RentalCount} rental(s) with SessionId {SessionId}",
+                            rentals.Count, sessionId);
+
+                        _logger.LogDebug("PaymentProviderAppService: SessionId={SessionId}, TransactionId={TransactionId}, Amount={Amount}, Currency={Currency}",
+                            sessionId, result.TransactionId, request.Amount, request.Currency);
+
                         await StoreTransactionRecordAsync(result, rentals, request, sessionId);
-                        _logger.LogInformation("PaymentProviderAppService: Transaction record stored and {RentalCount} rentals updated with SessionId {SessionId}",
+
+                        _logger.LogInformation("PaymentProviderAppService: Transaction record successfully stored and {RentalCount} rentals updated with SessionId {SessionId}",
                             rentals.Count, sessionId);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "PaymentProviderAppService: Error storing transaction record or updating rentals");
+                        _logger.LogError(ex, "PaymentProviderAppService: CRITICAL ERROR - Failed to store transaction record for {RentalCount} rental(s) with SessionId {SessionId}. Payment provider already charged customer!",
+                            rentals.Count, sessionId);
                         throw;
                     }
 
@@ -381,17 +388,25 @@ namespace MP.Application.Payments
                 });
                 p24Transaction.SetStatus("processing");
 
+                _logger.LogDebug("PaymentProviderAppService: Inserting P24Transaction - Id={TransactionId}, SessionId={SessionId}, Amount={Amount}, Status=processing",
+                    p24Transaction.Id, p24Transaction.SessionId, p24Transaction.Amount);
+
                 await _p24TransactionRepository.InsertAsync(p24Transaction);
+
+                _logger.LogInformation("PaymentProviderAppService: P24Transaction successfully inserted into database - Id={TransactionId}, SessionId={SessionId}",
+                    p24Transaction.Id, p24Transaction.SessionId);
 
                 // Update ALL rentals with the same SessionId
                 // This creates the link: Rental.Payment.Przelewy24TransactionId == P24Transaction.SessionId
                 foreach (var rental in rentals)
                 {
+                    _logger.LogDebug("PaymentProviderAppService: Updating rental {RentalId} with SessionId {SessionId}", rental.Id, sessionId);
                     rental.Payment.SetTransactionId(sessionId);
                     await _rentalRepository.UpdateAsync(rental);
+                    _logger.LogDebug("PaymentProviderAppService: Rental {RentalId} updated successfully with SessionId {SessionId}", rental.Id, sessionId);
                 }
 
-                _logger.LogInformation("Stored P24 transaction with SessionId {SessionId} for {Count} rental(s)",
+                _logger.LogInformation("PaymentProviderAppService: Stored P24 transaction with SessionId {SessionId} for {Count} rental(s)",
                     sessionId, rentals.Count);
             }
             else if (request.ProviderId.Equals("Stripe", StringComparison.OrdinalIgnoreCase))

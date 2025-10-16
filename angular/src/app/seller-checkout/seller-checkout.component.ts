@@ -11,7 +11,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { SellerService } from '../proxy/http-api/controllers/seller.service';
+import { ItemCheckoutService } from '../proxy/application/sellers/item-checkout.service';
 import {
   ItemForCheckoutDto,
   AvailablePaymentMethodsDto,
@@ -47,7 +47,7 @@ export class SellerCheckoutComponent implements OnInit, OnDestroy {
   PaymentMethodType = PaymentMethodType;
 
   constructor(
-    private sellerService: SellerService,
+    private itemCheckoutService: ItemCheckoutService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
   ) {}
@@ -62,7 +62,7 @@ export class SellerCheckoutComponent implements OnInit, OnDestroy {
   }
 
   loadAvailablePaymentMethods(): void {
-    this.sellerService
+    this.itemCheckoutService
       .getAvailablePaymentMethods()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -98,7 +98,7 @@ export class SellerCheckoutComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.item = null;
 
-    this.sellerService
+    this.itemCheckoutService
       .findItemByBarcode({ barcode: this.barcode.trim() })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -159,7 +159,7 @@ export class SellerCheckoutComponent implements OnInit, OnDestroy {
 
     this.isProcessing = true;
 
-    this.sellerService
+    this.itemCheckoutService
       .checkoutItem({
         itemSheetItemId: this.item.id,
         paymentMethod: paymentMethod,

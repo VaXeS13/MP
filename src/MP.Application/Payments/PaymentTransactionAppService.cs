@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -142,6 +143,18 @@ namespace MP.Application.Payments
 
             if (transaction == null)
             {
+                // Fallback: Try to find rental by extracting rental ID from sessionId
+                // SessionId format: rental_{shortGuid}_{timestamp} or rental_{fullGuid}_{timestamp}
+                Logger.LogWarning("P24Transaction not found for sessionId: {SessionId}. Attempting fallback lookup...", sessionId);
+
+                var fallbackRental = await TryFallbackLookupAsync(sessionId);
+                if (fallbackRental != null)
+                {
+                    // Create a synthetic transaction response from rental data
+                    Logger.LogInformation("Fallback lookup successful for rental {RentalId}", fallbackRental.Id);
+                    return CreatePaymentSuccessViewModelFromRental(fallbackRental);
+                }
+
                 throw new BusinessException("MP:PaymentTransactionNotFound")
                     .WithData("sessionId", sessionId);
             }
@@ -331,6 +344,135 @@ namespace MP.Application.Payments
                 "processing" => L["PaymentSuccess:MessageProcessing"],
                 _ => L["PaymentSuccess:MessagePending"]
             };
+        }
+
+        private async Task<Rental?> TryFallbackLookupAsync(string sessionId)
+        {
+            try
+            {
+                // SessionId formats:
+                // Old: rental_{fullGuid}_{timestamp}
+                // New: rental_{shortGuid}_{timestamp}
+                // Cart: cart_{shortGuid}_{itemcount}_{timestamp}
+
+                if (!sessionId.StartsWith("rental_", StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.LogDebug("SessionId does not start with 'rental_': {SessionId}", sessionId);
+                    return null;
+                }
+
+                // Extract the rental ID portion between "rental_" and the timestamp
+                var parts = sessionId.Split('_');
+                if (parts.Length < 3)
+                {
+                    Logger.LogDebug("SessionId format invalid (expected at least 3 parts): {SessionId}", sessionId);
+                    return null;
+                }
+
+                // Try to parse as GUID (short 8-char or full GUID)
+                var guidPart = parts[1];
+
+                // Try parsing as full GUID
+                if (Guid.TryParse(guidPart, out var fullGuid))
+                {
+                    Logger.LogDebug("Found full GUID in sessionId: {Guid}", fullGuid);
+                    try
+                    {
+                        var rental = await _rentalRepository.GetAsync(fullGuid);
+                        if (rental != null)
+                        {
+                            Logger.LogInformation("Found rental by full GUID: {RentalId}", fullGuid);
+                            return rental;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogDebug(ex, "Failed to lookup rental by full GUID: {Guid}", fullGuid);
+                    }
+                }
+
+                // Try to find rental by partial GUID match (first 8 chars)
+                var shortGuid = guidPart;
+                if (shortGuid.Length <= 8)
+                {
+                    Logger.LogDebug("Attempting partial GUID lookup with: {ShortGuid}", shortGuid);
+                    var queryable = await _rentalRepository.GetQueryableAsync();
+                    var rentals = await AsyncExecuter.ToListAsync(
+                        queryable.Where(r => r.Id.ToString("N").StartsWith(shortGuid))
+                    );
+
+                    if (rentals.Count == 1)
+                    {
+                        Logger.LogInformation("Found rental by partial GUID match: {RentalId}", rentals[0].Id);
+                        return rentals[0];
+                    }
+                    else if (rentals.Count > 1)
+                    {
+                        Logger.LogWarning("Multiple rentals found for partial GUID {ShortGuid}: {Count} matches", shortGuid, rentals.Count);
+                    }
+                }
+
+                Logger.LogDebug("No rental found for sessionId: {SessionId}", sessionId);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error during fallback lookup for sessionId: {SessionId}", sessionId);
+                return null;
+            }
+        }
+
+        private PaymentSuccessViewModel CreatePaymentSuccessViewModelFromRental(Rental rental)
+        {
+            try
+            {
+                var rentalDto = ObjectMapper.Map<Rental, RentalDto>(rental);
+
+                // Currency is stored on the RentalDto after mapping, default to PLN if not available
+                var currency = rentalDto.Currency ?? "PLN";
+
+                var viewModel = new PaymentSuccessViewModel
+                {
+                    Transaction = new PaymentTransactionDto
+                    {
+                        Id = Guid.NewGuid(),
+                        SessionId = "fallback",
+                        Amount = rental.Payment.TotalAmount,
+                        Currency = currency,
+                        Email = rental.User?.Email ?? "",
+                        Status = rental.Payment.IsPaid ? "completed" : "processing",
+                        StatusDisplayName = rental.Payment.IsPaid ? L["PaymentStatus:Completed"] : L["PaymentStatus:Processing"],
+                        IsCompleted = rental.Payment.IsPaid,
+                        IsFailed = false,
+                        IsPending = !rental.Payment.IsPaid,
+                        FormattedAmount = rental.Payment.TotalAmount.ToString("N2") + " " + currency,
+                        CreationTime = rental.CreationTime,
+                        FormattedCreatedAt = rental.CreationTime.ToString("yyyy-MM-dd HH:mm"),
+                        Verified = rental.Payment.IsPaid
+                    },
+                    Rentals = new List<RentalDto> { rentalDto },
+                    Success = rental.Payment.IsPaid,
+                    Message = rental.Payment.IsPaid ? L["PaymentSuccess:MessageCompleted"] : L["PaymentSuccess:MessageProcessing"],
+                    NextStepUrl = "/rentals/my-rentals",
+                    NextStepText = L["PaymentSuccess:ViewMyRentals"],
+                    TotalAmount = rental.Payment.TotalAmount,
+                    Currency = currency,
+                    PaymentDate = rental.CreationTime,
+                    PaymentMethod = "Przelewy24",
+                    FormattedPaymentDate = rental.CreationTime.ToString("yyyy-MM-dd HH:mm"),
+                    FormattedTotalAmount = rental.Payment.TotalAmount.ToString("N2") + " " + currency,
+                    PaymentProvider = "Przelewy24",
+                    IsVerified = rental.Payment.IsPaid
+                };
+
+                Logger.LogInformation("Created payment success view model from fallback rental lookup for rental {RentalId}", rental.Id);
+                return viewModel;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error creating payment success view model from rental: {RentalId}", rental.Id);
+                throw;
+            }
         }
     }
 }

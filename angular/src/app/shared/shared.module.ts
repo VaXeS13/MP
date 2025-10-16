@@ -4,6 +4,7 @@ import { NgModule } from '@angular/core';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { NgxValidateCoreModule } from '@ngx-validate/core';
 import { NotificationBellComponent } from './components/notification-bell/notification-bell.component';
+import { NotificationCenterComponent } from './components/notification-center/notification-center.component';
 import { ChatIconComponent } from './components/chat-icon/chat-icon.component';
 import { PromotionNotificationWidgetComponent } from './components/promotion-notification-widget/promotion-notification-widget.component';
 import { ButtonModule } from 'primeng/button';
@@ -29,7 +30,8 @@ import { FormsModule } from '@angular/forms';
     ButtonModule,
     OverlayPanelModule,
     TooltipModule,
-    BadgeModule
+    BadgeModule,
+    NotificationCenterComponent
   ],
   exports: [
     CommonModule,

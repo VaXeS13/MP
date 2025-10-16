@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.EventBus.Local;
 using MP.Domain.Payments;
+using MP.Domain.Payments.Events;
 using MP.Domain.Rentals;
 using MP.Domain.Booths;
 using Volo.Abp.Domain.Repositories;
@@ -29,6 +31,7 @@ namespace MP.Application.Payments
         private readonly IUnitOfWorkManager _unitOfWorkManager;
         private readonly ICurrentTenant _currentTenant;
         private readonly IDataFilter<IMultiTenant> _dataFilter;
+        private readonly ILocalEventBus _localEventBus;
 
         public P24StatusCheckRecurringJob(
             IP24TransactionRepository p24TransactionRepository,
@@ -38,7 +41,8 @@ namespace MP.Application.Payments
             IBoothRepository boothRepository,
             IUnitOfWorkManager unitOfWorkManager,
             ICurrentTenant currentTenant,
-            IDataFilter<IMultiTenant> dataFilter)
+            IDataFilter<IMultiTenant> dataFilter,
+            ILocalEventBus localEventBus)
         {
             _p24TransactionRepository = p24TransactionRepository;
             _przelewy24Service = przelewy24Service;
@@ -48,6 +52,7 @@ namespace MP.Application.Payments
             _unitOfWorkManager = unitOfWorkManager;
             _currentTenant = currentTenant;
             _dataFilter = dataFilter;
+            _localEventBus = localEventBus;
         }
 
         [AutomaticRetry(Attempts = 3)]
@@ -198,6 +203,25 @@ namespace MP.Application.Payments
 
                     _logger.LogInformation("[Hangfire] Cancelled {Count} rentals for transaction {SessionId}",
                         rentals.Count, transaction.SessionId);
+
+                    // Publish PaymentFailed event for notification
+                    var firstRental = rentals.FirstOrDefault();
+                    if (firstRental != null)
+                    {
+                        await _localEventBus.PublishAsync(new PaymentFailedEvent
+                        {
+                            UserId = firstRental.UserId,
+                            TransactionId = transaction.SessionId,
+                            Amount = transaction.Amount,
+                            Currency = transaction.Currency,
+                            Reason = "Payment not completed within allowed time",
+                            RentalIds = rentals.Select(r => r.Id).ToList(),
+                            FailedAt = DateTime.UtcNow
+                        });
+
+                        _logger.LogInformation("[Hangfire] Published PaymentFailedEvent for user {UserId}, transaction {SessionId}",
+                            firstRental.UserId, transaction.SessionId);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -271,6 +295,25 @@ namespace MP.Application.Payments
 
                 _logger.LogInformation("[Hangfire] Successfully updated {Count} rental(s) and booth(s) for transaction {SessionId}",
                     rentals.Count, transaction.SessionId);
+
+                // Publish PaymentCompleted event for notification
+                var firstRental = rentals.FirstOrDefault();
+                if (firstRental != null)
+                {
+                    await _localEventBus.PublishAsync(new PaymentCompletedEvent
+                    {
+                        UserId = firstRental.UserId,
+                        TransactionId = transaction.SessionId,
+                        Amount = transaction.Amount,
+                        Currency = transaction.Currency,
+                        RentalIds = rentals.Select(r => r.Id).ToList(),
+                        CompletedAt = DateTime.UtcNow,
+                        PaymentMethod = "Przelewy24"
+                    });
+
+                    _logger.LogInformation("[Hangfire] Published PaymentCompletedEvent for user {UserId}, transaction {SessionId}",
+                        firstRental.UserId, transaction.SessionId);
+                }
             }
             catch (Exception ex)
             {

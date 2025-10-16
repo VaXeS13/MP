@@ -95,5 +95,6 @@ public class MPApplicationModule : AbpModule
 
         // Rejestruj Background Workers jako Hosted Services
         services.AddHostedService<ExpiredCartCleanupWorker>();
+        services.AddHostedService<MP.Application.Notifications.NotificationReminderWorker>();
     }
 }

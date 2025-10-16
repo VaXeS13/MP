@@ -3,6 +3,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { OverlayPanel } from 'primeng/overlaypanel';
 import { NotificationService } from '../../../services/notification.service';
+import { NotificationCenterComponent } from '../notification-center/notification-center.component';
 
 @Component({
   selector: 'app-notification-bell',
