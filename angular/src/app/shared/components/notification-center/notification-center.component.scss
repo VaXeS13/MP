@@ -34,8 +34,46 @@
     background: var(--surface-section);
     border-bottom: 1px solid var(--surface-border);
 
+    .flex {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+
+      > div {
+        display: flex;
+        align-items: center;
+
+        &:first-child {
+          flex: 1 1 auto;
+          min-width: 200px;
+        }
+
+        &:nth-child(2) {
+          flex: 0 0 auto;
+          min-width: 150px;
+        }
+
+        &:nth-child(3) {
+          flex: 0 0 auto;
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+        }
+      }
+    }
+
     .p-dropdown {
-      min-width: 200px;
+      width: 100%;
+    }
+
+    .p-button {
+      white-space: nowrap;
+      flex-shrink: 0;
+
+      &:disabled {
+        opacity: 0.6;
+      }
     }
   }
 
@@ -44,15 +82,18 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 
-    .p-tabview {
+    ::ng-deep .p-tabview {
       flex: 1;
-      display: flex;
+      display: flex !important;
       flex-direction: column;
+      height: 100%;
 
       .p-tabview-nav {
         background: var(--surface-section);
         border-bottom: 1px solid var(--surface-border);
+        flex-shrink: 0;
 
         li {
           .p-tabview-nav-link {
@@ -77,13 +118,18 @@
 
       .p-tabview-panels {
         flex: 1;
-        overflow: hidden;
+        overflow: hidden !important;
         background: var(--surface-card);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
 
         .p-tabview-panel {
           height: 100%;
-          display: flex;
+          display: flex !important;
           flex-direction: column;
+          min-height: 0;
+          overflow: hidden;
         }
       }
     }
@@ -91,9 +137,12 @@
 
   .notification-list {
     flex: 1;
-    overflow-y: auto;
-    min-height: 300px;
-    max-height: 500px;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--surface-card);
 
     .notification-item {
       transition: all 0.2s ease;
@@ -185,9 +234,31 @@
     }
 
     .notification-filters {
-      .grid {
-        .col-12 {
-          margin-bottom: 0.5rem;
+      .flex {
+        flex-direction: column;
+        align-items: stretch !important;
+
+        > div {
+          width: 100%;
+
+          &:first-child {
+            min-width: auto;
+          }
+
+          &:nth-child(2) {
+            min-width: auto;
+          }
+
+          &:nth-child(3) {
+            flex: 1 1 auto;
+            flex-direction: column;
+
+            .p-button {
+              width: 100%;
+              text-align: left;
+              justify-content: flex-start;
+            }
+          }
         }
       }
     }
@@ -227,6 +298,7 @@
   // Button styling
   .p-button {
     border-radius: 6px;
+    flex-shrink: 0;
 
     &.p-button-rounded {
       border-radius: 50%;
@@ -235,6 +307,42 @@
     &.p-button-text {
       &:hover {
         background: var(--surface-hover);
+      }
+    }
+
+    &:not(.p-button-text) {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+
+      &:hover {
+        background: var(--primary-600);
+        border-color: var(--primary-600);
+      }
+
+      &:disabled {
+        background: var(--surface-border);
+        border-color: var(--surface-border);
+        color: var(--text-color-secondary);
+        cursor: not-allowed;
+      }
+    }
+
+    &.p-button-secondary {
+      background: var(--surface-300);
+      border-color: var(--surface-300);
+      color: var(--text-color);
+
+      &:hover:not(:disabled) {
+        background: var(--surface-400);
+        border-color: var(--surface-400);
+      }
+
+      &:disabled {
+        background: var(--surface-border);
+        border-color: var(--surface-border);
+        color: var(--text-color-secondary);
+        cursor: not-allowed;
       }
     }
   }

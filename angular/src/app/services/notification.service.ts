@@ -56,6 +56,14 @@ export interface NotificationStatsDto {
   expiredCount: number;
 }
 
+// Default empty stats object
+export const DEFAULT_STATS: NotificationStatsDto = {
+  totalCount: 0,
+  unreadCount: 0,
+  readCount: 0,
+  expiredCount: 0
+};
+
 @Injectable({
   providedIn: 'root'
 })
@@ -63,7 +71,7 @@ export class NotificationService {
   private readonly signalRService = inject(SignalRService);
   private readonly messageService = inject(MessageService);
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.apis.default.baseUrl;
+  private readonly baseUrl = environment.apis.default.url;
 
   private notificationReceived$ = new Subject<NotificationMessage>();
   private unreadCount$ = new BehaviorSubject<number>(0);

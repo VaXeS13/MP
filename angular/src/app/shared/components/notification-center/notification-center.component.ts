@@ -20,7 +20,8 @@ import {
   NotificationDto,
   NotificationListDto,
   GetNotificationsInput,
-  NotificationStatsDto
+  NotificationStatsDto,
+  DEFAULT_STATS
 } from '../../../services/notification.service';
 
 @Component({
@@ -73,7 +74,7 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   ];
 
   // Stats
-  stats: NotificationStatsDto | null = null;
+  stats: NotificationStatsDto = { ...DEFAULT_STATS };
 
   // State management
   selectedNotifications: string[] = [];
@@ -139,7 +140,7 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   }
 
   // Refresh current active tab
-  private refreshCurrentTab(): void {
+  refreshCurrentTab(): void {
     if (this.activeTabIndex === 0) {
       this.loadUnreadNotifications();
     } else {
@@ -167,6 +168,10 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
         this.unreadNotifications = response.items;
         this.unreadTotalCount = response.totalCount;
         this.loading = false;
+
+        // Automatically mark visible unread notifications as read after a short delay
+        // to ensure user has actually seen them
+        this.autoMarkVisibleAsRead();
       },
       error: (error) => {
         console.error('Failed to load unread notifications:', error);
@@ -273,20 +278,23 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   }
 
   // Mark as read
-  markAsRead(notificationId: string): void {
-    this.notificationService.markAsRead(notificationId).subscribe(() => {
-      // Update local state
-      const updateNotification = (notifications: NotificationDto[]) => {
-        const notification = notifications.find(n => n.id === notificationId);
-        if (notification) {
-          notification.isRead = true;
-          notification.readAt = new Date().toISOString();
-        }
-      };
+  async markAsRead(notificationId: string): Promise<void> {
+    await this.notificationService.markAsRead(notificationId);
 
-      updateNotification(this.unreadNotifications);
-      updateNotification(this.allNotifications);
-    });
+    // Update local state
+    const updateNotification = (notifications: NotificationDto[]) => {
+      const notification = notifications.find(n => n.id === notificationId);
+      if (notification) {
+        notification.isRead = true;
+        notification.readAt = new Date().toISOString();
+      }
+    };
+
+    updateNotification(this.unreadNotifications);
+    updateNotification(this.allNotifications);
+
+    // Refresh stats after marking as read
+    this.loadNotificationStats();
   }
 
   // Mark selected as read
@@ -307,6 +315,9 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
       updateNotifications(this.unreadNotifications);
       updateNotifications(this.allNotifications);
       this.selectedNotifications = [];
+
+      // Refresh stats after marking selected as read
+      this.loadNotificationStats();
     });
   }
 
@@ -322,7 +333,55 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
         notification.isRead = true;
         notification.readAt = new Date().toISOString();
       });
+
+      // Refresh stats after marking all as read
+      this.loadNotificationStats();
     });
+  }
+
+  // Automatically mark visible unread notifications as read
+  private autoMarkVisibleAsRead(): void {
+    // Only auto-mark in unread tab
+    if (this.activeTabIndex !== 0) {
+      return;
+    }
+
+    // Collect IDs of currently visible unread notifications
+    const unreadIds = this.currentNotifications
+      .filter(notification => !notification.isRead)
+      .map(notification => notification.id);
+
+    if (unreadIds.length === 0) {
+      return;
+    }
+
+    // Wait 1.5 seconds before marking as read to ensure user has seen them
+    setTimeout(() => {
+      this.notificationService.markMultipleAsRead(unreadIds).subscribe({
+        next: () => {
+          console.log(`Auto-marked ${unreadIds.length} notifications as read`);
+
+          // Update local state
+          const updateNotifications = (notifications: NotificationDto[]) => {
+            notifications.forEach(notification => {
+              if (unreadIds.includes(notification.id)) {
+                notification.isRead = true;
+                notification.readAt = new Date().toISOString();
+              }
+            });
+          };
+
+          updateNotifications(this.unreadNotifications);
+          updateNotifications(this.allNotifications);
+
+          // Refresh stats to update unread count
+          this.loadNotificationStats();
+        },
+        error: (error) => {
+          console.error('Failed to auto-mark notifications as read:', error);
+        }
+      });
+    }, 1500); // 1.5 second delay
   }
 
   // Delete notification

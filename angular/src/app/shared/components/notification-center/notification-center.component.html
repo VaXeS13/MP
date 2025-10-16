@@ -17,19 +17,19 @@
 
     <!-- Stats row -->
     <div class="notification-stats grid grid-nogutter">
-      <div class="col-12 md:col-3 text-center mb-2 md:mb-0" *ngIf="stats">
+      <div class="col-12 md:col-3 text-center mb-2 md:mb-0">
         <div class="text-2xl font-bold text-primary">{{ stats.unreadCount }}</div>
         <div class="text-sm text-color-secondary">Nieprzeczytane</div>
       </div>
-      <div class="col-12 md:col-3 text-center mb-2 md:mb-0" *ngIf="stats">
+      <div class="col-12 md:col-3 text-center mb-2 md:mb-0">
         <div class="text-2xl font-bold">{{ stats.totalCount }}</div>
         <div class="text-sm text-color-secondary">Wszystkie</div>
       </div>
-      <div class="col-12 md:col-3 text-center mb-2 md:mb-0" *ngIf="stats">
+      <div class="col-12 md:col-3 text-center mb-2 md:mb-0">
         <div class="text-2xl font-bold text-green-500">{{ stats.readCount }}</div>
         <div class="text-sm text-color-secondary">Przeczytane</div>
       </div>
-      <div class="col-12 md:col-3 text-center" *ngIf="stats">
+      <div class="col-12 md:col-3 text-center">
         <div class="text-2xl font-bold text-orange-500">{{ stats.expiredCount }}</div>
         <div class="text-sm text-color-secondary">Wygasłe</div>
       </div>
@@ -38,8 +38,9 @@
 
   <!-- Search and filters -->
   <div class="notification-filters surface-border border-bottom-1 p-3">
-    <div class="grid grid-nogutter gap-3 align-items-center">
-      <div class="col-12 md:col-6">
+    <div class="flex flex-wrap gap-3 align-items-center">
+      <!-- Search input -->
+      <div class="flex-1" style="min-width: 200px;">
         <span class="p-input-icon-left w-full">
           <i class="pi pi-search"></i>
           <input
@@ -52,7 +53,9 @@
             [value]="searchTerm">
         </span>
       </div>
-      <div class="col-12 md:col-3">
+
+      <!-- Severity filter -->
+      <div style="min-width: 150px;">
         <p-dropdown
           [options]="severityOptions"
           [(ngModel)]="selectedSeverity"
@@ -63,7 +66,9 @@
           (onChange)="onSeverityChange()">
         </p-dropdown>
       </div>
-      <div class="col-12 md:col-3 flex gap-2 justify-content-end">
+
+      <!-- Action buttons -->
+      <div class="flex gap-2 flex-wrap">
         <button
           pButton
           label="Oznacz jako przeczytane"
