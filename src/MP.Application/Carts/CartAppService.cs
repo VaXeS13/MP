@@ -399,6 +399,7 @@ namespace MP.Carts
                 {
                     UserId = userId,
                     TransactionId = paymentResult.TransactionId ?? string.Empty,
+                    SessionId = paymentResult.SessionId ?? paymentResult.TransactionId ?? Guid.NewGuid().ToString(),
                     Amount = totalAmount,
                     Currency = currency,
                     RentalIds = rentalIds,

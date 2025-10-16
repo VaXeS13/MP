@@ -155,25 +155,50 @@ namespace MP.Application.Notifications
         {
             try
             {
+                // Build message with booth names/numbers
+                string boothInfo = "stanowiska nieznane";
+
+                if (eventData.RentalIds.Any())
+                {
+                    var rentalRepository = LazyServiceProvider.LazyGetRequiredService<IRentalRepository>();
+                    var rentals = await rentalRepository.GetListAsync(
+                        r => eventData.RentalIds.Contains(r.Id),
+                        includeDetails: true
+                    );
+
+                    if (rentals.Any())
+                    {
+                        var boothNumbers = rentals
+                            .Select(r => r.Booth.Number)
+                            .Distinct()
+                            .ToList();
+
+                        if (boothNumbers.Count == 1)
+                            boothInfo = $"stanowisko {boothNumbers[0]}";
+                        else
+                            boothInfo = $"stanowiska {string.Join(", ", boothNumbers)}";
+                    }
+                }
+
                 var notification = new NotificationMessageDto
                 {
                     Id = Guid.NewGuid(),
-                    Type = NotificationTypes.PaymentReceived, // Using existing type temporarily
+                    Type = NotificationTypes.PaymentReceived,
                     Title = "Rozpoczęto proces płatności",
-                    Message = $"Rozpoczęto proces płatności za wynajem {eventData.RentalIds.Count} stanowisk o wartości {eventData.Amount:F2} {eventData.Currency}. Numer transakcji: {eventData.TransactionId}",
+                    Message = $"Rozpoczęto proces płatności za {boothInfo} o wartości {eventData.Amount:F2} {eventData.Currency}. ID sesji: {eventData.SessionId}",
                     Severity = "info",
                     ActionUrl = $"/rentals/my-rentals",
                     CreatedAt = DateTime.UtcNow
                 };
 
                 await _notificationAppService.SendToUserAsync(eventData.UserId, notification);
-                _logger.LogInformation("Created payment initiated notification for user {UserId}, transaction {TransactionId}",
-                    eventData.UserId, eventData.TransactionId);
+                _logger.LogInformation("Created payment initiated notification for user {UserId}, session {SessionId}",
+                    eventData.UserId, eventData.SessionId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to create payment initiated notification for transaction {TransactionId}",
-                    eventData.TransactionId);
+                _logger.LogError(ex, "Failed to create payment initiated notification for session {SessionId}",
+                    eventData.SessionId);
             }
         }
 

@@ -422,6 +422,27 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
     }
   }
 
+  getNotificationTypeName(type: string): string {
+    // Map notification types to Polish display names
+    const typeNameMap: { [key: string]: string } = {
+      'PaymentReceived': 'Płatność rozpoczęta',
+      'PaymentFailed': 'Błąd płatności',
+      'RentalStarted': 'Wynajem rozpoczęty',
+      'RentalCompleted': 'Wynajem zakończony',
+      'RentalExtending': 'Przedłużenie wynajmu',
+      'RentalExtended': 'Wynajem przedłużony',
+      'RentalExpiring': 'Wynajem wkrótce wygasa',
+      'RentalExpired': 'Wynajem wygasł',
+      'ItemSold': 'Przedmiot sprzedany',
+      'ItemExpiring': 'Przedmiot wkrótce wygasa',
+      'SettlementReady': 'Rozliczenie gotowe',
+      'SettlementPaid': 'Rozliczenie wypłacone',
+      'SystemAnnouncement': 'Ogłoszenie systemowe'
+    };
+
+    return typeNameMap[type] || type;
+  }
+
   formatDate(dateString: string): string {
     const date = new Date(dateString);
     const now = new Date();

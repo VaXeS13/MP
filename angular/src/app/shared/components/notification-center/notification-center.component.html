@@ -155,7 +155,7 @@
                   <div class="flex justify-content-between align-items-center mt-2">
                     <div class="flex gap-3 text-xs text-color-secondary">
                       <span>{{ formatDate(notification.creationTime) }}</span>
-                      <span *ngIf="notification.type" class="text-capitalize">{{ notification.type }}</span>
+                      <span *ngIf="notification.type" class="text-capitalize font-medium text-primary">{{ getNotificationTypeName(notification.type) }}</span>
                     </div>
                     <span *ngIf="!notification.isRead" class="unread-indicator">
                       <p-badge value="Nowe" severity="info"></p-badge>
@@ -247,7 +247,7 @@
                     <div class="flex gap-3 text-xs text-color-secondary">
                       <span>{{ formatDate(notification.creationTime) }}</span>
                       <span *ngIf="notification.readAt">Przeczytane: {{ formatDate(notification.readAt) }}</span>
-                      <span *ngIf="notification.type" class="text-capitalize">{{ notification.type }}</span>
+                      <span *ngIf="notification.type" class="text-capitalize font-medium text-primary">{{ getNotificationTypeName(notification.type) }}</span>
                     </div>
                     <span *ngIf="notification.isRead" class="read-indicator">
                       <i class="pi pi-check text-green-500"></i>

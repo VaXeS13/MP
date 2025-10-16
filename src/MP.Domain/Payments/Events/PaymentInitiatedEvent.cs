@@ -10,6 +10,7 @@ namespace MP.Domain.Payments.Events
     {
         public Guid UserId { get; set; }
         public string TransactionId { get; set; } = null!;
+        public string SessionId { get; set; } = null!;
         public decimal Amount { get; set; }
         public string Currency { get; set; } = null!;
         public List<Guid> RentalIds { get; set; } = new();
