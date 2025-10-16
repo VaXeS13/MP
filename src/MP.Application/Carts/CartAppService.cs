@@ -395,11 +395,14 @@ namespace MP.Carts
                 await _cartRepository.UpdateAsync(cart);
 
                 // Publish PaymentInitiated event for notification
+                // Generate sessionId from transaction or create new one
+                var sessionId = paymentResult.TransactionId ?? Guid.NewGuid().ToString();
+
                 await _localEventBus.PublishAsync(new PaymentInitiatedEvent
                 {
                     UserId = userId,
                     TransactionId = paymentResult.TransactionId ?? string.Empty,
-                    SessionId = paymentResult.SessionId ?? paymentResult.TransactionId ?? Guid.NewGuid().ToString(),
+                    SessionId = sessionId,
                     Amount = totalAmount,
                     Currency = currency,
                     RentalIds = rentalIds,

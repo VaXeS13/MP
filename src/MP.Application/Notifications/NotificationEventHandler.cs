@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EventBus.Distributed;
@@ -36,15 +38,18 @@ namespace MP.Application.Notifications
         private readonly INotificationAppService _notificationAppService;
         private readonly ILogger<NotificationEventHandler> _logger;
         private readonly ICurrentUser _currentUser;
+        private readonly IRentalRepository _rentalRepository;
 
         public NotificationEventHandler(
             INotificationAppService notificationAppService,
             ILogger<NotificationEventHandler> logger,
-            ICurrentUser currentUser)
+            ICurrentUser currentUser,
+            IRentalRepository rentalRepository)
         {
             _notificationAppService = notificationAppService;
             _logger = logger;
             _currentUser = currentUser;
+            _rentalRepository = rentalRepository;
         }
 
         public async Task HandleEventAsync(RentalConfirmedEvent eventData)
@@ -160,23 +165,29 @@ namespace MP.Application.Notifications
 
                 if (eventData.RentalIds.Any())
                 {
-                    var rentalRepository = LazyServiceProvider.LazyGetRequiredService<IRentalRepository>();
-                    var rentals = await rentalRepository.GetListAsync(
-                        r => eventData.RentalIds.Contains(r.Id),
-                        includeDetails: true
-                    );
-
-                    if (rentals.Any())
+                    try
                     {
-                        var boothNumbers = rentals
-                            .Select(r => r.Booth.Number)
-                            .Distinct()
-                            .ToList();
+                        var rentals = await _rentalRepository.GetListAsync(
+                            r => eventData.RentalIds.Contains(r.Id),
+                            includeDetails: true
+                        );
 
-                        if (boothNumbers.Count == 1)
-                            boothInfo = $"stanowisko {boothNumbers[0]}";
-                        else
-                            boothInfo = $"stanowiska {string.Join(", ", boothNumbers)}";
+                        if (rentals.Any())
+                        {
+                            var boothNumbers = rentals
+                                .Select(r => r.Booth.Number)
+                                .Distinct()
+                                .ToList();
+
+                            if (boothNumbers.Count == 1)
+                                boothInfo = $"stanowisko {boothNumbers[0]}";
+                            else
+                                boothInfo = $"stanowiska {string.Join(", ", boothNumbers)}";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to load rental details for booth info in payment notification");
                     }
                 }
 
