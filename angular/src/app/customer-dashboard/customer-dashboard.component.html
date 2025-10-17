@@ -1,6 +1,15 @@
 <div class="customer-dashboard">
   <h1>Mój Dashboard</h1>
 
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" style="margin-bottom: 1rem;">
+    <p-messages [value]="[{severity: 'error', summary: 'Błąd', detail: errorMessage}]"
+                [enableService]="false"
+                [closable]="true"
+                (onClose)="errorMessage = null">
+    </p-messages>
+  </div>
+
   <!-- Overview Cards -->
   <div class="grid">
     <div class="col-12 md:col-6 lg:col-3">

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MP.Rentals;
 using MP.Application.Rentals;
 using MP.Domain.Payments;
+using MP.Domain.Payments.Events;
 using MP.Application.Contracts.Payments;
 using MP.Domain.Rentals;
 using System;
@@ -14,6 +15,8 @@ using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp;
+using Volo.Abp.EventBus.Local;
+using Volo.Abp.Domain.Repositories;
 
 namespace MP.Controllers
 {
@@ -25,15 +28,21 @@ namespace MP.Controllers
         private readonly IRentalAppService _rentalAppService;
         private readonly RentalPaymentService _paymentService;
         private readonly IP24TransactionRepository _p24TransactionRepository;
+        private readonly ILocalEventBus _localEventBus;
+        private readonly IRepository<Rental, Guid> _rentalRepository;
 
         public RentalController(
             IRentalAppService rentalAppService,
             RentalPaymentService paymentService,
-            IP24TransactionRepository p24TransactionRepository)
+            IP24TransactionRepository p24TransactionRepository,
+            ILocalEventBus localEventBus,
+            IRepository<Rental, Guid> rentalRepository)
         {
             _rentalAppService = rentalAppService;
             _paymentService = paymentService;
             _p24TransactionRepository = p24TransactionRepository;
+            _localEventBus = localEventBus;
+            _rentalRepository = rentalRepository;
         }
 
         [HttpGet]
@@ -219,6 +228,41 @@ namespace MP.Controllers
                 // Update rental payment status (handles both single rental and cart checkout)
                 // HandlePaymentCallbackAsync uses SessionId to find all associated rentals
                 var success = await _paymentService.HandlePaymentCallbackAsync(notification.P24_session_id, true);
+
+                // Publish PaymentCompletedEvent for immediate notification (don't wait for Hangfire)
+                if (success)
+                {
+                    try
+                    {
+                        // Get all rentals associated with this transaction
+                        var rentals = await _rentalRepository.GetListAsync(r =>
+                            r.Payment.Przelewy24TransactionId == notification.P24_session_id,
+                            includeDetails: false);
+
+                        if (rentals.Any())
+                        {
+                            var firstRental = rentals.First();
+                            var amountInPln = notification.P24_amount / 100m; // Convert from groszy to PLN
+
+                            // Publish PaymentCompletedEvent
+                            await _localEventBus.PublishAsync(new PaymentCompletedEvent
+                            {
+                                UserId = firstRental.UserId,
+                                TransactionId = notification.P24_session_id,
+                                Amount = amountInPln,
+                                Currency = notification.P24_currency,
+                                RentalIds = rentals.Select(r => r.Id).ToList(),
+                                CompletedAt = DateTime.UtcNow,
+                                PaymentMethod = "Przelewy24"
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the error but don't fail the whole request
+                        // The event will be published again by Hangfire job if needed
+                    }
+                }
 
                 return Ok("OK");
             }

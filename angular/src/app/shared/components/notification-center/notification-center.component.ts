@@ -14,6 +14,7 @@ import { RippleModule } from 'primeng/ripple';
 import { MessageModule } from 'primeng/message';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LocalizationService, CoreModule } from '@abp/ng.core';
 
 import {
   NotificationService,
@@ -28,6 +29,7 @@ import {
   selector: 'app-notification-center',
   standalone: true,
   imports: [
+    CoreModule,
     CommonModule,
     FormsModule,
     TableModule,
@@ -65,13 +67,7 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   // Search and filter
   searchTerm = '';
   selectedSeverity: any = null;
-  severityOptions = [
-    { label: 'Wszystkie', value: null },
-    { label: 'Info', value: 'info' },
-    { label: 'Sukces', value: 'success' },
-    { label: 'Ostrzeżenie', value: 'warning' },
-    { label: 'Błąd', value: 'error' }
-  ];
+  severityOptions: any[] = [];
 
   // Stats
   stats: NotificationStatsDto = { ...DEFAULT_STATS };
@@ -81,9 +77,13 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private searchSubject$ = new Subject<string>();
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    private notificationService: NotificationService,
+    private localizationService: LocalizationService
+  ) {}
 
   ngOnInit(): void {
+    this.initializeSeverityOptions();
     this.initializeSearch();
     this.loadInitialData();
     this.subscribeToRealTimeUpdates();
@@ -92,6 +92,32 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  // Initialize severity options with localization
+  private initializeSeverityOptions(): void {
+    this.severityOptions = [
+      {
+        label: this.localizationService.instant('NotificationCenter:FilterBySeverity'),
+        value: null
+      },
+      {
+        label: this.localizationService.instant('NotificationSeverity:Info'),
+        value: 'info'
+      },
+      {
+        label: this.localizationService.instant('NotificationSeverity:Success'),
+        value: 'success'
+      },
+      {
+        label: this.localizationService.instant('NotificationSeverity:Warning'),
+        value: 'warning'
+      },
+      {
+        label: this.localizationService.instant('NotificationSeverity:Error'),
+        value: 'error'
+      }
+    ];
   }
 
   // Initialize search with debouncing
@@ -423,43 +449,41 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   }
 
   getNotificationTypeName(type: string): string {
-    // Map notification types to Polish display names
-    const typeNameMap: { [key: string]: string } = {
-      'PaymentReceived': 'Płatność rozpoczęta',
-      'PaymentFailed': 'Błąd płatności',
-      'RentalStarted': 'Wynajem rozpoczęty',
-      'RentalCompleted': 'Wynajem zakończony',
-      'RentalExtending': 'Przedłużenie wynajmu',
-      'RentalExtended': 'Wynajem przedłużony',
-      'RentalExpiring': 'Wynajem wkrótce wygasa',
-      'RentalExpired': 'Wynajem wygasł',
-      'ItemSold': 'Przedmiot sprzedany',
-      'ItemExpiring': 'Przedmiot wkrótce wygasa',
-      'SettlementReady': 'Rozliczenie gotowe',
-      'SettlementPaid': 'Rozliczenie wypłacone',
-      'SystemAnnouncement': 'Ogłoszenie systemowe'
+    // Map notification types to localization keys
+    const typeLocalizationKeyMap: { [key: string]: string } = {
+      'PaymentReceived': 'NotificationType:PaymentReceived',
+      'PaymentInitiated': 'NotificationType:PaymentInitiated',
+      'RentalStarted': 'NotificationType:RentalStarted',
+      'RentalCompleted': 'NotificationType:RentalCompleted',
+      'RentalCancelled': 'NotificationType:RentalCancelled',
+      'RentalExtended': 'NotificationType:RentalExtended',
+      'ItemSold': 'NotificationType:ItemSold'
     };
 
-    return typeNameMap[type] || type;
+    const key = typeLocalizationKeyMap[type];
+    return key ? this.localizationService.instant(key) : type;
   }
 
   formatDate(dateString: string): string {
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffHours < 1) {
-      return 'Przed chwilą';
+    if (diffMinutes < 1) {
+      return this.localizationService.instant('NotificationTime:JustNow');
+    } else if (diffHours < 1) {
+      return this.localizationService.instant('NotificationTime:MinutesAgo', diffMinutes.toString());
     } else if (diffHours < 24) {
-      return `${diffHours} godz. temu`;
+      return this.localizationService.instant('NotificationTime:HoursAgo', diffHours.toString());
     } else if (diffDays === 1) {
-      return 'Wczoraj';
+      return this.localizationService.instant('NotificationTime:Yesterday');
     } else if (diffDays < 7) {
-      return `${diffDays} dni temu`;
+      return this.localizationService.instant('NotificationTime:DaysAgo', diffDays.toString());
     } else {
-      return date.toLocaleDateString('pl-PL');
+      return date.toLocaleDateString(this.localizationService.currentLang === 'pl' ? 'pl-PL' : 'en-US');
     }
   }
 

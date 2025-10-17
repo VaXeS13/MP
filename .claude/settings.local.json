@@ -64,7 +64,8 @@
       "mcp__chrome-devtools__evaluate_script",
       "Read(//c/tmp/**)",
       "Read(//c/Users/vaxes/Downloads/**)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []

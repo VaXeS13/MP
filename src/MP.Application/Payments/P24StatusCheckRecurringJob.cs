@@ -211,6 +211,7 @@ namespace MP.Application.Payments
                         await _localEventBus.PublishAsync(new PaymentFailedEvent
                         {
                             UserId = firstRental.UserId,
+                            TenantId = transaction.TenantId,
                             TransactionId = transaction.SessionId,
                             Amount = transaction.Amount,
                             Currency = transaction.Currency,
@@ -303,6 +304,7 @@ namespace MP.Application.Payments
                     await _localEventBus.PublishAsync(new PaymentCompletedEvent
                     {
                         UserId = firstRental.UserId,
+                        TenantId = transaction.TenantId,
                         TransactionId = transaction.SessionId,
                         Amount = transaction.Amount,
                         Currency = transaction.Currency,

@@ -1,12 +1,16 @@
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.EventBus.Local;
 using Volo.Abp.Users;
+using Volo.Abp.Uow;
+using Volo.Abp.MultiTenancy;
 using MP.Application.Contracts.SignalR;
 using MP.Domain.Rentals.Events;
 using MP.Domain.Notifications;
@@ -18,6 +22,7 @@ using MP.Domain.Payments.Events;
 using MP.Domain.Settlements;
 using Volo.Abp.EventBus;
 using MP.Application.Contracts.Notifications;
+using MP.Localization;
 
 namespace MP.Application.Notifications
 {
@@ -38,18 +43,24 @@ namespace MP.Application.Notifications
         private readonly INotificationAppService _notificationAppService;
         private readonly ILogger<NotificationEventHandler> _logger;
         private readonly ICurrentUser _currentUser;
+        private readonly ICurrentTenant _currentTenant;
         private readonly IRentalRepository _rentalRepository;
+        private readonly IStringLocalizer<MPResource> _stringLocalizer;
 
         public NotificationEventHandler(
             INotificationAppService notificationAppService,
             ILogger<NotificationEventHandler> logger,
             ICurrentUser currentUser,
-            IRentalRepository rentalRepository)
+            ICurrentTenant currentTenant,
+            IRentalRepository rentalRepository,
+            IStringLocalizer<MPResource> stringLocalizer)
         {
             _notificationAppService = notificationAppService;
             _logger = logger;
             _currentUser = currentUser;
+            _currentTenant = currentTenant;
             _rentalRepository = rentalRepository;
+            _stringLocalizer = stringLocalizer;
         }
 
         public async Task HandleEventAsync(RentalConfirmedEvent eventData)
@@ -61,9 +72,9 @@ namespace MP.Application.Notifications
                 var notification = new NotificationMessageDto
                 {
                     Id = Guid.NewGuid(),
-                    Type = NotificationTypes.RentalStarted,
-                    Title = "Wynajem rozpoczęty",
-                    Message = $"Twój wynajem stanowiska {rental.Booth.Number} został rozpoczęty. Okres wynajmu: {rental.Period.StartDate:dd.MM.yyyy} - {rental.Period.EndDate:dd.MM.yyyy}",
+                    Type = MP.Domain.Notifications.NotificationTypes.RentalStarted,
+                    Title = _stringLocalizer["Notification:RentalStarted:Title"],
+                    Message = _stringLocalizer["Notification:RentalStarted:Message", rental.Booth.Number, rental.Period.StartDate.ToString("dd.MM.yyyy"), rental.Period.EndDate.ToString("dd.MM.yyyy")],
                     Severity = "success",
                     ActionUrl = $"/rentals/{rental.Id}",
                     CreatedAt = DateTime.UtcNow
@@ -87,9 +98,9 @@ namespace MP.Application.Notifications
                 var notification = new NotificationMessageDto
                 {
                     Id = Guid.NewGuid(),
-                    Type = NotificationTypes.RentalCompleted,
-                    Title = "Wynajem zakończony",
-                    Message = $"Twój wynajem stanowiska {rental.Booth.Number} został zakończony. Dziękujemy za korzystanie z naszych usług!",
+                    Type = MP.Domain.Notifications.NotificationTypes.RentalCompleted,
+                    Title = _stringLocalizer["Notification:RentalCompleted:Title"],
+                    Message = _stringLocalizer["Notification:RentalCompleted:Message", rental.Booth.Number],
                     Severity = "info",
                     ActionUrl = $"/rentals/{rental.Id}",
                     CreatedAt = DateTime.UtcNow
@@ -113,9 +124,9 @@ namespace MP.Application.Notifications
                 var notification = new NotificationMessageDto
                 {
                     Id = Guid.NewGuid(),
-                    Type = NotificationTypes.RentalCompleted,
-                    Title = "Wynajem anulowany",
-                    Message = $"Twój wynajem stanowiska {rental.Booth.Number} został anulowany.",
+                    Type = MP.Domain.Notifications.NotificationTypes.RentalCompleted,
+                    Title = _stringLocalizer["Notification:RentalCancelled:Title"],
+                    Message = _stringLocalizer["Notification:RentalCancelled:Message", rental.Booth.Number],
                     Severity = "warning",
                     ActionUrl = $"/rentals/{rental.Id}",
                     CreatedAt = DateTime.UtcNow
@@ -139,9 +150,9 @@ namespace MP.Application.Notifications
                 var notification = new NotificationMessageDto
                 {
                     Id = Guid.NewGuid(),
-                    Type = NotificationTypes.RentalExtended,
-                    Title = "Wynajem przedłużony",
-                    Message = $"Twój wynajem stanowiska {rental.Booth.Number} został przedłużony do {rental.Period.EndDate:dd.MM.yyyy}",
+                    Type = MP.Domain.Notifications.NotificationTypes.RentalExtended,
+                    Title = _stringLocalizer["Notification:RentalExtended:Title"],
+                    Message = _stringLocalizer["Notification:RentalExtended:Message", rental.Booth.Number, rental.Period.EndDate.ToString("dd.MM.yyyy")],
                     Severity = "success",
                     ActionUrl = $"/rentals/{rental.Id}",
                     CreatedAt = DateTime.UtcNow
@@ -156,12 +167,16 @@ namespace MP.Application.Notifications
             }
         }
 
+        [UnitOfWork]
         public async Task HandleEventAsync(PaymentInitiatedEvent eventData)
         {
-            try
+            // Set tenant context from event
+            using (_currentTenant.Change(eventData.TenantId))
             {
-                // Build message with booth names/numbers
-                string boothInfo = "stanowiska nieznane";
+                try
+                {
+                    // Build message with booth names/numbers
+                    string boothInfo = "unknown booths";
 
                 if (eventData.RentalIds.Any())
                 {
@@ -180,9 +195,9 @@ namespace MP.Application.Notifications
                                 .ToList();
 
                             if (boothNumbers.Count == 1)
-                                boothInfo = $"stanowisko {boothNumbers[0]}";
+                                boothInfo = $"booth {boothNumbers[0]}";
                             else
-                                boothInfo = $"stanowiska {string.Join(", ", boothNumbers)}";
+                                boothInfo = $"booths {string.Join(", ", boothNumbers)}";
                         }
                     }
                     catch (Exception ex)
@@ -194,9 +209,9 @@ namespace MP.Application.Notifications
                 var notification = new NotificationMessageDto
                 {
                     Id = Guid.NewGuid(),
-                    Type = NotificationTypes.PaymentReceived,
-                    Title = "Rozpoczęto proces płatności",
-                    Message = $"Rozpoczęto proces płatności za {boothInfo} o wartości {eventData.Amount:F2} {eventData.Currency}. ID sesji: {eventData.SessionId}",
+                    Type = MP.Domain.Notifications.NotificationTypes.PaymentReceived,
+                    Title = _stringLocalizer["Notification:PaymentInitiated:Title"],
+                    Message = _stringLocalizer["Notification:PaymentInitiated:Message", boothInfo, eventData.Amount.ToString("F2"), eventData.Currency, eventData.SessionId],
                     Severity = "info",
                     ActionUrl = $"/rentals/my-rentals",
                     CreatedAt = DateTime.UtcNow
@@ -206,62 +221,76 @@ namespace MP.Application.Notifications
                 _logger.LogInformation("Created payment initiated notification for user {UserId}, session {SessionId}",
                     eventData.UserId, eventData.SessionId);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to create payment initiated notification for session {SessionId}",
-                    eventData.SessionId);
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to create payment initiated notification for session {SessionId}",
+                        eventData.SessionId);
+                }
             }
         }
 
+        [UnitOfWork]
         public async Task HandleEventAsync(PaymentCompletedEvent eventData)
         {
-            try
-            {
-                var notification = new NotificationMessageDto
-                {
-                    Id = Guid.NewGuid(),
-                    Type = NotificationTypes.PaymentReceived,
-                    Title = "Płatność zakończona sukcesem!",
-                    Message = $"✅ Płatność za wynajem {eventData.RentalIds.Count} stanowisk o wartości {eventData.Amount:F2} {eventData.Currency} została potwierdzona. Twoje stanowiska są teraz aktywne. Numer transakcji: {eventData.TransactionId}",
-                    Severity = "success",
-                    ActionUrl = $"/rentals/my-rentals",
-                    CreatedAt = DateTime.UtcNow
-                };
+            _logger.LogInformation("[EVENT HANDLER] Received PaymentCompletedEvent for user {UserId}, transaction {TransactionId}",
+                eventData.UserId, eventData.TransactionId);
 
-                await _notificationAppService.SendToUserAsync(eventData.UserId, notification);
-                _logger.LogInformation("Created payment completed notification for user {UserId}, transaction {TransactionId}",
-                    eventData.UserId, eventData.TransactionId);
-            }
-            catch (Exception ex)
+            // Set tenant context from event
+            using (_currentTenant.Change(eventData.TenantId))
             {
-                _logger.LogError(ex, "Failed to create payment completed notification for transaction {TransactionId}",
-                    eventData.TransactionId);
+                try
+                {
+                    var notification = new NotificationMessageDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Type = MP.Domain.Notifications.NotificationTypes.PaymentReceived,
+                        Title = _stringLocalizer["Notification:PaymentCompleted:Title"],
+                        Message = _stringLocalizer["Notification:PaymentCompleted:Message", eventData.RentalIds.Count, eventData.Amount.ToString("F2"), eventData.Currency, eventData.TransactionId],
+                        Severity = "success",
+                        ActionUrl = $"/rentals/my-rentals",
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _notificationAppService.SendToUserAsync(eventData.UserId, notification);
+                    _logger.LogInformation("Created payment completed notification for user {UserId}, transaction {TransactionId}",
+                        eventData.UserId, eventData.TransactionId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to create payment completed notification for transaction {TransactionId}",
+                        eventData.TransactionId);
+                }
             }
         }
 
+        [UnitOfWork]
         public async Task HandleEventAsync(PaymentFailedEvent eventData)
         {
-            try
+            // Set tenant context from event
+            using (_currentTenant.Change(eventData.TenantId))
             {
-                var notification = new NotificationMessageDto
+                try
                 {
-                    Id = Guid.NewGuid(),
-                    Type = NotificationTypes.PaymentFailed,
-                    Title = "Płatność nie powiodła się",
-                    Message = $"❌ Płatność za wynajem stanowisk nie została ukończona. Powód: {eventData.Reason}. Stanowiska zostały zwolnione. Możesz spróbować ponownie.",
-                    Severity = "error",
-                    ActionUrl = $"/booths",
-                    CreatedAt = DateTime.UtcNow
-                };
+                    var notification = new NotificationMessageDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Type = MP.Domain.Notifications.NotificationTypes.PaymentFailed,
+                        Title = _stringLocalizer["Notification:PaymentFailed:Title"],
+                        Message = _stringLocalizer["Notification:PaymentFailed:Message", eventData.Reason],
+                        Severity = "error",
+                        ActionUrl = $"/booths",
+                        CreatedAt = DateTime.UtcNow
+                    };
 
-                await _notificationAppService.SendToUserAsync(eventData.UserId, notification);
-                _logger.LogInformation("Created payment failed notification for user {UserId}, transaction {TransactionId}",
-                    eventData.UserId, eventData.TransactionId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to create payment failed notification for transaction {TransactionId}",
-                    eventData.TransactionId);
+                    await _notificationAppService.SendToUserAsync(eventData.UserId, notification);
+                    _logger.LogInformation("Created payment failed notification for user {UserId}, transaction {TransactionId}",
+                        eventData.UserId, eventData.TransactionId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to create payment failed notification for transaction {TransactionId}",
+                        eventData.TransactionId);
+                }
             }
         }
 
@@ -272,9 +301,9 @@ namespace MP.Application.Notifications
                 var notification = new NotificationMessageDto
                 {
                     Id = Guid.NewGuid(),
-                    Type = NotificationTypes.ItemSold,
-                    Title = "Przedmiot sprzedany!",
-                    Message = $"💰 Twój przedmiot '{eventData.ItemName}' został sprzedany za {eventData.Price:F2} {eventData.Currency}",
+                    Type = MP.Domain.Notifications.NotificationTypes.ItemSold,
+                    Title = _stringLocalizer["Notification:ItemSold:Title"],
+                    Message = _stringLocalizer["Notification:ItemSold:Message", eventData.ItemName, eventData.Price.ToString("F2"), eventData.Currency],
                     Severity = "success",
                     ActionUrl = eventData.RentalId.HasValue ? $"/rentals/{eventData.RentalId}" : "/dashboard",
                     CreatedAt = DateTime.UtcNow

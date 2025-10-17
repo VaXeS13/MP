@@ -29,6 +29,10 @@ namespace MP.Promotions
 
         public string? CustomerMessage { get; set; }
 
+        public int? MaxAccountAgeDays { get; set; }
+
         public List<Guid> ApplicableBoothTypeIds { get; set; } = new();
+
+        public List<Guid> ApplicableBoothIds { get; set; } = new();
     }
 }

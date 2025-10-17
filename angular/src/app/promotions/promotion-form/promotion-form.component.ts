@@ -7,6 +7,8 @@ import { PromotionType, promotionTypeOptions } from '../../proxy/promotions/prom
 import { DiscountType } from '../../proxy/promotions/discount-type.enum';
 import { PromotionDisplayMode } from '../../proxy/promotions/promotion-display-mode.enum';
 import { ToasterService } from '@abp/ng.theme.shared';
+import { BoothTypeService } from '../../proxy/application/booth-types/booth-type.service';
+import { BoothService } from '../../proxy/booths/booth.service';
 
 @Component({
   selector: 'app-promotion-form',
@@ -37,16 +39,51 @@ export class PromotionFormComponent implements OnInit {
     { label: 'Banner', value: PromotionDisplayMode.Banner }
   ];
 
+  boothTypeOptions: any[] = [];
+  boothOptions: any[] = [];
+
   constructor(
     private fb: FormBuilder,
     private promotionService: PromotionService,
+    private boothTypeService: BoothTypeService,
+    private boothService: BoothService,
     private router: Router,
     private route: ActivatedRoute,
     private toaster: ToasterService
   ) {}
 
+  private loadBoothTypes(): void {
+    this.boothTypeService.getActiveTypes().subscribe({
+      next: (types) => {
+        this.boothTypeOptions = types.map(type => ({
+          label: type.name || '',
+          value: type.id
+        }));
+      },
+      error: (error) => {
+        console.error('Failed to load booth types:', error);
+      }
+    });
+  }
+
+  private loadBooths(): void {
+    this.boothService.getList({ skipCount: 0, maxResultCount: 1000 }).subscribe({
+      next: (response) => {
+        this.boothOptions = response.items.map(booth => ({
+          label: booth.number || '',
+          value: booth.id
+        }));
+      },
+      error: (error) => {
+        console.error('Failed to load booths:', error);
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.buildForm();
+    this.loadBoothTypes();
+    this.loadBooths();
 
     this.promotionId = this.route.snapshot.paramMap.get('id') || undefined;
     this.isEditMode = !!this.promotionId;
@@ -94,9 +131,11 @@ export class PromotionFormComponent implements OnInit {
       validTo: [null],
       maxUsageCount: [null, [Validators.min(1)]],
       maxUsagePerUser: [null, [Validators.min(1)]],
+      maxAccountAgeDays: [null, [Validators.min(1)]],
       customerMessage: ['', [Validators.maxLength(500)]],
       isActive: [true],
-      applicableBoothTypeIds: [[]]
+      applicableBoothTypeIds: [[]],
+      applicableBoothIds: [[]]
     });
   }
 
@@ -119,9 +158,11 @@ export class PromotionFormComponent implements OnInit {
           validTo: promotion.validTo ? new Date(promotion.validTo) : null,
           maxUsageCount: promotion.maxUsageCount,
           maxUsagePerUser: promotion.maxUsagePerUser,
+          maxAccountAgeDays: promotion.maxAccountAgeDays,
           customerMessage: promotion.customerMessage,
           isActive: promotion.isActive,
-          applicableBoothTypeIds: promotion.applicableBoothTypeIds || []
+          applicableBoothTypeIds: promotion.applicableBoothTypeIds || [],
+          applicableBoothIds: promotion.applicableBoothIds || []
         });
         this.loading = false;
       },
@@ -149,7 +190,8 @@ export class PromotionFormComponent implements OnInit {
       ...formValue,
       validFrom: formValue.validFrom ? new Date(formValue.validFrom).toISOString() : undefined,
       validTo: formValue.validTo ? new Date(formValue.validTo).toISOString() : undefined,
-      applicableBoothTypeIds: formValue.applicableBoothTypeIds || []
+      applicableBoothTypeIds: formValue.applicableBoothTypeIds || [],
+      applicableBoothIds: formValue.applicableBoothIds || []
     };
 
     const request$ = this.isEditMode && this.promotionId
@@ -183,5 +225,9 @@ export class PromotionFormComponent implements OnInit {
 
   get isPercentageDiscount(): boolean {
     return this.form.get('discountType')?.value === DiscountType.Percentage;
+  }
+
+  get isNewUserType(): boolean {
+    return this.form.get('type')?.value === PromotionType.NewUser;
   }
 }

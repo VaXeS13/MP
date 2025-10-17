@@ -109,6 +109,9 @@
                   </td>
                   <td class="fw-bold">
                     <div *ngIf="item.discountAmount > 0" class="price-with-discount">
+                      <span class="badge bg-success me-2" [pTooltip]="'Obniżona cena w promocji: ' + (item.discountPercentage | number:'1.0-0') + '%'" tooltipPosition="top">
+                        <i class="pi pi-tag me-1"></i>Promocja
+                      </span>
                       <div class="original-price">
                         {{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}
                       </div>
@@ -116,7 +119,7 @@
                         {{ item.finalPrice | currency:item.currency:'symbol':'1.2-2' }}
                       </div>
                     </div>
-                    <div *ngIf="item.discountAmount === 0">
+                    <div *ngIf="item.discountAmount === 0" [pTooltip]="hasPromoCode() ? 'Ta pozycja nie jest objęta promocją' : ''" tooltipPosition="top">
                       {{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}
                     </div>
                   </td>
@@ -182,6 +185,10 @@
                     <div>
                       <div class="fw-bold text-success">{{ cart.promoCodeUsed }}</div>
                       <small class="text-muted" *ngIf="cart.promotionName">{{ cart.promotionName }}</small>
+                      <div class="small text-muted mt-1">
+                        <i class="pi pi-info-circle me-1"></i>
+                        Dotyczy {{ getApplicableItemsCount() }} z {{ cart.itemCount }} pozycji w koszyku
+                      </div>
                     </div>
                   </div>
                 </div>

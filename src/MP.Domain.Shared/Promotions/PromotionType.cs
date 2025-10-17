@@ -18,6 +18,11 @@ namespace MP.Promotions
         /// <summary>
         /// Date range promotion (discount valid for specific period)
         /// </summary>
-        DateRange = 2
+        DateRange = 2,
+
+        /// <summary>
+        /// New user promotion (applies to accounts younger than specified days)
+        /// </summary>
+        NewUser = 3
     }
 }

@@ -4,6 +4,7 @@ using MP.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace MP.Migrations
 {
     [DbContext(typeof(MPDbContext))]
-    partial class MPDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251016194057_AddMaxAccountAgeDaysToPromotions")]
+    partial class AddMaxAccountAgeDaysToPromotions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -313,12 +316,6 @@ namespace MP.Migrations
                     b.Property<DateTime?>("DeletionTime")
                         .HasColumnType("datetime2")
                         .HasColumnName("DeletionTime");
-
-                    b.Property<decimal>("DiscountAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("DiscountPercentage")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("date")
@@ -2079,11 +2076,6 @@ namespace MP.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.PrimitiveCollection<string>("ApplicableBoothIds")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasComment("List of specific booth IDs this promotion applies to (empty = all booths)");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -2235,9 +2227,6 @@ namespace MP.Migrations
 
                     b.HasIndex("Type")
                         .HasDatabaseName("IX_Promotions_Type");
-
-                    b.HasIndex("TenantId", "IsActive")
-                        .HasDatabaseName("IX_Promotions_TenantId_IsActive");
 
                     b.HasIndex("TenantId", "PromoCode")
                         .HasDatabaseName("IX_Promotions_TenantId_PromoCode");

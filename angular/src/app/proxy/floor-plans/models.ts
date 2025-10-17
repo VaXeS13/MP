@@ -85,28 +85,12 @@ export interface GetFloorPlanElementListDto extends PagedAndSortedResultRequestD
   elementType?: FloorPlanElementType;
 }
 
-export interface GetFloorPlanListDto extends PagedAndSortedResultRequestDto {
-  tenantId?: string;
-  isActive?: boolean;
-  level?: number;
-  filter?: string;
-}
-
 export interface RentalOverlapDto {
   id?: string;
   userId?: string;
   startDate?: string;
   endDate?: string;
   status?: string;
-}
-
-export interface UpdateFloorPlanDto {
-  name: string;
-  level: number;
-  width: number;
-  height: number;
-  booths: CreateFloorPlanBoothDto[];
-  elements: CreateFloorPlanElementDto[];
 }
 
 export interface UpdateFloorPlanElementDto {
@@ -122,4 +106,11 @@ export interface UpdateFloorPlanElementDto {
   thickness?: number;
   opacity?: number;
   direction?: string;
+}
+
+export interface GetFloorPlanListDto extends PagedAndSortedResultRequestDto {
+  tenantId?: string;
+  isActive?: boolean;
+  level?: number;
+  filter?: string;
 }

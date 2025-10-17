@@ -80,7 +80,9 @@ namespace MP.Promotions
             promotion.SetMaxDiscountAmount(input.MaxDiscountAmount);
             promotion.SetUsageLimits(input.MaxUsageCount, input.MaxUsagePerUser);
             promotion.SetCustomerMessage(input.CustomerMessage);
+            promotion.SetMaxAccountAgeDays(input.MaxAccountAgeDays);
             promotion.SetApplicableBoothTypes(input.ApplicableBoothTypeIds);
+            promotion.SetApplicableBooths(input.ApplicableBoothIds);
 
             // Set IsActive based on input
             if (input.IsActive)
@@ -114,7 +116,9 @@ namespace MP.Promotions
             promotion.SetMinimumBoothsCount(input.MinimumBoothsCount);
             promotion.SetUsageLimits(input.MaxUsageCount, input.MaxUsagePerUser);
             promotion.SetCustomerMessage(input.CustomerMessage);
+            promotion.SetMaxAccountAgeDays(input.MaxAccountAgeDays);
             promotion.SetApplicableBoothTypes(input.ApplicableBoothTypeIds);
+            promotion.SetApplicableBooths(input.ApplicableBoothIds);
 
             // Update IsActive status
             if (input.IsActive && !promotion.IsActive)

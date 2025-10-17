@@ -22,6 +22,7 @@ import { BadgeModule } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
+import { MessagesModule } from 'primeng/messages';
 
 import { SharedModule } from '../shared/shared.module';
 
@@ -52,7 +53,8 @@ import { SharedModule } from '../shared/shared.module';
     BadgeModule,
     TooltipModule,
     ConfirmDialogModule,
-    ToastModule
+    ToastModule,
+    MessagesModule
   ]
 })
 export class CustomerDashboardModule { }

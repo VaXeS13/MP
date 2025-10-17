@@ -32,6 +32,7 @@ namespace MP.Middleware
             context.Items["ClientOrigin"] = clientOrigin;
             context.Items["OriginalHost"] = host;
 
+            /*
             _logger.LogInformation("=== SUBDOMAIN DETECTION ===");
             _logger.LogInformation("Request: {Method} {Path}", method, path);
             _logger.LogInformation("Host: {Host}", host);
@@ -41,7 +42,7 @@ namespace MP.Middleware
             _logger.LogInformation("Detected Subdomain: {Subdomain}", subdomain ?? "none");
             _logger.LogInformation("Client Origin: {ClientOrigin}", clientOrigin ?? "none");
             _logger.LogInformation("================================");
-
+            */
             await _next(context);
         }
 

@@ -21,6 +21,7 @@ namespace MP.Carts
 
         // Promotion discount applied to this item
         public decimal DiscountAmount { get; set; }
+        public decimal DiscountPercentage { get; set; }
         public decimal FinalPrice { get; set; }
 
         // Related entity data for display

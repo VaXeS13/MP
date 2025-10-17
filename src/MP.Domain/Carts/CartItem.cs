@@ -19,6 +19,9 @@ namespace MP.Domain.Carts
         public Currency Currency { get; private set; }
         public string? Notes { get; private set; }
 
+        public decimal DiscountAmount { get; private set; }
+        public decimal DiscountPercentage { get; private set; }
+
         public CartItemType ItemType { get; private set; }
         public Guid? ExtendedRentalId { get; private set; }
         public Guid? RentalId { get; private set; } // Rental created by admin for online payment
@@ -131,6 +134,30 @@ namespace MP.Domain.Carts
         public decimal GetTotalPrice()
         {
             return GetDaysCount() * PricePerDay;
+        }
+
+        public decimal GetFinalPrice()
+        {
+            return Math.Max(0, GetTotalPrice() - DiscountAmount);
+        }
+
+        public void ApplyDiscount(decimal discountAmount, decimal discountPercentage = 0)
+        {
+            if (discountAmount < 0)
+                throw new BusinessException("DISCOUNT_CANNOT_BE_NEGATIVE");
+
+            var totalPrice = GetTotalPrice();
+            if (discountAmount > totalPrice)
+                throw new BusinessException("DISCOUNT_CANNOT_EXCEED_ITEM_PRICE");
+
+            DiscountAmount = discountAmount;
+            DiscountPercentage = discountPercentage;
+        }
+
+        public void RemoveDiscount()
+        {
+            DiscountAmount = 0;
+            DiscountPercentage = 0;
         }
 
         public bool OverlapsWith(DateTime startDate, DateTime endDate)

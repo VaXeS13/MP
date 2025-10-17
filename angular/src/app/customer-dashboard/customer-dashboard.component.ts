@@ -1,5 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { CustomerDashboardService } from '@proxy/application/customer-dashboard';
+import {
+  CustomerOverviewDto,
+  MyActiveRentalDto,
+  RecentItemSaleDto,
+  CustomerDashboardDto,
+  CustomerSalesStatisticsDto
+} from '@proxy/application/contracts/customer-dashboard';
 
 @Component({
   selector: 'app-customer-dashboard',
@@ -9,27 +17,43 @@ import { Router } from '@angular/router';
 })
 export class CustomerDashboardComponent implements OnInit {
   loading = false;
+  errorMessage: string | null = null;
 
-  // Dashboard data (simplified - will be connected to API later)
-  overview = {
-    totalActiveRentals: 2,
-    totalItemsForSale: 15,
-    totalItemsSold: 8,
-    totalSalesAmount: 1250.00,
-    availableForWithdrawal: 950.00,
-    daysUntilNextRentalExpiration: 12
+  overview: CustomerOverviewDto = {
+    totalActiveRentals: 0,
+    totalItemsForSale: 0,
+    totalItemsSold: 0,
+    totalSalesAmount: 0,
+    totalCommissionPaid: 0,
+    availableForWithdrawal: 0,
+    daysUntilNextRentalExpiration: 0,
+    hasExpiringRentals: false,
+    hasPendingSettlements: false
   };
 
-  activeRentals: any[] = [];
-  recentSales: any[] = [];
-  salesStats = {
+  activeRentals: MyActiveRentalDto[] = [];
+  recentSales: RecentItemSaleDto[] = [];
+  salesStats: CustomerSalesStatisticsDto = {
     todaySales: 0,
-    weekSales: 450.00,
-    monthSales: 1250.00,
-    last30DaysSales: []
+    weekSales: 0,
+    monthSales: 0,
+    allTimeSales: 0,
+    todayItemsSold: 0,
+    weekItemsSold: 0,
+    monthItemsSold: 0,
+    allTimeItemsSold: 0,
+    averageSalePrice: 0,
+    highestSalePrice: 0,
+    lowestSalePrice: 0,
+    last30DaysSales: [],
+    salesByCategory: [],
+    monthlyGrowthPercentage: 0
   };
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private customerDashboardService: CustomerDashboardService
+  ) {}
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -37,51 +61,22 @@ export class CustomerDashboardComponent implements OnInit {
 
   private loadDashboardData(): void {
     this.loading = true;
+    this.errorMessage = null;
 
-    // Mock data - replace with actual API call
-    this.activeRentals = [
-      {
-        rentalId: '1',
-        boothNumber: 'A-101',
-        startDate: new Date(2025, 0, 1),
-        endDate: new Date(2025, 2, 31),
-        daysRemaining: 45,
-        totalItems: 10,
-        soldItems: 3,
-        totalSales: 450.00,
-        isExpiringSoon: false
+    this.customerDashboardService.getDashboard().subscribe({
+      next: (data: CustomerDashboardDto) => {
+        this.overview = data.overview;
+        this.activeRentals = data.activeRentals;
+        this.recentSales = data.recentSales;
+        this.salesStats = data.salesStatistics;
+        this.loading = false;
       },
-      {
-        rentalId: '2',
-        boothNumber: 'B-205',
-        startDate: new Date(2025, 1, 1),
-        endDate: new Date(2025, 1, 28),
-        daysRemaining: 12,
-        totalItems: 5,
-        soldItems: 5,
-        totalSales: 800.00,
-        isExpiringSoon: true
+      error: (error) => {
+        console.error('Error loading dashboard data:', error);
+        this.errorMessage = 'Nie udało się załadować danych dashboardu. Spróbuj ponownie później.';
+        this.loading = false;
       }
-    ];
-
-    this.recentSales = [
-      {
-        itemName: 'Vintage Lamp',
-        salePrice: 150.00,
-        soldAt: new Date(2025, 0, 15),
-        boothNumber: 'A-101'
-      },
-      {
-        itemName: 'Wooden Chair',
-        salePrice: 120.00,
-        soldAt: new Date(2025, 0, 14),
-        boothNumber: 'A-101'
-      }
-    ];
-
-    setTimeout(() => {
-      this.loading = false;
-    }, 500);
+    });
   }
 
   navigateToItems(): void {
@@ -110,7 +105,7 @@ export class CustomerDashboardComponent implements OnInit {
     }).format(amount);
   }
 
-  trackBySaleIndex(index: number, sale: any): number {
-    return index;
+  trackBySaleIndex(index: number, sale: RecentItemSaleDto): string {
+    return sale.itemId ? sale.itemId.toString() : index.toString();
   }
 }

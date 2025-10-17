@@ -2,14 +2,14 @@
   <!-- Header with stats -->
   <div class="notification-header surface-border border-bottom-1 p-4">
     <div class="flex justify-content-between align-items-center mb-3">
-      <h3 class="m-0 text-xl font-semibold">Centrum Powiadomień</h3>
+      <h3 class="m-0 text-xl font-semibold">{{ 'NotificationCenter:Title' | abpLocalization }}</h3>
       <button
         pButton
         type="button"
         icon="pi pi-refresh"
         [loading]="loading"
         (click)="refreshCurrentTab()"
-        pTooltip="Odśwież"
+        [pTooltip]="'NotificationCenter:Refresh' | abpLocalization"
         tooltipPosition="bottom"
         class="p-button-rounded p-button-text p-button-secondary">
       </button>
@@ -19,19 +19,19 @@
     <div class="notification-stats grid grid-nogutter">
       <div class="col-12 md:col-3 text-center mb-2 md:mb-0">
         <div class="text-2xl font-bold text-primary">{{ stats.unreadCount }}</div>
-        <div class="text-sm text-color-secondary">Nieprzeczytane</div>
+        <div class="text-sm text-color-secondary">{{ 'NotificationCenter:Unread' | abpLocalization }}</div>
       </div>
       <div class="col-12 md:col-3 text-center mb-2 md:mb-0">
         <div class="text-2xl font-bold">{{ stats.totalCount }}</div>
-        <div class="text-sm text-color-secondary">Wszystkie</div>
+        <div class="text-sm text-color-secondary">{{ 'NotificationCenter:All' | abpLocalization }}</div>
       </div>
       <div class="col-12 md:col-3 text-center mb-2 md:mb-0">
         <div class="text-2xl font-bold text-green-500">{{ stats.readCount }}</div>
-        <div class="text-sm text-color-secondary">Przeczytane</div>
+        <div class="text-sm text-color-secondary">{{ 'NotificationCenter:Read' | abpLocalization }}</div>
       </div>
       <div class="col-12 md:col-3 text-center">
         <div class="text-2xl font-bold text-orange-500">{{ stats.expiredCount }}</div>
-        <div class="text-sm text-color-secondary">Wygasłe</div>
+        <div class="text-sm text-color-secondary">{{ 'NotificationCenter:Expired' | abpLocalization }}</div>
       </div>
     </div>
   </div>
@@ -47,7 +47,7 @@
             #searchInput
             pInputText
             type="text"
-            placeholder="Szukaj powiadomień..."
+            [placeholder]="'NotificationCenter:SearchPlaceholder' | abpLocalization"
             class="w-full"
             (input)="onSearch($event)"
             [value]="searchTerm">
@@ -61,7 +61,7 @@
           [(ngModel)]="selectedSeverity"
           optionLabel="label"
           optionValue="value"
-          placeholder="Filtruj priorytet"
+          [placeholder]="'NotificationCenter:FilterBySeverity' | abpLocalization"
           class="w-full"
           (onChange)="onSeverityChange()">
         </p-dropdown>
@@ -71,7 +71,7 @@
       <div class="flex gap-2 flex-wrap">
         <button
           pButton
-          label="Oznacz jako przeczytane"
+          [label]="'NotificationCenter:MarkAsRead' | abpLocalization"
           [disabled]="!hasSelection"
           icon="pi pi-check"
           size="small"
@@ -79,7 +79,7 @@
         </button>
         <button
           pButton
-          label="Oznacz wszystkie jako przeczytane"
+          [label]="'NotificationCenter:MarkAllAsRead' | abpLocalization"
           [disabled]="!hasUnreadInCurrentView"
           icon="pi pi-check-double"
           size="small"
@@ -99,7 +99,7 @@
   <div class="notification-content">
     <p-tabView [(activeIndex)]="activeTabIndex" (onChange)="onTabChange($event)">
       <!-- Unread notifications tab -->
-      <p-tabPanel header="Nieprzeczytane" leftIcon="pi pi-envelope">
+      <p-tabPanel [header]="'NotificationCenter:Unread' | abpLocalization" leftIcon="pi pi-envelope">
         <div class="notification-list">
           <ng-container *ngIf="currentNotifications.length > 0; else noUnreadNotifications">
             <div
@@ -143,7 +143,7 @@
                         size="small"
                         severity="danger"
                         (click)="deleteNotification(notification.id); $event.stopPropagation()"
-                        pTooltip="Usuń">
+                        [pTooltip]="'Common:Delete' | abpLocalization">
                       </button>
                     </div>
                   </div>
@@ -170,8 +170,8 @@
           <ng-template #noUnreadNotifications>
             <div class="text-center p-6 text-color-secondary">
               <i class="pi pi-check-circle text-5xl mb-3 text-green-500"></i>
-              <h4 class="m-0 mb-2">Brak nieprzeczytanych powiadomień</h4>
-              <p class="m-0">Wszystkie powiadomienia zostały przeczytane</p>
+              <h4 class="m-0 mb-2">{{ 'NotificationCenter:NoNotifications' | abpLocalization }}</h4>
+              <p class="m-0">{{ 'NotificationCenter:NoNotificationsMessage' | abpLocalization }}</p>
             </div>
           </ng-template>
         </div>
@@ -190,7 +190,7 @@
       </p-tabPanel>
 
       <!-- All notifications tab -->
-      <p-tabPanel header="Wszystkie" leftIcon="pi pi-list">
+      <p-tabPanel [header]="'NotificationCenter:All' | abpLocalization" leftIcon="pi pi-list">
         <div class="notification-list">
           <ng-container *ngIf="currentNotifications.length > 0; else noAllNotifications">
             <div
@@ -234,7 +234,7 @@
                         size="small"
                         severity="danger"
                         (click)="deleteNotification(notification.id); $event.stopPropagation()"
-                        pTooltip="Usuń">
+                        [pTooltip]="'Common:Delete' | abpLocalization">
                       </button>
                     </div>
                   </div>
@@ -246,7 +246,7 @@
                   <div class="flex justify-content-between align-items-center mt-2">
                     <div class="flex gap-3 text-xs text-color-secondary">
                       <span>{{ formatDate(notification.creationTime) }}</span>
-                      <span *ngIf="notification.readAt">Przeczytane: {{ formatDate(notification.readAt) }}</span>
+                      <span *ngIf="notification.readAt">{{ 'NotificationCenter:Read' | abpLocalization }}: {{ formatDate(notification.readAt) }}</span>
                       <span *ngIf="notification.type" class="text-capitalize font-medium text-primary">{{ getNotificationTypeName(notification.type) }}</span>
                     </div>
                     <span *ngIf="notification.isRead" class="read-indicator">
@@ -262,8 +262,8 @@
           <ng-template #noAllNotifications>
             <div class="text-center p-6 text-color-secondary">
               <i class="pi pi-inbox text-5xl mb-3"></i>
-              <h4 class="m-0 mb-2">Brak powiadomień</h4>
-              <p class="m-0">Nie masz żadnych powiadomień</p>
+              <h4 class="m-0 mb-2">{{ 'NotificationCenter:NoNotifications' | abpLocalization }}</h4>
+              <p class="m-0">{{ 'NotificationCenter:NoNotificationsMessage' | abpLocalization }}</p>
             </div>
           </ng-template>
         </div>

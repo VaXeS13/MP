@@ -34,8 +34,10 @@ export interface CreatePromotionDto {
   maxUsageCount?: number;
   maxUsagePerUser?: number;
   customerMessage?: string;
+  maxAccountAgeDays?: number;
   isActive: boolean;
   applicableBoothTypeIds: string[];
+  applicableBoothIds: string[];
 }
 
 export interface GetPromotionsInput extends PagedAndSortedResultRequestDto {
@@ -63,7 +65,9 @@ export interface PromotionDto extends FullAuditedEntityDto<string> {
   currentUsageCount: number;
   maxUsagePerUser?: number;
   customerMessage?: string;
+  maxAccountAgeDays?: number;
   applicableBoothTypeIds: string[];
+  applicableBoothIds: string[];
 }
 
 export interface UpdatePromotionDto {
@@ -82,8 +86,10 @@ export interface UpdatePromotionDto {
   maxUsageCount?: number;
   maxUsagePerUser?: number;
   customerMessage?: string;
+  maxAccountAgeDays?: number;
   isActive: boolean;
   applicableBoothTypeIds: string[];
+  applicableBoothIds: string[];
 }
 
 export interface ValidatePromoCodeInput {

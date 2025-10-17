@@ -393,3 +393,66 @@ tr {
     filter: brightness(1.3);
   }
 }
+
+// Promotion badge styles
+.price-with-discount .badge {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 4px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  animation: badge-pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  i {
+    margin-right: 4px;
+    font-size: 0.8rem;
+  }
+
+  &.bg-success {
+    background-color: var(--bs-success) !important;
+    color: white;
+    box-shadow: 0 2px 8px rgba(25, 135, 84, 0.3);
+  }
+}
+
+@keyframes badge-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Row highlighting for items with discount
+table tbody tr {
+  &.has-discount {
+    background-color: rgba(25, 135, 84, 0.05) !important;
+    border-left: 3px solid var(--bs-success) !important;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: rgba(25, 135, 84, 0.1) !important;
+    }
+  }
+}
+
+// Applied promo code info text
+.applied-promo-code {
+  .small.text-muted {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+
+    i {
+      font-size: 0.75rem;
+    }
+  }
+}

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MP.Promotions;
 using Volo.Abp;
 using Volo.Abp.Domain.Services;
+using Volo.Abp.Identity;
 using MP.Domain.Carts;
 
 namespace MP.Domain.Promotions
@@ -16,13 +17,16 @@ namespace MP.Domain.Promotions
     {
         private readonly IPromotionRepository _promotionRepository;
         private readonly IPromotionUsageRepository _promotionUsageRepository;
+        private readonly IIdentityUserRepository _identityUserRepository;
 
         public PromotionManager(
             IPromotionRepository promotionRepository,
-            IPromotionUsageRepository promotionUsageRepository)
+            IPromotionUsageRepository promotionUsageRepository,
+            IIdentityUserRepository identityUserRepository)
         {
             _promotionRepository = promotionRepository;
             _promotionUsageRepository = promotionUsageRepository;
+            _identityUserRepository = identityUserRepository;
         }
 
         /// <summary>
@@ -90,12 +94,8 @@ namespace MP.Domain.Promotions
             // Validate promotion
             await ValidatePromotionForCartAsync(promotion, cart);
 
-            // Calculate discount
-            var totalAmount = cart.GetTotalAmount();
-            var discountAmount = promotion.CalculateDiscount(totalAmount);
-
-            // Apply to cart
-            cart.ApplyPromotion(promotion.Id, discountAmount, promoCode);
+            // Apply to cart (per-item discounts)
+            cart.ApplyPromotion(promotion.Id, promotion, promoCode);
 
             return promotion;
         }
@@ -173,8 +173,22 @@ namespace MP.Domain.Promotions
                 }
             }
 
-            // Check booth type restrictions
-            if (promotion.ApplicableBoothTypeIds.Any())
+            // Check specific booth restrictions
+            if (promotion.ApplicableBoothIds.Any())
+            {
+                var cartBoothIds = cart.Items.Select(i => i.BoothId).Distinct().ToList();
+                var hasApplicableBooth = cartBoothIds.Any(bid => promotion.IsApplicableToBooth(bid));
+
+                if (!hasApplicableBooth)
+                {
+                    if (throwException)
+                        throw new BusinessException("PROMOTION_NOT_APPLICABLE_TO_BOOTHS");
+                    else
+                        throw new Exception();
+                }
+            }
+            // Check booth type restrictions (only if no specific booths are set)
+            else if (promotion.ApplicableBoothTypeIds.Any())
             {
                 var cartBoothTypes = cart.Items.Select(i => i.BoothTypeId).Distinct().ToList();
                 var hasApplicableBooth = cartBoothTypes.Any(bt => promotion.IsApplicableToBoothType(bt));
@@ -200,6 +214,23 @@ namespace MP.Domain.Promotions
                     if (throwException)
                         throw new BusinessException("PROMOTION_USER_LIMIT_EXCEEDED")
                             .WithData("MaxUsage", promotion.MaxUsagePerUser.Value);
+                    else
+                        throw new Exception();
+                }
+            }
+
+            // Check new user promotion eligibility
+            if (promotion.Type == PromotionType.NewUser && promotion.MaxAccountAgeDays.HasValue)
+            {
+                var user = await _identityUserRepository.GetAsync(cart.UserId);
+                var accountAge = (DateTime.UtcNow - user.CreationTime).TotalDays;
+
+                if (accountAge > promotion.MaxAccountAgeDays.Value)
+                {
+                    if (throwException)
+                        throw new BusinessException("PROMOTION_NOT_APPLICABLE_TO_EXISTING_USERS")
+                            .WithData("MaxDays", promotion.MaxAccountAgeDays.Value)
+                            .WithData("AccountDays", (int)accountAge);
                     else
                         throw new Exception();
                 }

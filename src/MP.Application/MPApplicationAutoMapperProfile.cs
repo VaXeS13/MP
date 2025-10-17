@@ -26,6 +26,8 @@ using MP.Application.Contracts.Files;
 using MP.Application.Contracts.Notifications;
 using MP.Domain.Payments;
 using MP.Payments;
+using MP.Domain.Carts;
+using MP.Carts;
 
 namespace MP;
 
@@ -200,6 +202,25 @@ public class MPApplicationAutoMapperProfile : Profile
             .ForMember(dest => dest.BoothNumber,
                 opt => opt.MapFrom(src => src.Rental != null ? src.Rental.Booth.Number : null));
 
+        // CART MAPPINGS
+        CreateMap<CartItem, CartItemDto>()
+            .ForMember(dest => dest.DaysCount,
+                opt => opt.MapFrom(src => src.GetDaysCount()))
+            .ForMember(dest => dest.TotalPrice,
+                opt => opt.MapFrom(src => src.GetTotalPrice()))
+            .ForMember(dest => dest.FinalPrice,
+                opt => opt.MapFrom(src => src.GetFinalPrice()));
+
+        CreateMap<Cart, CartDto>()
+            .ForMember(dest => dest.ItemCount,
+                opt => opt.MapFrom(src => src.GetItemCount()))
+            .ForMember(dest => dest.TotalAmount,
+                opt => opt.MapFrom(src => src.GetTotalAmount()))
+            .ForMember(dest => dest.FinalAmount,
+                opt => opt.MapFrom(src => src.GetFinalAmount()))
+            .ForMember(dest => dest.TotalDays,
+                opt => opt.MapFrom(src => src.GetTotalDays()));
+
         // PROMOTION MAPPINGS
         CreateMap<Promotion, PromotionDto>()
             .ForMember(dest => dest.ApplicableBoothTypeIds,
@@ -223,7 +244,8 @@ public class MPApplicationAutoMapperProfile : Profile
             .ForMember(dest => dest.Severity, opt => opt.MapFrom(src => MapNotificationSeverity(src.Severity)));
 
         // PAYMENT TRANSACTION MAPPINGS
-        CreateMap<P24Transaction, PaymentTransactionDto>();
+        CreateMap<P24Transaction, PaymentTransactionDto>()
+            .ForMember(dest => dest.IsVerified, opt => opt.MapFrom(src => src.Verified));
     }
 
     private static Application.Contracts.Notifications.NotificationSeverity MapNotificationSeverity(Domain.Notifications.NotificationSeverity severity)

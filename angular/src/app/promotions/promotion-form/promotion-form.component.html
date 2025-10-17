@@ -191,6 +191,22 @@
             formControlName="minimumBoothsCount"
           />
         </div>
+
+        <div class="col-md-4 mb-3" *ngIf="isNewUserType">
+          <label for="maxAccountAgeDays" class="form-label">
+            {{ 'MP::Promotion:MaxAccountAgeDays' | abpLocalization }}
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:MaxAccountAgeDaysHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <input
+            id="maxAccountAgeDays"
+            type="number"
+            class="form-control"
+            formControlName="maxAccountAgeDays"
+            [class.is-invalid]="form.get('maxAccountAgeDays')?.invalid && form.get('maxAccountAgeDays')?.touched"
+          />
+        </div>
       </div>
 
       <!-- Validity Period -->
@@ -266,6 +282,54 @@
             class="form-control"
             formControlName="maxUsagePerUser"
           />
+        </div>
+      </div>
+
+      <!-- Booth Selection -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h5>{{ 'MP::Promotion:ApplicableBooths' | abpLocalization }}</h5>
+          <hr />
+        </div>
+
+        <div class="col-12 mb-3">
+          <label for="applicableBoothTypeIds" class="form-label">
+            {{ 'MP::Promotion:ApplicableBoothTypes' | abpLocalization }}
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:ApplicableBoothTypesHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <p-multiSelect
+            id="applicableBoothTypeIds"
+            [options]="boothTypeOptions"
+            optionLabel="label"
+            optionValue="value"
+            formControlName="applicableBoothTypeIds"
+            [showToggleAll]="true"
+            [maxSelectedLabels]="3"
+            selectedItemsLabel="{0} booth types selected"
+            placeholder="Select booth types...">
+          </p-multiSelect>
+        </div>
+
+        <div class="col-12 mb-3">
+          <label for="applicableBoothIds" class="form-label">
+            {{ 'MP::Promotion:ApplicableBooths' | abpLocalization }}
+            <i class="fas fa-info-circle text-muted ms-1"
+               pTooltip="{{ 'MP::Promotion:ApplicableBoothsHelp' | abpLocalization }}"
+               tooltipPosition="top"></i>
+          </label>
+          <p-multiSelect
+            id="applicableBoothIds"
+            [options]="boothOptions"
+            optionLabel="label"
+            optionValue="value"
+            formControlName="applicableBoothIds"
+            [showToggleAll]="true"
+            [maxSelectedLabels]="3"
+            selectedItemsLabel="{0} booths selected"
+            placeholder="Select specific booths...">
+          </p-multiSelect>
         </div>
       </div>
 

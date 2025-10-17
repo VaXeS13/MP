@@ -541,6 +541,7 @@
     "Promotion:TypeQuantity": "Quantity Discount",
     "Promotion:TypePromoCode": "Promo Code",
     "Promotion:TypeDateRange": "Date Range Promotion",
+    "Promotion:TypeNewUser": "New User Promotion",
     "Promotion:DisplayMode": "Display Mode",
     "Promotion:DisplayModeNone": "Don't Display",
     "Promotion:DisplayModeStickyRight": "Sticky Bottom Right",
@@ -580,6 +581,11 @@
     "Promotion:MaxUsageCountHelp": "Maximum total times this promotion can be used across all users. Leave empty for unlimited.",
     "Promotion:MaxUsagePerUserHelp": "Maximum times a single user can use this promotion. Leave empty for unlimited.",
     "Promotion:ApplicableBoothTypesHelp": "Restrict this promotion to specific booth types. Leave empty to apply to all booth types.",
+    "Promotion:ApplicableBooths": "Applicable Booths",
+    "Promotion:ApplicableBoothsHelp": "Restrict this promotion to specific booths. Leave empty to apply based on booth types or all booths.",
+    "Promotion:SelectBooths": "Select Booths",
+    "Promotion:MaxAccountAgeDays": "Maximum Account Age (Days)",
+    "Promotion:MaxAccountAgeDaysHelp": "For new user promotions, specify the maximum age of user account in days to qualify for this promotion (e.g., 7 for first week, 30 for first month)",
     "Promotion:AllBoothTypes": "All Booth Types",
     "Promotion:ApplyCode": "Apply Code",
     "Promotion:RemovePromotion": "Remove Promotion",
@@ -614,10 +620,13 @@
     "Enum:PromotionType:0": "Quantity Discount",
     "Enum:PromotionType:1": "Promo Code",
     "Enum:PromotionType:2": "Date Range Promotion",
+    "Enum:PromotionType:3": "New User Promotion",
 
     "Promotion:NoLongerValid": "The applied promotion is no longer valid and has been removed from your cart. Please review your updated total before proceeding.",
     "Promotion:ValidationFailed": "The applied promotion no longer meets the requirements and has been removed from your cart. Please review your updated total before proceeding.",
     "Promotion:NotFound": "The applied promotion could not be found and has been removed from your cart. Please review your updated total before proceeding.",
+    "Promotion:NotApplicableToExistingUsers": "This new user promotion has expired as your account is older than the promotional period.",
+    "Promotion:NotApplicableToBooths": "This promotion is not applicable to the selected booths.",
 
     "HomePageSection:Title": "Homepage Content Management",
     "HomePageSection:NewSection": "New Section",
@@ -724,6 +733,69 @@
     "PaymentStatus:Cancelled": "Cancelled",
     "PaymentStatus:Rejected": "Rejected",
     "PaymentStatus:Refunded": "Refunded",
-    "PaymentStatus:Unknown": "Unknown"
+    "PaymentStatus:Unknown": "Unknown",
+
+    "Notification:PaymentInitiated:Title": "Payment process started",
+    "Notification:PaymentInitiated:Message": "Payment process for {0} worth {1} {2} has been initiated. Session ID: {3}",
+
+    "Notification:PaymentCompleted:Title": "Payment completed successfully!",
+    "Notification:PaymentCompleted:Message": "✅ Payment for {0} booth(s) worth {1} {2} has been confirmed. Your booths are now active. Transaction ID: {3}",
+
+    "Notification:PaymentFailed:Title": "Payment failed",
+    "Notification:PaymentFailed:Message": "❌ Payment for booths was not completed. Reason: {0}. Booths have been released. You can try again.",
+
+    "Notification:RentalStarted:Title": "Rental Started",
+    "Notification:RentalStarted:Message": "Your rental of booth {0} has started. Rental period: {1} - {2}",
+
+    "Notification:RentalCompleted:Title": "Rental Completed",
+    "Notification:RentalCompleted:Message": "Your rental of booth {0} has been completed. Thank you for using our services!",
+
+    "Notification:RentalCancelled:Title": "Rental Cancelled",
+    "Notification:RentalCancelled:Message": "Your rental of booth {0} has been cancelled.",
+
+    "Notification:RentalExtended:Title": "Rental Extended",
+    "Notification:RentalExtended:Message": "Your rental of booth {0} has been extended until {1}",
+
+    "Notification:ItemSold:Title": "Item Sold!",
+    "Notification:ItemSold:Message": "💰 Your item '{0}' has been sold for {1} {2}",
+
+    "NotificationCenter:Title": "Notification Center",
+    "NotificationCenter:Refresh": "Refresh",
+    "NotificationCenter:Unread": "Unread",
+    "NotificationCenter:All": "All",
+    "NotificationCenter:Read": "Read",
+    "NotificationCenter:Expired": "Expired",
+    "NotificationCenter:SearchPlaceholder": "Search notifications...",
+    "NotificationCenter:FilterBySeverity": "Filter by severity",
+    "NotificationCenter:MarkAsRead": "Mark as read",
+    "NotificationCenter:MarkAsReadTooltip": "Mark this notification as read",
+    "NotificationCenter:Delete": "Delete",
+    "NotificationCenter:DeleteTooltip": "Delete this notification",
+    "NotificationCenter:MarkMultipleAsRead": "Mark selected as read",
+    "NotificationCenter:MarkAllAsRead": "Mark all as read",
+    "NotificationCenter:DeleteSelected": "Delete selected",
+    "NotificationCenter:NoNotifications": "No notifications",
+    "NotificationCenter:NoNotificationsMessage": "You don't have any notifications yet",
+    "NotificationCenter:NotificationsCount": "{0} notification(s)",
+
+    "NotificationSeverity:Success": "Success",
+    "NotificationSeverity:Info": "Info",
+    "NotificationSeverity:Warning": "Warning",
+    "NotificationSeverity:Error": "Error",
+
+    "NotificationType:PaymentReceived": "Payment Received",
+    "NotificationType:PaymentInitiated": "Payment Initiated",
+    "NotificationType:RentalStarted": "Rental Started",
+    "NotificationType:RentalCompleted": "Rental Completed",
+    "NotificationType:RentalCancelled": "Rental Cancelled",
+    "NotificationType:RentalExtended": "Rental Extended",
+    "NotificationType:ItemSold": "Item Sold",
+    "NotificationType:Unknown": "Notification",
+
+    "NotificationTime:JustNow": "just now",
+    "NotificationTime:MinutesAgo": "{0}m ago",
+    "NotificationTime:HoursAgo": "{0}h ago",
+    "NotificationTime:Yesterday": "Yesterday",
+    "NotificationTime:DaysAgo": "{0}d ago"
   }
 }

@@ -213,20 +213,50 @@ namespace MP.Domain.Carts
 
         // Promotion Methods
 
-        public void ApplyPromotion(Guid promotionId, decimal discountAmount, string? promoCode = null)
+        public void ApplyPromotion(Guid promotionId, MP.Domain.Promotions.Promotion promotion, string? promoCode = null)
         {
             if (Status != CartStatus.Active)
                 throw new BusinessException("CART_NOT_ACTIVE");
 
-            if (discountAmount < 0)
-                throw new BusinessException("DISCOUNT_AMOUNT_CANNOT_BE_NEGATIVE");
-
-            if (discountAmount > GetTotalAmount())
-                throw new BusinessException("DISCOUNT_CANNOT_EXCEED_TOTAL");
-
             AppliedPromotionId = promotionId;
-            DiscountAmount = discountAmount;
             PromoCodeUsed = promoCode;
+
+            // Get items applicable to this promotion
+            var applicableItems = GetApplicableItems(promotion);
+
+            if (!applicableItems.Any())
+            {
+                // No items applicable - remove discount from all
+                foreach (var item in _items)
+                {
+                    item.RemoveDiscount();
+                }
+                DiscountAmount = 0;
+                return;
+            }
+
+            // Calculate discount for applicable items
+            var applicableTotal = applicableItems.Sum(i => i.GetTotalPrice());
+            var globalDiscount = promotion.CalculateDiscount(applicableTotal);
+
+            // Distribute discount proportionally to applicable items
+            foreach (var item in _items)
+            {
+                if (applicableItems.Contains(item))
+                {
+                    var itemTotal = item.GetTotalPrice();
+                    var itemDiscount = (itemTotal / applicableTotal) * globalDiscount;
+                    var itemDiscountPercentage = itemTotal > 0 ? (itemDiscount / itemTotal) * 100 : 0;
+                    item.ApplyDiscount(itemDiscount, itemDiscountPercentage);
+                }
+                else
+                {
+                    item.RemoveDiscount();
+                }
+            }
+
+            // Store total discount for legacy compatibility
+            DiscountAmount = _items.Sum(i => i.DiscountAmount);
         }
 
         public void RemovePromotion()
@@ -237,11 +267,35 @@ namespace MP.Domain.Carts
             AppliedPromotionId = null;
             DiscountAmount = 0;
             PromoCodeUsed = null;
+
+            foreach (var item in _items)
+            {
+                item.RemoveDiscount();
+            }
+        }
+
+        private List<CartItem> GetApplicableItems(MP.Domain.Promotions.Promotion promotion)
+        {
+            // If specific booths are defined, filter by BoothId
+            if (promotion.ApplicableBoothIds.Any())
+            {
+                return _items.Where(i => promotion.IsApplicableToBooth(i.BoothId)).ToList();
+            }
+
+            // If specific booth types are defined, filter by BoothTypeId
+            if (promotion.ApplicableBoothTypeIds.Any())
+            {
+                return _items.Where(i => promotion.IsApplicableToBoothType(i.BoothTypeId)).ToList();
+            }
+
+            // No restrictions - all items
+            return _items.ToList();
         }
 
         public decimal GetFinalAmount()
         {
-            return Math.Max(0, GetTotalAmount() - DiscountAmount);
+            // Sum final prices from all items (which already have discounts applied)
+            return _items.Sum(item => item.GetFinalPrice());
         }
 
         public bool HasPromotionApplied()

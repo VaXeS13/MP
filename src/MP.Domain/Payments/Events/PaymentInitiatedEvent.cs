@@ -9,6 +9,7 @@ namespace MP.Domain.Payments.Events
     public class PaymentInitiatedEvent
     {
         public Guid UserId { get; set; }
+        public Guid? TenantId { get; set; }
         public string TransactionId { get; set; } = null!;
         public string SessionId { get; set; } = null!;
         public decimal Amount { get; set; }

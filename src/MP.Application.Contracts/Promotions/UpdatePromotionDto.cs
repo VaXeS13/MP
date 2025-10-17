@@ -50,8 +50,13 @@ namespace MP.Promotions
         [StringLength(500)]
         public string? CustomerMessage { get; set; }
 
+        [Range(1, int.MaxValue)]
+        public int? MaxAccountAgeDays { get; set; }
+
         public bool IsActive { get; set; }
 
         public List<Guid> ApplicableBoothTypeIds { get; set; } = new();
+
+        public List<Guid> ApplicableBoothIds { get; set; } = new();
     }
 }

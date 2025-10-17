@@ -967,6 +967,18 @@ namespace MP.EntityFrameworkCore
                     .HasMaxLength(1000)
                     .HasComment("Notatki do wynajmu");
 
+                b.Property(x => x.DiscountAmount)
+                    .IsRequired()
+                    .HasColumnType("decimal(18,2)")
+                    .HasDefaultValue(0m)
+                    .HasComment("Discount amount applied to this item");
+
+                b.Property(x => x.DiscountPercentage)
+                    .IsRequired()
+                    .HasColumnType("decimal(18,2)")
+                    .HasDefaultValue(0m)
+                    .HasComment("Discount percentage applied to this item");
+
                 b.Property(x => x.ItemType)
                     .IsRequired()
                     .HasDefaultValue(CartItemType.Rental)
@@ -1616,6 +1628,21 @@ namespace MP.EntityFrameworkCore
                     .HasMaxLength(500)
                     .HasComment("Customer message");
 
+                b.Property(x => x.MaxAccountAgeDays)
+                    .HasComment("Maximum account age in days for new user promotions");
+
+                // Applicable booth types collection - JSON column
+                b.Property("_applicableBoothTypeIds")
+                    .HasColumnName("ApplicableBoothTypeIds")
+                    .HasColumnType("nvarchar(max)")
+                    .HasComment("List of booth type IDs this promotion applies to (empty = all types)");
+
+                // Applicable booths collection - JSON column
+                b.Property("_applicableBoothIds")
+                    .HasColumnName("ApplicableBoothIds")
+                    .HasColumnType("nvarchar(max)")
+                    .HasComment("List of specific booth IDs this promotion applies to (empty = all booths)");
+
                 // Indeksy
                 b.HasIndex(x => x.TenantId)
                     .HasDatabaseName("IX_Promotions_TenantId");
@@ -1637,6 +1664,9 @@ namespace MP.EntityFrameworkCore
 
                 b.HasIndex(x => x.Type)
                     .HasDatabaseName("IX_Promotions_Type");
+
+                b.HasIndex(x => new { x.TenantId, x.IsActive })
+                    .HasDatabaseName("IX_Promotions_TenantId_IsActive");
             });
 
             // Konfiguracja tabeli PromotionUsages

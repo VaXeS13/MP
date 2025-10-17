@@ -16,6 +16,7 @@ export interface CartDto extends EntityDto<string> {
   items: CartItemDto[];
   itemCount: number;
   totalAmount: number;
+  finalAmount: number;
   totalDays: number;
   userName?: string;
   userEmail?: string;
@@ -38,6 +39,7 @@ export interface CartItemDto extends EntityDto<string> {
   daysCount: number;
   totalPrice: number;
   discountAmount: number;
+  discountPercentage: number;
   finalPrice: number;
   boothNumber?: string;
   boothDescription?: string;

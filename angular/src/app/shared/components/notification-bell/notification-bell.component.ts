@@ -52,12 +52,9 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   }
 
   getBadgeSeverity(): string {
-    if (this.unreadCount > 10) {
+    // Always show red badge like chat when there are unread notifications
+    if (this.unreadCount > 0) {
       return 'danger';
-    } else if (this.unreadCount > 5) {
-      return 'warning';
-    } else if (this.unreadCount > 0) {
-      return 'info';
     }
     return 'secondary';
   }

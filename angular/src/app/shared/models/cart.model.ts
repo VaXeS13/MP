@@ -16,6 +16,7 @@ export interface CartItemDto {
   daysCount: number;
   totalPrice: number;
   discountAmount: number;
+  discountPercentage: number;
   finalPrice: number;
   boothNumber?: string;
   boothDescription?: string;
@@ -33,6 +34,7 @@ export interface CartDto {
   items: CartItemDto[];
   itemCount: number;
   totalAmount: number;
+  finalAmount: number;
   totalDays: number;
   userName?: string;
   userEmail?: string;

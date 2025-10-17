@@ -113,14 +113,28 @@ namespace MP.Domain.Promotions
         /// </summary>
         public string? CustomerMessage { get; private set; }
 
+        /// <summary>
+        /// Maximum account age in days for new user promotions (null = no limit)
+        /// </summary>
+        public int? MaxAccountAgeDays { get; private set; }
+
         // Applicable booth types
 
-        private readonly List<Guid> _applicableBoothTypeIds = new();
+        private List<Guid> _applicableBoothTypeIds = new();
 
         /// <summary>
         /// Booth type IDs this promotion applies to (empty = all types)
         /// </summary>
         public IReadOnlyList<Guid> ApplicableBoothTypeIds => _applicableBoothTypeIds.AsReadOnly();
+
+        // Applicable specific booths
+
+        private List<Guid> _applicableBoothIds = new();
+
+        /// <summary>
+        /// Specific Booth IDs this promotion applies to (empty = all booths or filtered by booth types)
+        /// </summary>
+        public IReadOnlyList<Guid> ApplicableBoothIds => _applicableBoothIds.AsReadOnly();
 
         // Constructor for EF Core
         private Promotion() { }
@@ -257,12 +271,29 @@ namespace MP.Domain.Promotions
             CustomerMessage = message?.Trim();
         }
 
+        public void SetMaxAccountAgeDays(int? days)
+        {
+            if (days.HasValue && days.Value <= 0)
+                throw new BusinessException("PROMOTION_MAX_ACCOUNT_AGE_MUST_BE_POSITIVE");
+
+            MaxAccountAgeDays = days;
+        }
+
         public void SetApplicableBoothTypes(List<Guid> boothTypeIds)
         {
             _applicableBoothTypeIds.Clear();
             if (boothTypeIds != null && boothTypeIds.Any())
             {
                 _applicableBoothTypeIds.AddRange(boothTypeIds.Distinct());
+            }
+        }
+
+        public void SetApplicableBooths(List<Guid> boothIds)
+        {
+            _applicableBoothIds.Clear();
+            if (boothIds != null && boothIds.Any())
+            {
+                _applicableBoothIds.AddRange(boothIds.Distinct());
             }
         }
 
@@ -296,7 +327,7 @@ namespace MP.Domain.Promotions
 
         // Validation methods
 
-        public bool IsValid()
+        public bool IsValid(DateTime? userCreationTime = null)
         {
             if (!IsActive)
                 return false;
@@ -312,6 +343,14 @@ namespace MP.Domain.Promotions
             if (MaxUsageCount.HasValue && CurrentUsageCount >= MaxUsageCount.Value)
                 return false;
 
+            // For NewUser promotions, check if user account age qualifies
+            if (Type == PromotionType.NewUser && userCreationTime.HasValue && MaxAccountAgeDays.HasValue)
+            {
+                var accountAge = (now - userCreationTime.Value).TotalDays;
+                if (accountAge > MaxAccountAgeDays.Value)
+                    return false;
+            }
+
             return true;
         }
 
@@ -322,6 +361,15 @@ namespace MP.Domain.Promotions
                 return true;
 
             return _applicableBoothTypeIds.Contains(boothTypeId);
+        }
+
+        public bool IsApplicableToBooth(Guid boothId)
+        {
+            // If no specific booths defined, check booth types
+            if (!_applicableBoothIds.Any())
+                return true;
+
+            return _applicableBoothIds.Contains(boothId);
         }
 
         public decimal CalculateDiscount(decimal totalAmount)

@@ -15,6 +15,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { InputTextarea } from 'primeng/inputtextarea';
 import { InputNumber } from 'primeng/inputnumber';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 @NgModule({
   declarations: [
@@ -35,7 +36,8 @@ import { InputNumber } from 'primeng/inputnumber';
     DropdownModule,
     CalendarModule,
     InputTextarea,
-    InputNumber
+    InputNumber,
+    MultiSelectModule
   ]
 })
 export class PromotionsModule { }

@@ -568,7 +568,16 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   getFinalAmount(): number {
-    return (this.cart?.totalAmount || 0) - (this.cart?.discountAmount || 0);
+    // Use the FinalAmount from cart (sum of item final prices)
+    return this.cart?.finalAmount || (this.cart?.totalAmount || 0);
+  }
+
+  hasItemDiscount(item: CartItemDto): boolean {
+    return item.discountAmount > 0;
+  }
+
+  getApplicableItemsCount(): number {
+    return this.cart?.items?.filter(item => this.hasItemDiscount(item)).length || 0;
   }
 
   triggerNeonBorder(): void {

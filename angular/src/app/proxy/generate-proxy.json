@@ -4854,7 +4854,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": true,
               "implementFrom": "MP.Application.Contracts.Notifications.INotificationAppService"
             },
             "SendToTenantAsyncByNotification": {
@@ -7825,100 +7825,6 @@
               "allowAnonymous": false,
               "implementFrom": "MP.Booths.IBoothAppService"
             },
-            "UpdateAsyncByIdAndInput": {
-              "uniqueName": "UpdateAsyncByIdAndInput",
-              "name": "UpdateAsync",
-              "httpMethod": "PUT",
-              "url": "{id}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "input",
-                  "typeAsString": "MP.Booths.UpdateBoothDto, MP.Application.Contracts",
-                  "type": "MP.Booths.UpdateBoothDto",
-                  "typeSimple": "MP.Booths.UpdateBoothDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "MP.Booths.UpdateBoothDto",
-                  "typeSimple": "MP.Booths.UpdateBoothDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "MP.Booths.BoothDto",
-                "typeSimple": "MP.Booths.BoothDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "MP.Booths.IBoothAppService"
-            },
-            "DeleteAsyncById": {
-              "uniqueName": "DeleteAsyncById",
-              "name": "DeleteAsync",
-              "httpMethod": "DELETE",
-              "url": "{id}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "MP.Booths.IBoothAppService"
-            },
             "GetAvailableBoothsAsync": {
               "uniqueName": "GetAvailableBoothsAsync",
               "name": "GetAvailableBoothsAsync",
@@ -8515,6 +8421,382 @@
               },
               "allowAnonymous": false,
               "implementFrom": "MP.Carts.ICartAppService"
+            }
+          }
+        },
+        "MP.Controllers.BoothController": {
+          "controllerName": "Booth",
+          "controllerGroupName": null,
+          "isRemoteService": false,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "MP.Controllers.BoothController",
+          "interfaces": [],
+          "actions": {
+            "UpdateByIdAndInput": {
+              "uniqueName": "UpdateByIdAndInput",
+              "name": "Update",
+              "httpMethod": "PUT",
+              "url": "api/app/booth/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Booths.UpdateBoothDto, MP.Application.Contracts",
+                  "type": "MP.Booths.UpdateBoothDto",
+                  "typeSimple": "MP.Booths.UpdateBoothDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Booths.UpdateBoothDto",
+                  "typeSimple": "MP.Booths.UpdateBoothDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Booths.BoothDto",
+                "typeSimple": "MP.Booths.BoothDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.BoothController"
+            },
+            "DeleteById": {
+              "uniqueName": "DeleteById",
+              "name": "Delete",
+              "httpMethod": "DELETE",
+              "url": "api/app/booth/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.BoothController"
+            }
+          }
+        },
+        "MP.Controllers.FloorPlanController": {
+          "controllerName": "FloorPlan",
+          "controllerGroupName": null,
+          "isRemoteService": false,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "MP.Controllers.FloorPlanController",
+          "interfaces": [],
+          "actions": {
+            "GetListByInput": {
+              "uniqueName": "GetListByInput",
+              "name": "GetList",
+              "httpMethod": "GET",
+              "url": "api/app/floor-plan",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.FloorPlans.GetFloorPlanListDto, MP.Application.Contracts",
+                  "type": "MP.FloorPlans.GetFloorPlanListDto",
+                  "typeSimple": "MP.FloorPlans.GetFloorPlanListDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "TenantId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "IsActive",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Level",
+                  "jsonName": null,
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Filter",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Sorting",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "SkipCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "MaxResultCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "Volo.Abp.Application.Dtos.PagedResultDto<MP.FloorPlans.FloorPlanDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<MP.FloorPlans.FloorPlanDto>"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.FloorPlanController"
+            },
+            "GetById": {
+              "uniqueName": "GetById",
+              "name": "Get",
+              "httpMethod": "GET",
+              "url": "api/app/floor-plan/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.FloorPlans.FloorPlanDto",
+                "typeSimple": "MP.FloorPlans.FloorPlanDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.FloorPlanController"
+            },
+            "GetBoothsByFloorPlanId": {
+              "uniqueName": "GetBoothsByFloorPlanId",
+              "name": "GetBooths",
+              "httpMethod": "GET",
+              "url": "api/app/floor-plan/{floorPlanId}/booths",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "floorPlanId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "floorPlanId",
+                  "name": "floorPlanId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<MP.FloorPlans.FloorPlanBoothDto>",
+                "typeSimple": "[MP.FloorPlans.FloorPlanBoothDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.FloorPlanController"
+            },
+            "GetBoothsAvailabilityByFloorPlanIdAndStartDateAndEndDate": {
+              "uniqueName": "GetBoothsAvailabilityByFloorPlanIdAndStartDateAndEndDate",
+              "name": "GetBoothsAvailability",
+              "httpMethod": "GET",
+              "url": "api/app/floor-plan/{floorPlanId}/booths-availability",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "floorPlanId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "startDate",
+                  "typeAsString": "System.DateTime, System.Private.CoreLib",
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "endDate",
+                  "typeAsString": "System.DateTime, System.Private.CoreLib",
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "floorPlanId",
+                  "name": "floorPlanId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "startDate",
+                  "name": "startDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "endDate",
+                  "name": "endDate",
+                  "jsonName": null,
+                  "type": "System.DateTime",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<MP.FloorPlans.BoothAvailabilityDto>",
+                "typeSimple": "[MP.FloorPlans.BoothAvailabilityDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.FloorPlanController"
             }
           }
         },
@@ -10972,152 +11254,6 @@
             }
           ],
           "actions": {
-            "GetAsyncById": {
-              "uniqueName": "GetAsyncById",
-              "name": "GetAsync",
-              "httpMethod": "GET",
-              "url": "api/app/floor-plan/{id}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "MP.FloorPlans.FloorPlanDto",
-                "typeSimple": "MP.FloorPlans.FloorPlanDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "MP.FloorPlans.IFloorPlanAppService"
-            },
-            "GetListAsyncByInput": {
-              "uniqueName": "GetListAsyncByInput",
-              "name": "GetListAsync",
-              "httpMethod": "GET",
-              "url": "api/app/floor-plan",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "MP.FloorPlans.GetFloorPlanListDto, MP.Application.Contracts",
-                  "type": "MP.FloorPlans.GetFloorPlanListDto",
-                  "typeSimple": "MP.FloorPlans.GetFloorPlanListDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "TenantId",
-                  "jsonName": null,
-                  "type": "System.Guid?",
-                  "typeSimple": "string?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "IsActive",
-                  "jsonName": null,
-                  "type": "System.Boolean?",
-                  "typeSimple": "boolean?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "Level",
-                  "jsonName": null,
-                  "type": "System.Int32?",
-                  "typeSimple": "number?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "Filter",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "Sorting",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "SkipCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "MaxResultCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Application.Dtos.PagedResultDto<MP.FloorPlans.FloorPlanDto>",
-                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<MP.FloorPlans.FloorPlanDto>"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "MP.FloorPlans.IFloorPlanAppService"
-            },
             "CreateAsyncByInput": {
               "uniqueName": "CreateAsyncByInput",
               "name": "CreateAsync",
@@ -11151,100 +11287,6 @@
               "returnValue": {
                 "type": "MP.FloorPlans.FloorPlanDto",
                 "typeSimple": "MP.FloorPlans.FloorPlanDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "MP.FloorPlans.IFloorPlanAppService"
-            },
-            "UpdateAsyncByIdAndInput": {
-              "uniqueName": "UpdateAsyncByIdAndInput",
-              "name": "UpdateAsync",
-              "httpMethod": "PUT",
-              "url": "api/app/floor-plan/{id}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "input",
-                  "typeAsString": "MP.FloorPlans.UpdateFloorPlanDto, MP.Application.Contracts",
-                  "type": "MP.FloorPlans.UpdateFloorPlanDto",
-                  "typeSimple": "MP.FloorPlans.UpdateFloorPlanDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "MP.FloorPlans.UpdateFloorPlanDto",
-                  "typeSimple": "MP.FloorPlans.UpdateFloorPlanDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "MP.FloorPlans.FloorPlanDto",
-                "typeSimple": "MP.FloorPlans.FloorPlanDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "MP.FloorPlans.IFloorPlanAppService"
-            },
-            "DeleteAsyncById": {
-              "uniqueName": "DeleteAsyncById",
-              "name": "DeleteAsync",
-              "httpMethod": "DELETE",
-              "url": "api/app/floor-plan/{id}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
               },
               "allowAnonymous": false,
               "implementFrom": "MP.FloorPlans.IFloorPlanAppService"
@@ -26686,6 +26728,18 @@
           "regex": null
         },
         {
+          "name": "FinalAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "TotalDays",
           "jsonName": null,
           "type": "System.Int32",
@@ -26912,6 +26966,18 @@
         },
         {
           "name": "DiscountAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DiscountPercentage",
           "jsonName": null,
           "type": "System.Decimal",
           "typeSimple": "number",
@@ -28684,87 +28750,6 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
-    "MP.FloorPlans.UpdateFloorPlanDto": {
-      "baseType": null,
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "Name",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 1,
-          "maxLength": 100,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Level",
-          "jsonName": null,
-          "type": "System.Int32",
-          "typeSimple": "number",
-          "isRequired": true,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": "0",
-          "maximum": "50",
-          "regex": null
-        },
-        {
-          "name": "Width",
-          "jsonName": null,
-          "type": "System.Int32",
-          "typeSimple": "number",
-          "isRequired": true,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": "100",
-          "maximum": "10000",
-          "regex": null
-        },
-        {
-          "name": "Height",
-          "jsonName": null,
-          "type": "System.Int32",
-          "typeSimple": "number",
-          "isRequired": true,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": "100",
-          "maximum": "10000",
-          "regex": null
-        },
-        {
-          "name": "Booths",
-          "jsonName": null,
-          "type": "[MP.FloorPlans.CreateFloorPlanBoothDto]",
-          "typeSimple": "[MP.FloorPlans.CreateFloorPlanBoothDto]",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Elements",
-          "jsonName": null,
-          "type": "[MP.FloorPlans.CreateFloorPlanElementDto]",
-          "typeSimple": "[MP.FloorPlans.CreateFloorPlanElementDto]",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -30831,6 +30816,18 @@
           "regex": null
         },
         {
+          "name": "MaxAccountAgeDays",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "1",
+          "maximum": "2147483647",
+          "regex": null
+        },
+        {
           "name": "IsActive",
           "jsonName": null,
           "type": "System.Boolean",
@@ -30844,6 +30841,18 @@
         },
         {
           "name": "ApplicableBoothTypeIds",
+          "jsonName": null,
+          "type": "[System.Guid]",
+          "typeSimple": "[string]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ApplicableBoothIds",
           "jsonName": null,
           "type": "[System.Guid]",
           "typeSimple": "[string]",
@@ -31159,7 +31168,31 @@
           "regex": null
         },
         {
+          "name": "MaxAccountAgeDays",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "ApplicableBoothTypeIds",
+          "jsonName": null,
+          "type": "[System.Guid]",
+          "typeSimple": "[string]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ApplicableBoothIds",
           "jsonName": null,
           "type": "[System.Guid]",
           "typeSimple": "[string]",
@@ -31178,12 +31211,14 @@
       "enumNames": [
         "Quantity",
         "PromoCode",
-        "DateRange"
+        "DateRange",
+        "NewUser"
       ],
       "enumValues": [
         0,
         1,
-        2
+        2,
+        3
       ],
       "genericArguments": null,
       "properties": null
@@ -31376,6 +31411,18 @@
           "regex": null
         },
         {
+          "name": "MaxAccountAgeDays",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "1",
+          "maximum": "2147483647",
+          "regex": null
+        },
+        {
           "name": "IsActive",
           "jsonName": null,
           "type": "System.Boolean",
@@ -31389,6 +31436,18 @@
         },
         {
           "name": "ApplicableBoothTypeIds",
+          "jsonName": null,
+          "type": "[System.Guid]",
+          "typeSimple": "[string]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ApplicableBoothIds",
           "jsonName": null,
           "type": "[System.Guid]",
           "typeSimple": "[string]",

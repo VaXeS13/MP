@@ -4,9 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Uow;
 using Volo.Abp.Users;
+using Volo.Abp.MultiTenancy;
 using MP.Application.Contracts.Notifications;
 using MP.Application.Contracts.Services;
 using MP.Application.Contracts.SignalR;
@@ -21,25 +24,35 @@ namespace MP.Application.Notifications
         private readonly IUserNotificationRepository _userNotificationRepository;
         private readonly IRepository<UserNotification, Guid> _notificationRepository;
         private readonly ICurrentUser _currentUser;
+        private readonly ICurrentTenant _currentTenant;
         private readonly ISignalRNotificationService _signalRNotificationService;
 
         public NotificationAppService(
             IUserNotificationRepository userNotificationRepository,
             IRepository<UserNotification, Guid> notificationRepository,
             ICurrentUser currentUser,
+            ICurrentTenant currentTenant,
             ISignalRNotificationService signalRNotificationService)
         {
             _userNotificationRepository = userNotificationRepository;
             _notificationRepository = notificationRepository;
             _currentUser = currentUser;
+            _currentTenant = currentTenant;
             _signalRNotificationService = signalRNotificationService;
         }
 
         [HttpPost("send-to-user")]
+        [AllowAnonymous] // Required for Hangfire background jobs (no authenticated user in background context)
+        [UnitOfWork] // Ensures database changes are committed
         public async Task SendToUserAsync(Guid userId, NotificationMessageDto notification)
         {
             // Map severity from string to enum
             var severity = ParseDomainSeverity(notification.Severity);
+
+            // Get TenantId - prefer CurrentTenant (works in Hangfire context) with fallback to CurrentUser
+            var tenantId = _currentTenant.Id ?? _currentUser.TenantId;
+            Logger.LogInformation("[NOTIFICATION] Sending notification to user {UserId} in tenant {TenantId}. Type={Type}, Title={Title}",
+                userId, tenantId, notification.Type, notification.Title);
 
             var userNotification = new UserNotification(
                 GuidGenerator.Create(),
@@ -52,7 +65,7 @@ namespace MP.Application.Notifications
                 null,
                 null,
                 null,
-                _currentUser.TenantId
+                tenantId
             );
 
             // 1. Save to database
