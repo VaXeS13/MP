@@ -19,8 +19,8 @@ namespace MP.Domain.Carts
         public Currency Currency { get; private set; }
         public string? Notes { get; private set; }
 
-        public decimal DiscountAmount { get; private set; }
-        public decimal DiscountPercentage { get; private set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal DiscountPercentage { get; set; }
 
         public CartItemType ItemType { get; private set; }
         public Guid? ExtendedRentalId { get; private set; }
