@@ -443,6 +443,7 @@ namespace MP.Carts
                 StatusDisplayName = cart.Status.ToString(),
                 ItemCount = cart.GetItemCount(),
                 TotalAmount = cart.GetTotalAmount(),
+                FinalAmount = cart.GetFinalAmount(),
                 TotalDays = cart.GetTotalDays(),
                 CreationTime = cart.CreationTime,
                 LastModificationTime = cart.LastModificationTime
@@ -471,10 +472,6 @@ namespace MP.Carts
                 }
             }
 
-            // Calculate per-item discount (proportional to item price)
-            var totalAmount = cart.GetTotalAmount();
-            var totalDiscount = cart.DiscountAmount;
-
             // Map items with related data
             foreach (var item in cart.Items)
             {
@@ -483,13 +480,8 @@ namespace MP.Carts
 
                 var itemTotalPrice = item.GetTotalPrice();
 
-                // Calculate proportional discount for this item
-                decimal itemDiscount = 0;
-                if (totalAmount > 0 && totalDiscount > 0)
-                {
-                    itemDiscount = (itemTotalPrice / totalAmount) * totalDiscount;
-                }
-
+                // Use discount values already set on CartItem by promotion logic
+                // Do not recalculate - the domain layer (Cart.ApplyPromotion) already calculated these
                 var itemDto = new CartItemDto
                 {
                     Id = item.Id,
@@ -502,8 +494,9 @@ namespace MP.Carts
                     Notes = item.Notes,
                     DaysCount = item.GetDaysCount(),
                     TotalPrice = itemTotalPrice,
-                    DiscountAmount = itemDiscount,
-                    FinalPrice = itemTotalPrice - itemDiscount,
+                    DiscountAmount = item.DiscountAmount,
+                    DiscountPercentage = item.DiscountPercentage,
+                    FinalPrice = item.GetFinalPrice(),
                     BoothNumber = booth.Number,
                     BoothDescription = $"Booth {booth.Number}",
                     BoothTypeName = boothType.Name,
