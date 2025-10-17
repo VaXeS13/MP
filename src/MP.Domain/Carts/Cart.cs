@@ -294,8 +294,9 @@ namespace MP.Domain.Carts
 
         public decimal GetFinalAmount()
         {
-            // Sum final prices from all items (which already have discounts applied)
-            return _items.Sum(item => item.GetFinalPrice());
+            // Calculate final amount as total minus discount
+            // DiscountAmount is already the sum of all item discounts
+            return Math.Max(0, GetTotalAmount() - DiscountAmount);
         }
 
         public bool HasPromotionApplied()

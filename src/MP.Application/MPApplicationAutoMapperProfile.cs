@@ -209,7 +209,11 @@ public class MPApplicationAutoMapperProfile : Profile
             .ForMember(dest => dest.TotalPrice,
                 opt => opt.MapFrom(src => src.GetTotalPrice()))
             .ForMember(dest => dest.FinalPrice,
-                opt => opt.MapFrom(src => src.GetFinalPrice()));
+                opt => opt.MapFrom(src => src.GetFinalPrice()))
+            .ForMember(dest => dest.DiscountAmount,
+                opt => opt.MapFrom(src => src.DiscountAmount))
+            .ForMember(dest => dest.DiscountPercentage,
+                opt => opt.MapFrom(src => src.DiscountPercentage));
 
         CreateMap<Cart, CartDto>()
             .ForMember(dest => dest.ItemCount,
