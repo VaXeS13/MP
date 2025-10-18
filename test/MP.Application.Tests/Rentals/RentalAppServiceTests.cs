@@ -18,6 +18,8 @@ namespace MP.Application.Tests.Rentals
 {
     public class RentalAppServiceTests : MPApplicationTestBase<MPApplicationTestModule>
     {
+        private static readonly Guid TestUserId1 = new Guid("00000000-0000-0000-0000-000000000001");
+
         private readonly IRentalAppService _rentalAppService;
         private readonly IBoothRepository _boothRepository;
         private readonly IBoothTypeRepository _boothTypeRepository;
@@ -31,6 +33,16 @@ namespace MP.Application.Tests.Rentals
             _boothTypeRepository = GetRequiredService<IBoothTypeRepository>();
             _rentalRepository = GetRequiredService<IRepository<Rental, Guid>>();
             _userRepository = GetRequiredService<IRepository<IdentityUser, Guid>>();
+        }
+
+        private async Task CleanupRentalsForTestUserAsync()
+        {
+            // Clean up rentals for the test user to avoid accumulation between tests
+            var rentals = await _rentalRepository.GetListAsync(r => r.UserId == TestUserId1);
+            foreach (var rental in rentals)
+            {
+                await _rentalRepository.DeleteAsync(rental);
+            }
         }
 
         [Fact]
@@ -117,11 +129,12 @@ namespace MP.Application.Tests.Rentals
         [UnitOfWork]
         public async Task GetMyRentalsAsync_Should_Return_Only_Current_User_Rentals()
         {
-            // Arrange
+            // Arrange - cleanup previous rentals for this user
+            await CleanupRentalsForTestUserAsync();
+
             var booth1 = await CreateTestBoothAsync();
             var booth2 = await CreateTestBoothAsync($"BOOTH{Guid.NewGuid().ToString().Substring(0, 5)}".ToUpper());
             var boothType = await CreateTestBoothTypeAsync();
-            var userId = new Guid("00000000-0000-0000-0000-000000000001"); // TestUserId1 from CurrentUser mock
 
             var createDto1 = new CreateMyRentalDto
             {
@@ -148,7 +161,7 @@ namespace MP.Application.Tests.Rentals
             // Assert
             result.Items.ShouldNotBeEmpty();
             result.TotalCount.ShouldBe(2);
-            result.Items.ToList().ForEach(r => r.UserId.ShouldBe(userId));
+            result.Items.ToList().ForEach(r => r.UserId.ShouldBe(TestUserId1));
         }
 
         [Fact]

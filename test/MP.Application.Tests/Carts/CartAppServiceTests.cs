@@ -229,8 +229,9 @@ namespace MP.Application.Tests.Carts
 
             var updateDto = new UpdateCartItemDto
             {
+                BoothTypeId = boothType.Id, // Must provide BoothTypeId
                 StartDate = DateTime.Today.AddDays(10),
-                EndDate = DateTime.Today.AddDays(15) // 6 days total
+                EndDate = DateTime.Today.AddDays(16) // 7 days total (10-16 inclusive)
             };
 
             // Act
@@ -266,8 +267,9 @@ namespace MP.Application.Tests.Carts
 
             var updateDto = new UpdateCartItemDto
             {
+                BoothTypeId = boothType.Id, // Must provide BoothTypeId
                 StartDate = DateTime.Today.AddDays(7),
-                EndDate = DateTime.Today.AddDays(16) // 10 days
+                EndDate = DateTime.Today.AddDays(16) // 10 days (7-16 inclusive)
             };
 
             // Act
@@ -367,12 +369,14 @@ namespace MP.Application.Tests.Carts
                 PaymentMethodId = null
             };
 
-            // Act & Assert
-            var exception = await Should.ThrowAsync<BusinessException>(
-                () => _cartAppService.CheckoutAsync(checkoutDto)
-            );
+            // Act
+            var result = await _cartAppService.CheckoutAsync(checkoutDto);
 
-            exception.Code.ShouldBe("CART_IS_EMPTY");
+            // Assert - CheckoutAsync returns CheckoutResultDto with Success=false, doesn't throw exception
+            result.ShouldNotBeNull();
+            result.Success.ShouldBeFalse();
+            result.ErrorMessage.ShouldNotBeNullOrEmpty();
+            result.ErrorMessage!.ShouldContain("empty");
         }
 
         // Helper methods
