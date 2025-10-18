@@ -53,7 +53,7 @@ namespace MP.Application.Tests.Payments
             // Create booth (initially Reserved)
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
-                "P24-TEST-01",
+                "P24TEST01",
                 100m
             );
             booth.MarkAsReserved();

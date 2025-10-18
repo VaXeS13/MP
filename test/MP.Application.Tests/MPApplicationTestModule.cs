@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Volo.Abp.Modularity;
 using Volo.Abp.Users;
+using MP.Application.Contracts.Services;
 
 namespace MP;
 
@@ -21,5 +22,9 @@ public class MPApplicationTestModule : AbpModule
         currentUser.GetId().Returns(new Guid("00000000-0000-0000-0000-000000000001"));
 
         context.Services.AddSingleton(currentUser);
+
+        // Mock SignalRNotificationService for tests
+        var signalRNotificationService = Substitute.For<ISignalRNotificationService>();
+        context.Services.AddSingleton(signalRNotificationService);
     }
 }

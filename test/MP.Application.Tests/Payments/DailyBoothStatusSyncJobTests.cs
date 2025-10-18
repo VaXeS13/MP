@@ -53,7 +53,7 @@ namespace MP.Application.Tests.Payments
             // Create booth
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
-                "TEST-RENTED-01",
+                "RENTED01",
                 100m
             );
             await _boothRepository.InsertAsync(booth);
@@ -112,7 +112,7 @@ namespace MP.Application.Tests.Payments
             // Create booth
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
-                "TEST-RESERVED-01",
+                "RESERV01",
                 100m
             );
             await _boothRepository.InsertAsync(booth);
@@ -158,7 +158,7 @@ namespace MP.Application.Tests.Payments
             // Create booth
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
-                "TEST-AVAILABLE-01",
+                "AVAILAB01",
                 100m
             );
             await _boothRepository.InsertAsync(booth);
@@ -188,7 +188,7 @@ namespace MP.Application.Tests.Payments
             // Create booth in maintenance
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
-                "TEST-MAINT-01",
+                "MAINT01",
                 100m
             );
             booth.MarkAsMaintenace();
@@ -232,7 +232,7 @@ namespace MP.Application.Tests.Payments
             // Create booth
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
-                "TEST-PRIORITY-01",
+                "PRIOR01",
                 100m
             );
             await _boothRepository.InsertAsync(booth);
