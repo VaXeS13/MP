@@ -349,7 +349,7 @@ namespace MP.Application.Tests.Rentals
         // Helper methods
         private async Task<MP.Domain.Booths.Booth> CreateTestBoothAsync(decimal price = 100m)
         {
-            return await CreateTestBoothAsync($"BOOTH-{Guid.NewGuid().ToString().Substring(0, 8)}", price);
+            return await CreateTestBoothAsync($"BT{Guid.NewGuid().ToString().Substring(0, 6)}", price);
         }
 
         private async Task<MP.Domain.Booths.Booth> CreateTestBoothAsync(string number, decimal price = 100m)

@@ -6,7 +6,15 @@
       "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build)",
       "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build -v n)",
       "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build -v q)",
-      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build --filter \"CreateRentalAsync_Should_Create_Valid_Rental_With_Correct_Status\" -v n)"
+      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build --filter \"CreateRentalAsync_Should_Create_Valid_Rental_With_Correct_Status\" -v n)",
+      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build --filter \"CreateRentalAsync_Should_Calculate_Correct_Total_Cost\" -v n)",
+      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build --filter \"CreateRentalAsync_Should_Throw_When_Booth_Already_Rented_In_Period\" -v n)",
+      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build -v q)",
+      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build)",
+      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj test/MP.Application.Tests/MP.Application.Tests.csproj --no-build -v q)",
+      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"GetMyCartAsync_Should_Return_Empty_Cart_For_New_User\")",
+      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"RemoveItemAsync_Should_Remove_Item_From_Cart\")",
+      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"AddItemAsync_Should_Add_Booth_To_Cart\")"
     ],
     "deny": [],
     "ask": []

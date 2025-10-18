@@ -343,7 +343,7 @@ namespace MP.Application.Tests.Carts
         }
 
         // Helper methods
-        private async Task<MP.Domain.Booths.Booth> CreateTestBoothAsync(string number = "TEST-BOOTH-01", decimal price = 100m)
+        private async Task<MP.Domain.Booths.Booth> CreateTestBoothAsync(string number = "TEST-01", decimal price = 100m)
         {
             var booth = new MP.Domain.Booths.Booth(Guid.NewGuid(), number, price);
             await _boothRepository.InsertAsync(booth);

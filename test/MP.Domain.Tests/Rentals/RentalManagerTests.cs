@@ -24,6 +24,10 @@ namespace MP.Domain.Tests.Rentals
         private readonly IBoothTypeRepository _boothTypeRepository;
         private readonly RentalManager _rentalManager;
 
+        // Use known test user IDs that are seeded in MPDomainTestModule
+        private static readonly Guid TestUserId1 = new Guid("00000000-0000-0000-0000-000000000001");
+        private static readonly Guid TestUserId2 = new Guid("00000000-0000-0000-0000-000000000002");
+
         public RentalManagerTests()
         {
             _rentalRepository = GetRequiredService<IRentalRepository>();
@@ -36,7 +40,7 @@ namespace MP.Domain.Tests.Rentals
         public async Task CreateRentalAsync_Should_Create_Valid_Rental_With_Correct_Status()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = TestUserId1;
             var booth = new Booth(Guid.NewGuid(), "TEST-01", 100m);
             await _boothRepository.InsertAsync(booth);
 
@@ -70,7 +74,7 @@ namespace MP.Domain.Tests.Rentals
         public async Task CreateRentalAsync_Should_Calculate_Correct_Total_Cost()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = TestUserId1;
             var dailyPrice = 100m;
             var booth = new Booth(Guid.NewGuid(), "TEST-02", dailyPrice);
             await _boothRepository.InsertAsync(booth);
@@ -99,7 +103,7 @@ namespace MP.Domain.Tests.Rentals
         public async Task CreateRentalAsync_Should_Use_Custom_Daily_Rate_If_Provided()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = TestUserId1;
             var boothDailyPrice = 100m;
             var customDailyRate = 150m;
 
@@ -131,7 +135,7 @@ namespace MP.Domain.Tests.Rentals
         public async Task CreateRentalAsync_Should_Throw_When_Booth_Type_Not_Active()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = TestUserId1;
             var booth = new Booth(Guid.NewGuid(), "TEST-04", 100m);
             await _boothRepository.InsertAsync(booth);
 
@@ -160,7 +164,7 @@ namespace MP.Domain.Tests.Rentals
         public async Task CreateRentalAsync_Should_Throw_When_Booth_In_Maintenance()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = TestUserId1;
             var booth = new Booth(Guid.NewGuid(), "TEST-05", 100m);
             booth.MarkAsMaintenace();
             await _boothRepository.InsertAsync(booth);
@@ -189,8 +193,8 @@ namespace MP.Domain.Tests.Rentals
         public async Task CreateRentalAsync_Should_Throw_When_Booth_Already_Rented_In_Period()
         {
             // Arrange
-            var userId1 = Guid.NewGuid();
-            var userId2 = Guid.NewGuid();
+            var userId1 = TestUserId1;
+            var userId2 = TestUserId2;
 
             var booth = new Booth(Guid.NewGuid(), "TEST-06", 100m);
             await _boothRepository.InsertAsync(booth);
@@ -232,7 +236,7 @@ namespace MP.Domain.Tests.Rentals
         public async Task CreateRentalAsync_Should_Mark_Booth_As_Reserved()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = TestUserId1;
             var booth = new Booth(Guid.NewGuid(), "TEST-07", 100m);
             booth.MarkAsAvailable(); // Ensure it's available
             await _boothRepository.InsertAsync(booth);
@@ -269,7 +273,7 @@ namespace MP.Domain.Tests.Rentals
             await _boothTypeRepository.InsertAsync(boothType);
 
             var startDate = DateTime.Today.AddDays(7);
-            var endDate = startDate.AddDays(13); // 7 days
+            var endDate = startDate.AddDays(6); // 7 days
             var period = new RentalPeriod(startDate, endDate);
 
             // Act
@@ -307,8 +311,8 @@ namespace MP.Domain.Tests.Rentals
         public async Task ValidateExtensionAsync_Should_Throw_When_New_Rental_Exists_In_Extended_Period()
         {
             // Arrange
-            var userId1 = Guid.NewGuid();
-            var userId2 = Guid.NewGuid();
+            var userId1 = TestUserId1;
+            var userId2 = TestUserId2;
 
             var booth = new Booth(Guid.NewGuid(), "TEST-10", 100m);
             await _boothRepository.InsertAsync(booth);
@@ -355,8 +359,8 @@ namespace MP.Domain.Tests.Rentals
         public async Task ValidateGapRulesAsync_Should_Throw_When_Period_Overlaps_Existing_Rental()
         {
             // Arrange
-            var userId1 = Guid.NewGuid();
-            var userId2 = Guid.NewGuid();
+            var userId1 = TestUserId1;
+            var userId2 = TestUserId2;
 
             var booth = new Booth(Guid.NewGuid(), "TEST-11", 100m);
             await _boothRepository.InsertAsync(booth);
@@ -377,7 +381,7 @@ namespace MP.Domain.Tests.Rentals
             await _rentalRepository.InsertAsync(rental1);
 
             var overlappingStartDate = startDate1.AddDays(2);
-            var overlappingEndDate = overlappingStartDate.AddDays(5);
+            var overlappingEndDate = overlappingStartDate.AddDays(6);
 
             // Act & Assert
             var exception = await Should.ThrowAsync<BusinessException>(
@@ -395,7 +399,7 @@ namespace MP.Domain.Tests.Rentals
         public async Task ValidateGapRulesAsync_Should_Exclude_Specific_Rental_When_Checking()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var userId = TestUserId1;
 
             var booth = new Booth(Guid.NewGuid(), "TEST-12", 100m);
             await _boothRepository.InsertAsync(booth);

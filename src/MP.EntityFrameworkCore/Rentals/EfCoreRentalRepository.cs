@@ -83,7 +83,7 @@ namespace MP.Rentals
             var query = dbContext.Rentals
                 .AsNoTracking()
                 .Where(r => r.BoothId == boothId &&
-                           (r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended) &&
+                           (r.Status == RentalStatus.Draft || r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended) &&
                            r.Period.StartDate <= endDate.Date &&
                            r.Period.EndDate >= startDate.Date);
 

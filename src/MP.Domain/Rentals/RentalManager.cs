@@ -69,6 +69,7 @@ namespace MP.Domain.Rentals
 
             // Oznacz stanowisko jako zarezerwowane
             booth.MarkAsReserved();
+            await _boothRepository.UpdateAsync(booth);
 
             // Utwórz wynajęcie z walutą tenanta
             var rental = new Rental(
