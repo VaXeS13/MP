@@ -1,3 +1,4 @@
+using Volo.Abp.Uow;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +33,7 @@ namespace MP.Application.Tests.Payments
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task DetermineBoothStatus_Should_Return_Rented_When_Active_Rental_Exists()
         {
             // Arrange
@@ -91,6 +93,7 @@ namespace MP.Application.Tests.Payments
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task DetermineBoothStatus_Should_Return_Reserved_When_Future_Rental_Exists()
         {
             // Arrange
@@ -150,6 +153,7 @@ namespace MP.Application.Tests.Payments
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task DetermineBoothStatus_Should_Return_Available_When_No_Rental_Exists()
         {
             // Arrange
@@ -180,6 +184,7 @@ namespace MP.Application.Tests.Payments
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task DetermineBoothStatus_Should_Return_Maintenance_When_Status_Is_Maintenance()
         {
             // Arrange
@@ -211,6 +216,7 @@ namespace MP.Application.Tests.Payments
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task DetermineBoothStatus_Should_Prioritize_Active_Over_Future_Rental()
         {
             // Arrange

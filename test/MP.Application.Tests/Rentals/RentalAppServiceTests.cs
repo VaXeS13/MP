@@ -1,3 +1,4 @@
+using Volo.Abp.Uow;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +34,7 @@ namespace MP.Application.Tests.Rentals
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task CreateMyRentalAsync_Should_Create_Rental_For_Current_User()
         {
             // Arrange
@@ -59,6 +61,7 @@ namespace MP.Application.Tests.Rentals
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task CreateMyRentalAsync_Should_Calculate_Total_Amount()
         {
             // Arrange
@@ -84,6 +87,7 @@ namespace MP.Application.Tests.Rentals
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task CreateMyRentalAsync_Should_Throw_When_Booth_In_Maintenance()
         {
             // Arrange
@@ -110,6 +114,7 @@ namespace MP.Application.Tests.Rentals
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task GetMyRentalsAsync_Should_Return_Only_Current_User_Rentals()
         {
             // Arrange
@@ -147,6 +152,7 @@ namespace MP.Application.Tests.Rentals
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task CheckAvailabilityAsync_Should_Return_True_For_Available_Booth()
         {
             // Arrange
@@ -162,6 +168,7 @@ namespace MP.Application.Tests.Rentals
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task CheckAvailabilityAsync_Should_Return_False_When_Booth_Already_Rented()
         {
             // Arrange
@@ -196,6 +203,7 @@ namespace MP.Application.Tests.Rentals
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task CalculateCostAsync_Should_Return_Correct_Amount()
         {
             // Arrange
@@ -220,6 +228,7 @@ namespace MP.Application.Tests.Rentals
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task GetAsync_Should_Return_Rental_Details()
         {
             // Arrange
@@ -247,6 +256,7 @@ namespace MP.Application.Tests.Rentals
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task GetListAsync_Should_Return_All_Rentals_With_Pagination()
         {
             // Arrange
@@ -280,6 +290,7 @@ namespace MP.Application.Tests.Rentals
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task CancelRentalAsync_Should_Cancel_Draft_Rental()
         {
             // Arrange
@@ -304,6 +315,7 @@ namespace MP.Application.Tests.Rentals
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task GetActiveRentalsAsync_Should_Return_Only_Active_Rentals()
         {
             // Arrange

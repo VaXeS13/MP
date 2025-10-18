@@ -18,7 +18,14 @@
       "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"DetermineBoothStatus_Should_Return_Available_When_No_Rental_Exists\")",
       "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CreateMyRentalAsync_Should_Create_Rental_For_Current_User\")",
       "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CartAppServiceTests\")",
-      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CartAppServiceTests\" -v q)"
+      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CartAppServiceTests\" -v q)",
+      "Bash(for file in test/MP.Application.Tests/Payments/*.cs test/MP.Booth/*.cs)",
+      "Bash(do)",
+      "Bash(if [ -f \"$file\" ])",
+      "Bash(then)",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(xargs -I {} bash -c 'sed -i \"\"\"\"1s/^/using Volo.Abp.Uow;\\n/\"\"\"\" \"\"\"\"{}\"\"\"\" && sed -i \"\"\"\"/^\\s*\\[Fact\\]/a\\        [UnitOfWork]\"\"\"\" \"\"\"\"{}\"\"\"\"')"
     ],
     "deny": [],
     "ask": []

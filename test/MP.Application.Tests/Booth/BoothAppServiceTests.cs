@@ -1,3 +1,4 @@
+using Volo.Abp.Uow;
 ﻿using MP.Booths;
 using MP.Domain.Booths;
 using Shouldly;
@@ -23,6 +24,7 @@ namespace MP.Booth
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task Should_Create_Valid_Booth()
         {
             // Arrange
@@ -43,6 +45,7 @@ namespace MP.Booth
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task Should_Not_Create_Booth_With_Empty_Number()
         {
             // Arrange
@@ -58,6 +61,7 @@ namespace MP.Booth
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task Should_Not_Create_Booth_With_Duplicate_Number()
         {
             // Arrange - Utwórz pierwsze stanowisko
@@ -78,6 +82,7 @@ namespace MP.Booth
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task Should_Get_Available_Booths_Only()
         {
             // Arrange
@@ -97,6 +102,7 @@ namespace MP.Booth
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task Should_Create_Booth_With_Correct_Price()
         {
             // Arrange
@@ -122,6 +128,7 @@ namespace MP.Booth
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task Should_Change_Booth_Status()
         {
             // Arrange

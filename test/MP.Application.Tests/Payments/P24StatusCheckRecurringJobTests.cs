@@ -1,3 +1,4 @@
+using Volo.Abp.Uow;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -32,6 +33,7 @@ namespace MP.Application.Tests.Payments
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task Should_Update_Rental_And_Booth_When_Payment_Verified()
         {
             // Arrange
@@ -127,6 +129,7 @@ namespace MP.Application.Tests.Payments
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task Should_Not_Update_Booth_Status_If_In_Maintenance()
         {
             // Arrange
@@ -190,6 +193,7 @@ namespace MP.Application.Tests.Payments
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task Should_Mark_Booth_As_Reserved_When_Rental_Starts_In_Future()
         {
             // Arrange
@@ -256,6 +260,7 @@ namespace MP.Application.Tests.Payments
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task Should_Cancel_Rental_When_Max_Status_Checks_Reached()
         {
             // Arrange
