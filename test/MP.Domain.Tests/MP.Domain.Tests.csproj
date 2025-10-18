@@ -10,11 +10,21 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\MP.Domain\MP.Domain.csproj" />
+    <ProjectReference Include="..\..\src\MP.EntityFrameworkCore\MP.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\MP.TestBase\MP.TestBase.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.secrets.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -46,8 +46,7 @@ namespace MP.Application.Tests.Payments
                 Guid.NewGuid(),
                 "Test Type",
                 "Test Description",
-                10m,
-                true
+                10m
             );
             await _boothTypeRepository.InsertAsync(boothType);
 
@@ -55,8 +54,7 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 "TEST-RENTED-01",
-                100m,
-                Currency.PLN
+                100m
             );
             await _boothRepository.InsertAsync(booth);
 
@@ -67,12 +65,11 @@ namespace MP.Application.Tests.Payments
                 booth.Id,
                 boothType.Id,
                 new RentalPeriod(today.AddDays(-5), today.AddDays(5)),
-                1000m
+                1000m,
+                Currency.PLN
             );
             rental.MarkAsPaid(1000m, DateTime.Now);
             await _rentalRepository.InsertAsync(rental);
-
-            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             // Create lookup dictionaries (simulating job logic)
             var activeRentalMap = new Dictionary<Guid, Rental>
@@ -108,8 +105,7 @@ namespace MP.Application.Tests.Payments
                 Guid.NewGuid(),
                 "Test Type 2",
                 "Test Description",
-                10m,
-                true
+                10m
             );
             await _boothTypeRepository.InsertAsync(boothType);
 
@@ -117,8 +113,7 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 "TEST-RESERVED-01",
-                100m,
-                Currency.PLN
+                100m
             );
             await _boothRepository.InsertAsync(booth);
 
@@ -129,12 +124,11 @@ namespace MP.Application.Tests.Payments
                 booth.Id,
                 boothType.Id,
                 new RentalPeriod(today.AddDays(1), today.AddDays(10)),
-                1000m
+                1000m,
+                Currency.PLN
             );
             rental.MarkAsPaid(1000m, DateTime.Now);
             await _rentalRepository.InsertAsync(rental);
-
-            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             // Create lookup dictionaries
             var activeRentalMap = new Dictionary<Guid, Rental>();
@@ -165,11 +159,9 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 "TEST-AVAILABLE-01",
-                100m,
-                Currency.PLN
+                100m
             );
             await _boothRepository.InsertAsync(booth);
-            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             // No rentals
             var activeRentalMap = new Dictionary<Guid, Rental>();
@@ -197,12 +189,10 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 "TEST-MAINT-01",
-                100m,
-                Currency.PLN
+                100m
             );
             booth.MarkAsMaintenace();
             await _boothRepository.InsertAsync(booth);
-            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             // Even with active rental, maintenance takes priority
             var activeRentalMap = new Dictionary<Guid, Rental>();
@@ -235,8 +225,7 @@ namespace MP.Application.Tests.Payments
                 Guid.NewGuid(),
                 "Test Type 3",
                 "Test Description",
-                10m,
-                true
+                10m
             );
             await _boothTypeRepository.InsertAsync(boothType);
 
@@ -244,8 +233,7 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 "TEST-PRIORITY-01",
-                100m,
-                Currency.PLN
+                100m
             );
             await _boothRepository.InsertAsync(booth);
 
@@ -256,7 +244,8 @@ namespace MP.Application.Tests.Payments
                 booth.Id,
                 boothType.Id,
                 new RentalPeriod(today.AddDays(-2), today.AddDays(2)),
-                1000m
+                1000m,
+                Currency.PLN
             );
             activeRental.MarkAsPaid(1000m, DateTime.Now);
 
@@ -267,13 +256,13 @@ namespace MP.Application.Tests.Payments
                 booth.Id,
                 boothType.Id,
                 new RentalPeriod(today.AddDays(5), today.AddDays(10)),
-                1000m
+                1000m,
+                Currency.PLN
             );
             futureRental.MarkAsPaid(1000m, DateTime.Now);
 
             await _rentalRepository.InsertAsync(activeRental);
             await _rentalRepository.InsertAsync(futureRental);
-            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             // Both active and future rentals exist
             var activeRentalMap = new Dictionary<Guid, Rental>

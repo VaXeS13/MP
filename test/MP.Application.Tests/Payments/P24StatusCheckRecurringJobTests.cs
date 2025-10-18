@@ -46,8 +46,7 @@ namespace MP.Application.Tests.Payments
                 Guid.NewGuid(),
                 "Test Type P24",
                 "Test Description",
-                10m,
-                true
+                10m
             );
             await _boothTypeRepository.InsertAsync(boothType);
 
@@ -55,8 +54,7 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 "P24-TEST-01",
-                100m,
-                Currency.PLN
+                100m
             );
             booth.MarkAsReserved();
             await _boothRepository.InsertAsync(booth);
@@ -69,7 +67,8 @@ namespace MP.Application.Tests.Payments
                 booth.Id,
                 boothType.Id,
                 new RentalPeriod(today, today.AddDays(10)),
-                1000m
+                1000m,
+                Currency.PLN
             );
             rental.Payment.SetTransactionId(sessionId);
             await _rentalRepository.InsertAsync(rental);
@@ -87,7 +86,6 @@ namespace MP.Application.Tests.Payments
                 "test-sign"
             );
             await _p24TransactionRepository.InsertAsync(transaction);
-            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             // Act - Simulate payment verification
             transaction.SetStatus("completed");
@@ -119,8 +117,6 @@ namespace MP.Application.Tests.Payments
                 await _rentalRepository.UpdateAsync(rentalToUpdate);
             }
 
-            await UnitOfWorkManager.Current.SaveChangesAsync();
-
             // Assert
             var updatedRental = await _rentalRepository.GetAsync(rental.Id);
             updatedRental.Payment.IsPaid.ShouldBeTrue();
@@ -145,8 +141,7 @@ namespace MP.Application.Tests.Payments
                 Guid.NewGuid(),
                 "Test Type P24-2",
                 "Test Description",
-                10m,
-                true
+                10m
             );
             await _boothTypeRepository.InsertAsync(boothType);
 
@@ -154,8 +149,7 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 "P24-MAINT-01",
-                100m,
-                Currency.PLN
+                100m
             );
             booth.MarkAsMaintenace();
             await _boothRepository.InsertAsync(booth);
@@ -168,12 +162,11 @@ namespace MP.Application.Tests.Payments
                 booth.Id,
                 boothType.Id,
                 new RentalPeriod(today, today.AddDays(10)),
-                1000m
+                1000m,
+                Currency.PLN
             );
             rental.Payment.SetTransactionId(sessionId);
             await _rentalRepository.InsertAsync(rental);
-
-            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             // Act - Mark rental as paid
             rental.MarkAsPaid(rental.Payment.TotalAmount, DateTime.Now, sessionId);
@@ -189,8 +182,6 @@ namespace MP.Application.Tests.Payments
                 boothToUpdate.MarkAsRented();
                 await _boothRepository.UpdateAsync(boothToUpdate);
             }
-
-            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             // Assert
             var updatedBooth = await _boothRepository.GetAsync(booth.Id);
@@ -213,8 +204,7 @@ namespace MP.Application.Tests.Payments
                 Guid.NewGuid(),
                 "Test Type P24-3",
                 "Test Description",
-                10m,
-                true
+                10m
             );
             await _boothTypeRepository.InsertAsync(boothType);
 
@@ -222,8 +212,7 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 "P24-FUTURE-01",
-                100m,
-                Currency.PLN
+                100m
             );
             await _boothRepository.InsertAsync(booth);
 
@@ -235,12 +224,11 @@ namespace MP.Application.Tests.Payments
                 booth.Id,
                 boothType.Id,
                 new RentalPeriod(today.AddDays(1), today.AddDays(10)),
-                1000m
+                1000m,
+                Currency.PLN
             );
             rental.Payment.SetTransactionId(sessionId);
             await _rentalRepository.InsertAsync(rental);
-
-            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             // Act - Mark rental as paid
             rental.MarkAsPaid(rental.Payment.TotalAmount, DateTime.Now, sessionId);
@@ -261,7 +249,6 @@ namespace MP.Application.Tests.Payments
             }
 
             await _rentalRepository.UpdateAsync(rental);
-            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             // Assert
             var updatedBooth = await _boothRepository.GetAsync(booth.Id);
@@ -283,8 +270,7 @@ namespace MP.Application.Tests.Payments
                 Guid.NewGuid(),
                 "Test Type P24-4",
                 "Test Description",
-                10m,
-                true
+                10m
             );
             await _boothTypeRepository.InsertAsync(boothType);
 
@@ -292,8 +278,7 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 "P24-CANCEL-01",
-                100m,
-                Currency.PLN
+                100m
             );
             booth.MarkAsReserved();
             await _boothRepository.InsertAsync(booth);
@@ -306,7 +291,8 @@ namespace MP.Application.Tests.Payments
                 booth.Id,
                 boothType.Id,
                 new RentalPeriod(today, today.AddDays(10)),
-                1000m
+                1000m,
+                Currency.PLN
             );
             rental.Payment.SetTransactionId(sessionId);
             await _rentalRepository.InsertAsync(rental);
@@ -328,8 +314,6 @@ namespace MP.Application.Tests.Payments
             transaction.IncrementStatusCheckCount(); // 3 checks reached
             await _p24TransactionRepository.InsertAsync(transaction);
 
-            await UnitOfWorkManager.Current.SaveChangesAsync();
-
             // Act - Simulate HandleMaxStatusChecksReached logic
             if (transaction.ManualStatusCheckCount >= 3 && transaction.Status != "completed")
             {
@@ -347,8 +331,6 @@ namespace MP.Application.Tests.Payments
                     await _boothRepository.UpdateAsync(boothToRelease);
                 }
             }
-
-            await UnitOfWorkManager.Current.SaveChangesAsync();
 
             // Assert
             var updatedRental = await _rentalRepository.GetAsync(rental.Id);

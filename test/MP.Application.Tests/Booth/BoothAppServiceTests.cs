@@ -29,7 +29,6 @@ namespace MP.Booth
             var createDto = new CreateBoothDto
             {
                 Number = "TEST01",
-                Type = BoothType.SelfPricing,
                 PricePerDay = 25.00m
             };
 
@@ -39,9 +38,8 @@ namespace MP.Booth
             // Assert
             result.ShouldNotBeNull();
             result.Number.ShouldBe("TEST01");
-            result.Type.ShouldBe(BoothType.SelfPricing);
             result.Status.ShouldBe(BoothStatus.Available);
-            result.CommissionPercentage.ShouldBe(10m); // SelfPricing = 10%
+            result.PricePerDay.ShouldBe(25.00m);
         }
 
         [Fact]
@@ -51,7 +49,6 @@ namespace MP.Booth
             var createDto = new CreateBoothDto
             {
                 Number = "",
-                Type = BoothType.SelfPricing,
                 PricePerDay = 25.00m
             };
 
@@ -64,13 +61,12 @@ namespace MP.Booth
         public async Task Should_Not_Create_Booth_With_Duplicate_Number()
         {
             // Arrange - Utwórz pierwsze stanowisko
-            var booth1 = new MP.Domain.Booths.Booth(Guid.NewGuid(), "DUPLICATE", BoothType.SelfPricing, 25.00m);
+            var booth1 = new MP.Domain.Booths.Booth(Guid.NewGuid(), "DUPLICATE", 25.00m);
             await _boothRepository.InsertAsync(booth1);
 
             var createDto = new CreateBoothDto
             {
                 Number = "DUPLICATE",
-                Type = BoothType.SelfPricing,
                 PricePerDay = 30.00m
             };
 
@@ -85,8 +81,8 @@ namespace MP.Booth
         public async Task Should_Get_Available_Booths_Only()
         {
             // Arrange
-            var availableBooth = new MP.Domain.Booths.Booth(Guid.NewGuid(), "AVAIL01", BoothType.SelfPricing, 25.00m);
-            var rentedBooth = new MP.Domain.Booths.Booth(Guid.NewGuid(), "RENTED01", BoothType.SelfPricing, 25.00m);
+            var availableBooth = new MP.Domain.Booths.Booth(Guid.NewGuid(), "AVAIL01", 25.00m);
+            var rentedBooth = new MP.Domain.Booths.Booth(Guid.NewGuid(), "RENTED01", 25.00m);
             rentedBooth.MarkAsRented();
 
             await _boothRepository.InsertAsync(availableBooth);
@@ -101,26 +97,28 @@ namespace MP.Booth
         }
 
         [Fact]
-        public async Task Should_Calculate_Commission_Correctly()
+        public async Task Should_Create_Booth_With_Correct_Price()
         {
             // Arrange
-            var selfPricingBooth = await _boothAppService.CreateAsync(new CreateBoothDto
+            var createDto1 = new CreateBoothDto
             {
                 Number = "SELF01",
-                Type = BoothType.SelfPricing,
                 PricePerDay = 25.00m
-            });
+            };
 
-            var shopPricingBooth = await _boothAppService.CreateAsync(new CreateBoothDto
+            var createDto2 = new CreateBoothDto
             {
                 Number = "SHOP01",
-                Type = BoothType.ShopPricing,
                 PricePerDay = 35.00m
-            });
+            };
+
+            // Act
+            var booth1 = await _boothAppService.CreateAsync(createDto1);
+            var booth2 = await _boothAppService.CreateAsync(createDto2);
 
             // Assert
-            selfPricingBooth.CommissionPercentage.ShouldBe(10m);
-            shopPricingBooth.CommissionPercentage.ShouldBe(30m);
+            booth1.PricePerDay.ShouldBe(25.00m);
+            booth2.PricePerDay.ShouldBe(35.00m);
         }
 
         [Fact]
@@ -130,7 +128,6 @@ namespace MP.Booth
             var booth = await _boothAppService.CreateAsync(new CreateBoothDto
             {
                 Number = "STATUS01",
-                Type = BoothType.SelfPricing,
                 PricePerDay = 25.00m
             });
 

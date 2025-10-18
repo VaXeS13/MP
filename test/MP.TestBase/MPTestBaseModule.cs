@@ -3,9 +3,7 @@ using Volo.Abp;
 using Volo.Abp.Authorization;
 using Volo.Abp.Autofac;
 using Volo.Abp.BackgroundJobs;
-using Volo.Abp.Data;
 using Volo.Abp.Modularity;
-using Volo.Abp.Threading;
 
 namespace MP;
 
@@ -29,19 +27,8 @@ public class MPTestBaseModule : AbpModule
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
-        SeedTestData(context);
-    }
-
-    private static void SeedTestData(ApplicationInitializationContext context)
-    {
-        AsyncHelper.RunSync(async () =>
-        {
-            using (var scope = context.ServiceProvider.CreateScope())
-            {
-                await scope.ServiceProvider
-                    .GetRequiredService<IDataSeeder>()
-                    .SeedAsync();
-            }
-        });
+        // Note: Data seeding is skipped by default for tests
+        // Individual tests that need specific data setup should use helper methods
+        // or manually seed data within their test context via repositories
     }
 }
