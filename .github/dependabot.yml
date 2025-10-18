@@ -1,0 +1,69 @@
+version: 2
+updates:
+  # Enable version updates for npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/angular"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "vaxeshinc"
+    assignees:
+      - "vaxeshinc"
+    labels:
+      - "dependencies"
+      - "security"
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    ignore:
+      # Ignore major version updates for stable packages
+      # - dependency-name: "@angular/*"
+      #   update-types: ["version-update:semver-major"]
+    commit-message:
+      prefix: "chore(deps):"
+      include: "scope"
+
+  # Enable version updates for .NET NuGet packages
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "vaxeshinc"
+    assignees:
+      - "vaxeshinc"
+    labels:
+      - "dependencies"
+      - "security"
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    ignore:
+      # Ignore pre-release versions
+      # - dependency-name: "Volo.Abp*"
+      #   update-types: ["version-update:semver-prerelease"]
+    commit-message:
+      prefix: "chore(deps):"
+      include: "scope"
+
+  # Enable security updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "vaxeshinc"
+    labels:
+      - "ci-cd"
+    commit-message:
+      prefix: "ci(actions):"
+      include: "scope"
