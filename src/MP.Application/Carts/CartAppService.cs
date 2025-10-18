@@ -364,9 +364,15 @@ namespace MP.Carts
                     MethodId = input.PaymentMethodId,
                     Metadata = new Dictionary<string, object>
                     {
-                        ["cartId"] = cart.Id,
-                        ["rentalIds"] = rentalIds,
-                        ["itemCount"] = cart.Items.Count
+                        ["cartId"] = cart.Id.ToString(),
+                        ["userId"] = userId.ToString(),
+                        ["rentalIds"] = string.Join(",", rentalIds),
+                        ["itemCount"] = cart.Items.Count,
+                        ["discountAmount"] = cart.DiscountAmount,
+                        ["originalAmount"] = cart.GetTotalAmount(),
+                        ["finalAmount"] = totalAmount,
+                        ["promotionId"] = cart.AppliedPromotionId?.ToString() ?? string.Empty,
+                        ["promoCodeUsed"] = cart.PromoCodeUsed ?? string.Empty
                     }
                 };
 

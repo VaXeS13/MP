@@ -10,6 +10,8 @@ using MP.Domain.Settings;
 using MP.Domain.Payments;
 using MP.Domain.Rentals;
 using MP.Domain.Booths;
+using MP.Domain.Promotions;
+using MP.Domain.Carts;
 
 namespace MP.Application.Payments
 {
@@ -22,6 +24,9 @@ namespace MP.Application.Payments
         private readonly IStripeTransactionRepository _stripeTransactionRepository;
         private readonly IRepository<Rental, Guid> _rentalRepository;
         private readonly IBoothRepository _boothRepository;
+        private readonly IPromotionRepository _promotionRepository;
+        private readonly ICartRepository _cartRepository;
+        private readonly PromotionManager _promotionManager;
         private readonly ILogger<StripeWebhookHandler> _logger;
 
         public StripeWebhookHandler(
@@ -29,12 +34,18 @@ namespace MP.Application.Payments
             IStripeTransactionRepository stripeTransactionRepository,
             IRepository<Rental, Guid> rentalRepository,
             IBoothRepository boothRepository,
+            IPromotionRepository promotionRepository,
+            ICartRepository cartRepository,
+            PromotionManager promotionManager,
             ILogger<StripeWebhookHandler> logger)
         {
             _settingProvider = settingProvider;
             _stripeTransactionRepository = stripeTransactionRepository;
             _rentalRepository = rentalRepository;
             _boothRepository = boothRepository;
+            _promotionRepository = promotionRepository;
+            _cartRepository = cartRepository;
+            _promotionManager = promotionManager;
             _logger = logger;
         }
 
@@ -304,12 +315,90 @@ namespace MP.Application.Payments
                     await _stripeTransactionRepository.UpdateAsync(transaction);
                 }
 
+                // Register promotion usage if promotion was applied to the cart
+                await RegisterPromotionUsageAsync(stripeSessionId, rentals[0].Payment);
+
                 _logger.LogInformation("StripeWebhookHandler: Payment confirmed for {Count} rental(s), session {SessionId}",
                     rentals.Count, stripeSessionId);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "StripeWebhookHandler: Error processing successful payment for session {SessionId}", stripeSessionId);
+            }
+        }
+
+        /// <summary>
+        /// Register promotion usage after successful payment
+        /// </summary>
+        private async Task RegisterPromotionUsageAsync(string stripeSessionId, MP.Domain.Rentals.Payment payment)
+        {
+            try
+            {
+                // Extract promotion data from payment metadata
+                // The metadata was set when creating the payment in CartAppService
+                if (payment == null)
+                {
+                    _logger.LogWarning("StripeWebhookHandler: Payment is null for session {SessionId}", stripeSessionId);
+                    return;
+                }
+
+                // Check if payment has promotion metadata
+                // Note: We need to query Stripe session to get metadata since it's not stored in our Payment entity
+                // As a workaround, we'll get the cart from the rentalIds associated with this payment
+
+                // Try to reconstruct from payment and rental relationship
+                var rentalIds = await _rentalRepository
+                    .GetListAsync(r => r.Payment.Przelewy24TransactionId == stripeSessionId);
+
+                if (!rentalIds.Any())
+                {
+                    _logger.LogInformation("StripeWebhookHandler: No rentals found for promotion registration, session {SessionId}", stripeSessionId);
+                    return;
+                }
+
+                // Get first rental to find associated cart
+                var firstRental = rentalIds.First();
+
+                // Find cart items that reference these rentals
+                var allCarts = await _cartRepository.GetListAsync();
+
+                var relevantCart = allCarts.FirstOrDefault(c =>
+                    c.Items.Any(item => rentalIds.Select(r => r.Id).Contains(item.RentalId ?? Guid.Empty)));
+
+                if (relevantCart == null)
+                {
+                    _logger.LogInformation("StripeWebhookHandler: No cart found for promotion registration, session {SessionId}", stripeSessionId);
+                    return;
+                }
+
+                // Check if cart had promotion applied
+                if (!relevantCart.HasPromotionApplied() || !relevantCart.AppliedPromotionId.HasValue)
+                {
+                    _logger.LogInformation("StripeWebhookHandler: Cart {CartId} has no promotion applied, session {SessionId}",
+                        relevantCart.Id, stripeSessionId);
+                    return;
+                }
+
+                // Register promotion usage
+                await _promotionManager.RecordUsageAsync(
+                    relevantCart.AppliedPromotionId.Value,
+                    firstRental.UserId,
+                    relevantCart.Id,
+                    relevantCart.DiscountAmount,
+                    relevantCart.GetTotalAmount(),
+                    relevantCart.GetFinalAmount(),
+                    relevantCart.PromoCodeUsed,
+                    firstRental.Id
+                );
+
+                _logger.LogInformation("StripeWebhookHandler: Registered promotion usage for cart {CartId}, promotion {PromotionId}, session {SessionId}",
+                    relevantCart.Id, relevantCart.AppliedPromotionId, stripeSessionId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "StripeWebhookHandler: Error registering promotion usage for session {SessionId}", stripeSessionId);
+                // Don't throw - payment already succeeded, we just couldn't register promo usage
+                // This will be caught and logged but won't fail the webhook
             }
         }
     }

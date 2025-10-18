@@ -127,7 +127,7 @@ export class CartService {
    * Clear entire cart
    */
   clearCart(): Observable<CartDto> {
-    return this.http.post<CartDto>(`${this.apiUrl}/clear`, {}).pipe(
+    return this.http.post<CartDto>(`${this.apiUrl}/clear-cart`, {}).pipe(
       tap(cart => this.cartSubject.next(cart))
     );
   }
