@@ -160,7 +160,7 @@ namespace MP.Application.Tests.Carts
                 () => _cartAppService.AddItemAsync(addToCartDto)
             );
 
-            exception.Code.ShouldBe("BOOTH_ALREADY_IN_CART");
+            exception.Code.ShouldBe("CART_BOOTH_ALREADY_ADDED_WITH_OVERLAPPING_DATES");
         }
 
         [Fact]
