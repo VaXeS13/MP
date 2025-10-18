@@ -10,6 +10,7 @@ using Shouldly;
 using Volo.Abp;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
+using Volo.Abp.Uow;
 using Xunit;
 
 namespace MP.Application.Tests.Carts
@@ -29,9 +30,19 @@ namespace MP.Application.Tests.Carts
             _userRepository = GetRequiredService<IRepository<IdentityUser, Guid>>();
         }
 
+        private async Task CleanupCartAsync()
+        {
+            // Clean up any carts for the current test user before each test
+            await _cartAppService.ClearCartAsync();
+        }
+
         [Fact]
+        [UnitOfWork]
         public async Task GetMyCartAsync_Should_Return_Empty_Cart_For_New_User()
         {
+            // Arrange
+            await CleanupCartAsync();
+
             // Act
             var cart = await _cartAppService.GetMyCartAsync();
 
@@ -43,9 +54,11 @@ namespace MP.Application.Tests.Carts
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task GetMyCartAsync_Should_Return_Existing_Cart()
         {
             // Arrange - Add an item to cart first
+            await CleanupCartAsync();
             var booth = await CreateTestBoothAsync();
             var boothType = await CreateTestBoothTypeAsync();
 
@@ -69,9 +82,11 @@ namespace MP.Application.Tests.Carts
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task AddItemAsync_Should_Add_Booth_To_Cart()
         {
             // Arrange
+            await CleanupCartAsync();
             var booth = await CreateTestBoothAsync();
             var boothType = await CreateTestBoothTypeAsync();
 
@@ -95,9 +110,11 @@ namespace MP.Application.Tests.Carts
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task AddItemAsync_Should_Calculate_Correct_Total_Amount()
         {
             // Arrange
+            await CleanupCartAsync();
             var boothPrice = 100m;
             var booth = await CreateTestBoothAsync(price: boothPrice);
             var boothType = await CreateTestBoothTypeAsync();
@@ -119,9 +136,11 @@ namespace MP.Application.Tests.Carts
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task AddItemAsync_Should_Throw_When_Booth_Already_In_Cart()
         {
             // Arrange
+            await CleanupCartAsync();
             var booth = await CreateTestBoothAsync(price: 100m);
             var boothType = await CreateTestBoothTypeAsync();
 
@@ -145,9 +164,11 @@ namespace MP.Application.Tests.Carts
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task RemoveItemAsync_Should_Remove_Item_From_Cart()
         {
             // Arrange
+            await CleanupCartAsync();
             var booth = await CreateTestBoothAsync();
             var boothType = await CreateTestBoothTypeAsync();
 
@@ -171,9 +192,11 @@ namespace MP.Application.Tests.Carts
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task RemoveItemAsync_Should_Throw_When_Item_Not_In_Cart()
         {
             // Arrange
+            await CleanupCartAsync();
             var fakeItemId = Guid.NewGuid();
 
             // Act & Assert
@@ -185,9 +208,11 @@ namespace MP.Application.Tests.Carts
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task UpdateItemAsync_Should_Update_Cart_Item_Dates()
         {
             // Arrange
+            await CleanupCartAsync();
             var booth = await CreateTestBoothAsync();
             var boothType = await CreateTestBoothTypeAsync();
 
@@ -218,9 +243,11 @@ namespace MP.Application.Tests.Carts
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task UpdateItemAsync_Should_Recalculate_Total_Amount_After_Update()
         {
             // Arrange
+            await CleanupCartAsync();
             var boothPrice = 100m;
             var booth = await CreateTestBoothAsync(price: boothPrice);
             var boothType = await CreateTestBoothTypeAsync();
@@ -253,9 +280,11 @@ namespace MP.Application.Tests.Carts
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task ClearCartAsync_Should_Remove_All_Items()
         {
             // Arrange
+            await CleanupCartAsync();
             var booth1 = await CreateTestBoothAsync(price: 100m);
             var booth2 = await CreateTestBoothAsync("BOOTH02", 50m);
             var boothType = await CreateTestBoothTypeAsync();
@@ -289,9 +318,11 @@ namespace MP.Application.Tests.Carts
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task CheckoutAsync_Should_Create_Rentals_And_Clear_Cart()
         {
             // Arrange
+            await CleanupCartAsync();
             var booth = await CreateTestBoothAsync();
             var boothType = await CreateTestBoothTypeAsync();
 
@@ -325,9 +356,11 @@ namespace MP.Application.Tests.Carts
         }
 
         [Fact]
+        [UnitOfWork]
         public async Task CheckoutAsync_Should_Throw_When_Cart_Empty()
         {
             // Arrange
+            await CleanupCartAsync();
             var checkoutDto = new CheckoutCartDto
             {
                 PaymentProviderId = "p24",

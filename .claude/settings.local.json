@@ -16,7 +16,9 @@
       "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"RemoveItemAsync_Should_Remove_Item_From_Cart\")",
       "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"AddItemAsync_Should_Add_Booth_To_Cart\")",
       "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"DetermineBoothStatus_Should_Return_Available_When_No_Rental_Exists\")",
-      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CreateMyRentalAsync_Should_Create_Rental_For_Current_User\")"
+      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CreateMyRentalAsync_Should_Create_Rental_For_Current_User\")",
+      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CartAppServiceTests\")",
+      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CartAppServiceTests\" -v q)"
     ],
     "deny": [],
     "ask": []
