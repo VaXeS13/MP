@@ -1,31 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj)",
-      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj -v normal)",
-      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build)",
-      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build -v n)",
       "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build -v q)",
-      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build --filter \"CreateRentalAsync_Should_Create_Valid_Rental_With_Correct_Status\" -v n)",
-      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build --filter \"CreateRentalAsync_Should_Calculate_Correct_Total_Cost\" -v n)",
-      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build --filter \"CreateRentalAsync_Should_Throw_When_Booth_Already_Rented_In_Period\" -v n)",
       "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build -v q)",
       "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build)",
-      "Bash(dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj test/MP.Application.Tests/MP.Application.Tests.csproj --no-build -v q)",
-      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"GetMyCartAsync_Should_Return_Empty_Cart_For_New_User\")",
-      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"RemoveItemAsync_Should_Remove_Item_From_Cart\")",
-      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"AddItemAsync_Should_Add_Booth_To_Cart\")",
-      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"DetermineBoothStatus_Should_Return_Available_When_No_Rental_Exists\")",
-      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CreateMyRentalAsync_Should_Create_Rental_For_Current_User\")",
-      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CartAppServiceTests\")",
-      "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CartAppServiceTests\" -v q)",
-      "Bash(for file in test/MP.Application.Tests/Payments/*.cs test/MP.Booth/*.cs)",
-      "Bash(do)",
-      "Bash(if [ -f \"$file\" ])",
-      "Bash(then)",
-      "Bash(fi)",
-      "Bash(done)",
-      "Bash(xargs -I {} bash -c 'sed -i \"\"\"\"1s/^/using Volo.Abp.Uow;\\n/\"\"\"\" \"\"\"\"{}\"\"\"\" && sed -i \"\"\"\"/^\\s*\\[Fact\\]/a\\        [UnitOfWork]\"\"\"\" \"\"\"\"{}\"\"\"\"')"
+      "Bash(git add -A)",
+      "Bash(git commit -m \"Fix BoothAppServiceTests - all 6 tests passing (100%)\n\n- Fixed hardcoded booth numbers to use random GUIDs\n- Fixed duplicate number test with proper variable reuse\n- Fixed assertion logic for available/rented booths\n- Fixed price creation test with unique booth numbers\n- Fixed status change test with unique booth number\n\nResults:\n- Booth tests: 6/6 (100%) ✅\n- Total: 36/50 (72%)\n\nRemaining failing tests: 14\n- Cart: 5 failing\n- Rental: 2 failing  \n- Payment Jobs: 7 failing\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")"
     ],
     "deny": [],
     "ask": []

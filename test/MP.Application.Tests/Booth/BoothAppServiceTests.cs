@@ -28,9 +28,10 @@ namespace MP.Booth
         public async Task Should_Create_Valid_Booth()
         {
             // Arrange
+            var boothNumber = $"BOOTH{Guid.NewGuid().ToString().Substring(0, 5)}".ToUpper();
             var createDto = new CreateBoothDto
             {
-                Number = "TEST01",
+                Number = boothNumber,
                 PricePerDay = 25.00m
             };
 
@@ -39,7 +40,7 @@ namespace MP.Booth
 
             // Assert
             result.ShouldNotBeNull();
-            result.Number.ShouldBe("TEST01");
+            result.Number.ShouldBe(boothNumber);
             result.Status.ShouldBe(BoothStatus.Available);
             result.PricePerDay.ShouldBe(25.00m);
         }
@@ -64,13 +65,14 @@ namespace MP.Booth
         [UnitOfWork]
         public async Task Should_Not_Create_Booth_With_Duplicate_Number()
         {
-            // Arrange - Utwórz pierwsze stanowisko
-            var booth1 = new MP.Domain.Booths.Booth(Guid.NewGuid(), "DUPLICATE", 25.00m);
+            // Arrange - Create first booth with specific number
+            var duplicateNumber = $"DUP{Guid.NewGuid().ToString().Substring(0, 5)}".ToUpper();
+            var booth1 = new MP.Domain.Booths.Booth(Guid.NewGuid(), duplicateNumber, 25.00m);
             await _boothRepository.InsertAsync(booth1);
 
             var createDto = new CreateBoothDto
             {
-                Number = "DUPLICATE",
+                Number = duplicateNumber,
                 PricePerDay = 30.00m
             };
 
@@ -86,8 +88,10 @@ namespace MP.Booth
         public async Task Should_Get_Available_Booths_Only()
         {
             // Arrange
-            var availableBooth = new MP.Domain.Booths.Booth(Guid.NewGuid(), "AVAIL01", 25.00m);
-            var rentedBooth = new MP.Domain.Booths.Booth(Guid.NewGuid(), "RENTED01", 25.00m);
+            var availableNumber = $"AVAIL{Guid.NewGuid().ToString().Substring(0, 4)}".ToUpper();
+            var rentedNumber = $"RENTED{Guid.NewGuid().ToString().Substring(0, 3)}".ToUpper();
+            var availableBooth = new MP.Domain.Booths.Booth(Guid.NewGuid(), availableNumber, 25.00m);
+            var rentedBooth = new MP.Domain.Booths.Booth(Guid.NewGuid(), rentedNumber, 25.00m);
             rentedBooth.MarkAsRented();
 
             await _boothRepository.InsertAsync(availableBooth);
@@ -97,8 +101,8 @@ namespace MP.Booth
             var availableBooths = await _boothAppService.GetAvailableBoothsAsync();
 
             // Assert
-            availableBooths.ShouldContain(b => b.Number == "AVAIL01");
-            availableBooths.ShouldNotContain(b => b.Number == "RENTED01");
+            availableBooths.ShouldContain(b => b.Number == availableNumber);
+            availableBooths.ShouldNotContain(b => b.Number == rentedNumber);
         }
 
         [Fact]
@@ -108,13 +112,13 @@ namespace MP.Booth
             // Arrange
             var createDto1 = new CreateBoothDto
             {
-                Number = "SELF01",
+                Number = $"SELF{Guid.NewGuid().ToString().Substring(0, 4)}".ToUpper(),
                 PricePerDay = 25.00m
             };
 
             var createDto2 = new CreateBoothDto
             {
-                Number = "SHOP01",
+                Number = $"SHOP{Guid.NewGuid().ToString().Substring(0, 4)}".ToUpper(),
                 PricePerDay = 35.00m
             };
 
@@ -134,7 +138,7 @@ namespace MP.Booth
             // Arrange
             var booth = await _boothAppService.CreateAsync(new CreateBoothDto
             {
-                Number = "STATUS01",
+                Number = $"STAT{Guid.NewGuid().ToString().Substring(0, 5)}".ToUpper(),
                 PricePerDay = 25.00m
             });
 
