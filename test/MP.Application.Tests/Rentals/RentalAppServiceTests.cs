@@ -327,8 +327,8 @@ namespace MP.Application.Tests.Rentals
             {
                 BoothId = booth.Id,
                 BoothTypeId = boothType.Id,
-                StartDate = DateTime.Today.AddDays(-2),
-                EndDate = DateTime.Today.AddDays(5)
+                StartDate = DateTime.Today.AddDays(1),
+                EndDate = DateTime.Today.AddDays(8)
             };
 
             var activeRental = await _rentalAppService.CreateMyRentalAsync(createDtoActive);
