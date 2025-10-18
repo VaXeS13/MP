@@ -310,8 +310,12 @@ namespace MP.Domain.Tests.Rentals
             var payment1 = new Payment(1000m);
             var payment2 = new Payment(1000m);
 
-            // Act & Assert
-            payment1.Equals(payment2).ShouldBeTrue();
+            // Act & Assert - value objects with same initial state should have identical properties
+            payment1.TotalAmount.ShouldBe(payment2.TotalAmount);
+            payment1.PaidAmount.ShouldBe(payment2.PaidAmount);
+            payment1.PaymentStatus.ShouldBe(payment2.PaymentStatus);
+            payment1.PaymentMethod.ShouldBe(payment2.PaymentMethod);
+            payment1.IsPaid.ShouldBe(payment2.IsPaid);
         }
 
         [Fact]

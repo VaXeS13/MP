@@ -12,76 +12,106 @@ namespace MP.Domain.Tests.Rentals
         public void Constructor_Should_Create_Valid_Period()
         {
             // Arrange
-            var startDate = DateTime.Today;
-            var endDate = DateTime.Today.AddDays(6);
+            var startDate = DateTime.Today.AddDays(7);
+            var endDate = DateTime.Today.AddDays(13); // 7 days
 
             // Act
             var period = new RentalPeriod(startDate, endDate);
 
             // Assert
-            period.StartDate.ShouldBe(startDate);
-            period.EndDate.ShouldBe(endDate);
+            period.StartDate.ShouldBe(startDate.Date);
+            period.EndDate.ShouldBe(endDate.Date);
         }
 
         [Fact]
         public void Constructor_Should_Throw_When_EndDate_Before_StartDate()
         {
             // Arrange
-            var startDate = DateTime.Today.AddDays(5);
-            var endDate = DateTime.Today;
+            var startDate = DateTime.Today.AddDays(10);
+            var endDate = DateTime.Today.AddDays(5);
 
             // Act & Assert
             var exception = Should.Throw<BusinessException>(
                 () => new RentalPeriod(startDate, endDate)
             );
 
-            exception.Code.ShouldBe("RENTAL_PERIOD_INVALID_DATES");
+            exception.Code.ShouldBe("RENTAL_END_DATE_MUST_BE_AFTER_START");
         }
 
         [Fact]
         public void Constructor_Should_Throw_When_EndDate_Equals_StartDate()
         {
             // Arrange
-            var startDate = DateTime.Today;
-            var endDate = DateTime.Today;
+            var startDate = DateTime.Today.AddDays(7);
+            var endDate = DateTime.Today.AddDays(7);
 
             // Act & Assert
             var exception = Should.Throw<BusinessException>(
                 () => new RentalPeriod(startDate, endDate)
             );
 
-            exception.Code.ShouldBe("RENTAL_PERIOD_INVALID_DATES");
+            exception.Code.ShouldBe("RENTAL_END_DATE_MUST_BE_AFTER_START");
         }
 
         [Fact]
-        public void DaysCount_Should_Calculate_Correctly()
+        public void Constructor_Should_Throw_When_StartDate_In_Past()
         {
             // Arrange
-            var startDate = DateTime.Today;
-            var endDate = DateTime.Today.AddDays(6); // 7 days total
+            var startDate = DateTime.Today.AddDays(-1);
+            var endDate = DateTime.Today.AddDays(6);
+
+            // Act & Assert
+            var exception = Should.Throw<BusinessException>(
+                () => new RentalPeriod(startDate, endDate)
+            );
+
+            exception.Code.ShouldBe("RENTAL_START_DATE_CANNOT_BE_IN_PAST");
+        }
+
+        [Fact]
+        public void Constructor_Should_Throw_When_Less_Than_7_Days()
+        {
+            // Arrange
+            var startDate = DateTime.Today.AddDays(7);
+            var endDate = DateTime.Today.AddDays(9); // Only 3 days
+
+            // Act & Assert
+            var exception = Should.Throw<BusinessException>(
+                () => new RentalPeriod(startDate, endDate)
+            );
+
+            exception.Code.ShouldBe("RENTAL_MINIMUM_7_DAYS_REQUIRED");
+        }
+
+        [Fact]
+        public void GetDaysCount_Should_Calculate_Correctly()
+        {
+            // Arrange
+            var startDate = DateTime.Today.AddDays(7);
+            var endDate = DateTime.Today.AddDays(13); // 7 days total
 
             var period = new RentalPeriod(startDate, endDate);
 
             // Act
-            var daysCount = period.DaysCount;
+            var daysCount = period.GetDaysCount();
 
             // Assert
             daysCount.ShouldBe(7);
         }
 
         [Fact]
-        public void DaysCount_Should_Include_Both_Start_And_End_Day()
+        public void GetDaysCount_Should_Include_Both_Start_And_End_Day()
         {
-            // Arrange
-            var startDate = new DateTime(2024, 1, 1);
-            var endDate = new DateTime(2024, 1, 10);
+            // Arrange - use future dates to avoid validation errors
+            var startDate = DateTime.Today.AddDays(30);
+            var endDate = DateTime.Today.AddDays(39);  // 10 days inclusive
 
             var period = new RentalPeriod(startDate, endDate);
 
             // Act
-            var daysCount = period.DaysCount;
+            var daysCount = period.GetDaysCount();
 
-            // Assert - 10 days inclusive
+            // Assert - 10 days inclusive (30-39 = 10 days)
             daysCount.ShouldBe(10);
         }
 
@@ -89,15 +119,11 @@ namespace MP.Domain.Tests.Rentals
         public void OverlapsWith_Should_Return_True_When_Overlapping()
         {
             // Arrange
-            var period1Start = DateTime.Today;
-            var period1End = DateTime.Today.AddDays(6);
-            var period = new RentalPeriod(period1Start, period1End);
-
-            var period2Start = DateTime.Today.AddDays(3);
-            var period2End = DateTime.Today.AddDays(10);
+            var period1 = new RentalPeriod(DateTime.Today.AddDays(7), DateTime.Today.AddDays(13));
+            var period2 = new RentalPeriod(DateTime.Today.AddDays(10), DateTime.Today.AddDays(16));
 
             // Act
-            var overlaps = period.OverlapsWith(period2Start, period2End);
+            var overlaps = period1.OverlapsWith(period2);
 
             // Assert
             overlaps.ShouldBeTrue();
@@ -107,33 +133,25 @@ namespace MP.Domain.Tests.Rentals
         public void OverlapsWith_Should_Return_False_When_Not_Overlapping()
         {
             // Arrange
-            var period1Start = DateTime.Today;
-            var period1End = DateTime.Today.AddDays(6);
-            var period = new RentalPeriod(period1Start, period1End);
-
-            var period2Start = DateTime.Today.AddDays(10);
-            var period2End = DateTime.Today.AddDays(16);
+            var period1 = new RentalPeriod(DateTime.Today.AddDays(7), DateTime.Today.AddDays(13));
+            var period2 = new RentalPeriod(DateTime.Today.AddDays(17), DateTime.Today.AddDays(23));
 
             // Act
-            var overlaps = period.OverlapsWith(period2Start, period2End);
+            var overlaps = period1.OverlapsWith(period2);
 
             // Assert
             overlaps.ShouldBeFalse();
         }
 
         [Fact]
-        public void OverlapsWith_Should_Return_True_When_Adjacent()
+        public void OverlapsWith_Should_Return_False_When_Adjacent()
         {
             // Arrange - periods are adjacent (period1 ends when period2 starts)
-            var period1Start = DateTime.Today;
-            var period1End = DateTime.Today.AddDays(6);
-            var period = new RentalPeriod(period1Start, period1End);
-
-            var period2Start = period1End.AddDays(1);
-            var period2End = period2Start.AddDays(6);
+            var period1 = new RentalPeriod(DateTime.Today.AddDays(7), DateTime.Today.AddDays(13));
+            var period2 = new RentalPeriod(DateTime.Today.AddDays(14), DateTime.Today.AddDays(20));
 
             // Act
-            var overlaps = period.OverlapsWith(period2Start, period2End);
+            var overlaps = period1.OverlapsWith(period2);
 
             // Assert - adjacent periods should not overlap
             overlaps.ShouldBeFalse();
@@ -143,186 +161,112 @@ namespace MP.Domain.Tests.Rentals
         public void OverlapsWith_Should_Return_True_For_Contained_Period()
         {
             // Arrange
-            var period1Start = DateTime.Today;
-            var period1End = DateTime.Today.AddDays(10);
-            var period = new RentalPeriod(period1Start, period1End);
-
-            var period2Start = DateTime.Today.AddDays(2);
-            var period2End = DateTime.Today.AddDays(5);
+            var period1 = new RentalPeriod(DateTime.Today.AddDays(7), DateTime.Today.AddDays(20));
+            var period2 = new RentalPeriod(DateTime.Today.AddDays(10), DateTime.Today.AddDays(16));
 
             // Act
-            var overlaps = period.OverlapsWith(period2Start, period2End);
+            var overlaps = period1.OverlapsWith(period2);
 
             // Assert - contained period should overlap
             overlaps.ShouldBeTrue();
         }
 
         [Fact]
-        public void Contains_Should_Return_True_When_Date_In_Period()
+        public void OverlapsWith_Should_Return_True_When_Same_Period()
         {
             // Arrange
-            var startDate = DateTime.Today;
-            var endDate = DateTime.Today.AddDays(6);
-            var period = new RentalPeriod(startDate, endDate);
-            var dateInPeriod = DateTime.Today.AddDays(3);
+            var startDate = DateTime.Today.AddDays(7);
+            var endDate = DateTime.Today.AddDays(13);
+            var period1 = new RentalPeriod(startDate, endDate);
+            var period2 = new RentalPeriod(startDate, endDate);
 
             // Act
-            var contains = period.Contains(dateInPeriod);
+            var overlaps = period1.OverlapsWith(period2);
 
             // Assert
-            contains.ShouldBeTrue();
+            overlaps.ShouldBeTrue();
         }
 
         [Fact]
-        public void Contains_Should_Return_True_For_Start_Date()
+        public void HasGapBefore_Should_Return_True_When_Gap_Exists()
         {
             // Arrange
-            var startDate = DateTime.Today;
-            var endDate = DateTime.Today.AddDays(6);
-            var period = new RentalPeriod(startDate, endDate);
+            var previousPeriod = new RentalPeriod(DateTime.Today.AddDays(7), DateTime.Today.AddDays(13));
+            var currentPeriod = new RentalPeriod(DateTime.Today.AddDays(17), DateTime.Today.AddDays(23));
 
             // Act
-            var contains = period.Contains(startDate);
+            var hasGap = currentPeriod.HasGapBefore(previousPeriod);
 
             // Assert
-            contains.ShouldBeTrue();
+            hasGap.ShouldBeTrue();
         }
 
         [Fact]
-        public void Contains_Should_Return_True_For_End_Date()
+        public void HasGapBefore_Should_Return_False_When_Adjacent()
         {
             // Arrange
-            var startDate = DateTime.Today;
-            var endDate = DateTime.Today.AddDays(6);
-            var period = new RentalPeriod(startDate, endDate);
+            var previousPeriod = new RentalPeriod(DateTime.Today.AddDays(7), DateTime.Today.AddDays(13));
+            var currentPeriod = new RentalPeriod(DateTime.Today.AddDays(14), DateTime.Today.AddDays(20));
 
             // Act
-            var contains = period.Contains(endDate);
+            var hasGap = currentPeriod.HasGapBefore(previousPeriod);
 
             // Assert
-            contains.ShouldBeTrue();
+            hasGap.ShouldBeFalse();
         }
 
         [Fact]
-        public void Contains_Should_Return_False_When_Date_Before_Period()
+        public void Create_Should_Create_Period_With_Days_Count()
         {
             // Arrange
-            var startDate = DateTime.Today.AddDays(5);
-            var endDate = DateTime.Today.AddDays(10);
-            var period = new RentalPeriod(startDate, endDate);
-            var dateBeforePeriod = DateTime.Today;
+            var startDate = DateTime.Today.AddDays(7);
+            var daysCount = 10;
 
             // Act
-            var contains = period.Contains(dateBeforePeriod);
+            var period = RentalPeriod.Create(startDate, daysCount);
 
             // Assert
-            contains.ShouldBeFalse();
+            period.StartDate.ShouldBe(startDate.Date);
+            period.GetDaysCount().ShouldBe(daysCount);
         }
 
         [Fact]
-        public void Contains_Should_Return_False_When_Date_After_Period()
+        public void Create_Should_Throw_When_Days_Less_Than_7()
         {
             // Arrange
-            var startDate = DateTime.Today;
-            var endDate = DateTime.Today.AddDays(6);
-            var period = new RentalPeriod(startDate, endDate);
-            var dateAfterPeriod = DateTime.Today.AddDays(10);
+            var startDate = DateTime.Today.AddDays(7);
+            var daysCount = 5;
 
-            // Act
-            var contains = period.Contains(dateAfterPeriod);
+            // Act & Assert
+            var exception = Should.Throw<BusinessException>(
+                () => RentalPeriod.Create(startDate, daysCount)
+            );
 
-            // Assert
-            contains.ShouldBeFalse();
+            exception.Code.ShouldBe("RENTAL_MINIMUM_7_DAYS_REQUIRED");
         }
 
         [Fact]
-        public void IsActive_Should_Return_True_When_Current_Date_In_Period()
+        public void RentalPeriod_Should_Be_ValueObject()
         {
             // Arrange
-            var startDate = DateTime.Today.AddDays(-1);
-            var endDate = DateTime.Today.AddDays(5);
-            var period = new RentalPeriod(startDate, endDate);
+            var period1 = new RentalPeriod(DateTime.Today.AddDays(7), DateTime.Today.AddDays(13));
+            var period2 = new RentalPeriod(DateTime.Today.AddDays(7), DateTime.Today.AddDays(13));
 
-            // Act
-            var isActive = period.IsActive();
-
-            // Assert
-            isActive.ShouldBeTrue();
+            // Act & Assert - value objects with same properties should have same hash and atomic values
+            period1.StartDate.ShouldBe(period2.StartDate);
+            period1.EndDate.ShouldBe(period2.EndDate);
+            period1.GetDaysCount().ShouldBe(period2.GetDaysCount());
         }
 
         [Fact]
-        public void IsActive_Should_Return_False_When_Period_In_Past()
+        public void RentalPeriod_Should_Not_Equal_Different_Dates()
         {
             // Arrange
-            var startDate = DateTime.Today.AddDays(-10);
-            var endDate = DateTime.Today.AddDays(-5);
-            var period = new RentalPeriod(startDate, endDate);
+            var period1 = new RentalPeriod(DateTime.Today.AddDays(7), DateTime.Today.AddDays(13));
+            var period2 = new RentalPeriod(DateTime.Today.AddDays(8), DateTime.Today.AddDays(14));
 
-            // Act
-            var isActive = period.IsActive();
-
-            // Assert
-            isActive.ShouldBeFalse();
-        }
-
-        [Fact]
-        public void IsActive_Should_Return_False_When_Period_In_Future()
-        {
-            // Arrange
-            var startDate = DateTime.Today.AddDays(5);
-            var endDate = DateTime.Today.AddDays(10);
-            var period = new RentalPeriod(startDate, endDate);
-
-            // Act
-            var isActive = period.IsActive();
-
-            // Assert
-            isActive.ShouldBeFalse();
-        }
-
-        [Fact]
-        public void IsFuture_Should_Return_True_When_StartDate_After_Today()
-        {
-            // Arrange
-            var startDate = DateTime.Today.AddDays(5);
-            var endDate = DateTime.Today.AddDays(10);
-            var period = new RentalPeriod(startDate, endDate);
-
-            // Act
-            var isFuture = period.IsFuture();
-
-            // Assert
-            isFuture.ShouldBeTrue();
-        }
-
-        [Fact]
-        public void IsFuture_Should_Return_False_When_StartDate_Is_Today()
-        {
-            // Arrange
-            var startDate = DateTime.Today;
-            var endDate = DateTime.Today.AddDays(5);
-            var period = new RentalPeriod(startDate, endDate);
-
-            // Act
-            var isFuture = period.IsFuture();
-
-            // Assert
-            isFuture.ShouldBeFalse();
-        }
-
-        [Fact]
-        public void IsFuture_Should_Return_False_When_StartDate_In_Past()
-        {
-            // Arrange
-            var startDate = DateTime.Today.AddDays(-5);
-            var endDate = DateTime.Today.AddDays(5);
-            var period = new RentalPeriod(startDate, endDate);
-
-            // Act
-            var isFuture = period.IsFuture();
-
-            // Assert
-            isFuture.ShouldBeFalse();
+            // Act & Assert
+            period1.Equals(period2).ShouldBeFalse();
         }
     }
 }

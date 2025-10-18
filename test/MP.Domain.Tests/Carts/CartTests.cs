@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using MP.Carts;
 using MP.Domain.Booths;
 using MP.Domain.Carts;
 using MP.Domain.Promotions;
@@ -52,8 +53,8 @@ namespace MP.Domain.Tests.Carts
                 _cartId,
                 _boothId,
                 _boothTypeId,
-                DateTime.Today,
-                DateTime.Today.AddDays(6),
+                DateTime.Today.AddDays(7),
+                DateTime.Today.AddDays(13),
                 100m,
                 Currency.PLN
             );
@@ -84,9 +85,9 @@ namespace MP.Domain.Tests.Carts
             // Arrange
             var cart = new Cart(_cartId, _userId);
             var item1 = new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN);
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN);
             var item2 = new CartItem(Guid.NewGuid(), _cartId, Guid.NewGuid(), _boothTypeId,
-                DateTime.Today.AddDays(10), DateTime.Today.AddDays(16), 150m, Currency.PLN);
+                DateTime.Today.AddDays(20), DateTime.Today.AddDays(26), 150m, Currency.PLN);
 
             // Act
             cart.AddItem(item1);
@@ -102,13 +103,13 @@ namespace MP.Domain.Tests.Carts
             // Arrange
             var cart = new Cart(_cartId, _userId);
             var item = new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN);
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN);
 
             // Act
             cart.AddItem(item);
 
             // Assert
-            cart.Items.Should().Contain(item);
+            cart.Items.ShouldContain(item);
             cart.GetItemCount().ShouldBe(1);
         }
 
@@ -133,14 +134,14 @@ namespace MP.Domain.Tests.Carts
             var cart = new Cart(_cartId, _userId);
             var itemId = Guid.NewGuid();
             var item = new CartItem(itemId, _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN);
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN);
             cart.AddItem(item);
 
             // Act
             cart.RemoveItem(itemId);
 
             // Assert
-            cart.Items.Should().NotContain(item);
+            cart.Items.ShouldNotContain(item);
             cart.IsEmpty().ShouldBeTrue();
         }
 
@@ -163,9 +164,9 @@ namespace MP.Domain.Tests.Carts
             // Arrange
             var cart = new Cart(_cartId, _userId);
             cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN));
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
             cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, Guid.NewGuid(), _boothTypeId,
-                DateTime.Today.AddDays(10), DateTime.Today.AddDays(16), 150m, Currency.PLN));
+                DateTime.Today.AddDays(20), DateTime.Today.AddDays(26), 150m, Currency.PLN));
 
             // Act
             cart.Clear();
@@ -193,7 +194,7 @@ namespace MP.Domain.Tests.Carts
             // Arrange
             var cart = new Cart(_cartId, _userId);
             cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN));
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
 
             // Act
             cart.MarkAsCheckedOut();
@@ -233,7 +234,7 @@ namespace MP.Domain.Tests.Carts
             // Arrange
             var cart = new Cart(_cartId, _userId);
             cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN));
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
             cart.MarkAsCheckedOut();
 
             // Act & Assert
@@ -248,10 +249,10 @@ namespace MP.Domain.Tests.Carts
             var cart = new Cart(_cartId, _userId);
             // Item 1: 100 per day * 7 days = 700
             cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN));
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
             // Item 2: 150 per day * 7 days = 1050
             cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, Guid.NewGuid(), _boothTypeId,
-                DateTime.Today.AddDays(10), DateTime.Today.AddDays(16), 150m, Currency.PLN));
+                DateTime.Today.AddDays(20), DateTime.Today.AddDays(26), 150m, Currency.PLN));
 
             // Act
             var total = cart.GetTotalAmount();
@@ -280,10 +281,10 @@ namespace MP.Domain.Tests.Carts
             var cart = new Cart(_cartId, _userId);
             // Item 1: 7 days
             cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN));
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
             // Item 2: 7 days
             cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, Guid.NewGuid(), _boothTypeId,
-                DateTime.Today.AddDays(10), DateTime.Today.AddDays(16), 150m, Currency.PLN));
+                DateTime.Today.AddDays(20), DateTime.Today.AddDays(26), 150m, Currency.PLN));
 
             // Act
             var totalDays = cart.GetTotalDays();
@@ -298,7 +299,7 @@ namespace MP.Domain.Tests.Carts
             // Arrange
             var cart = new Cart(_cartId, _userId);
             cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN));
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
 
             // Act
             var hasItem = cart.HasBoothInCart(_boothId);
@@ -325,10 +326,10 @@ namespace MP.Domain.Tests.Carts
         {
             // Arrange
             var cart = new Cart(_cartId, _userId);
-            var startDate = DateTime.Today.AddDays(5);
-            var endDate = DateTime.Today.AddDays(11);
+            var startDate = DateTime.Today.AddDays(10);
+            var endDate = DateTime.Today.AddDays(16);
             cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(10), 100m, Currency.PLN));
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
 
             // Act
             var hasOverlap = cart.HasOverlappingBooking(_boothId, startDate, endDate);
@@ -343,10 +344,10 @@ namespace MP.Domain.Tests.Carts
             // Arrange
             var cart = new Cart(_cartId, _userId);
             cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN));
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
 
             // Act
-            var hasOverlap = cart.HasOverlappingBooking(_boothId, DateTime.Today.AddDays(10), DateTime.Today.AddDays(16));
+            var hasOverlap = cart.HasOverlappingBooking(_boothId, DateTime.Today.AddDays(20), DateTime.Today.AddDays(26));
 
             // Assert
             hasOverlap.ShouldBeFalse();
@@ -379,7 +380,7 @@ namespace MP.Domain.Tests.Carts
             // Arrange
             var cart = new Cart(_cartId, _userId);
             cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN));
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
             cart.MarkAsCheckedOut();
 
             // Act & Assert
@@ -444,7 +445,7 @@ namespace MP.Domain.Tests.Carts
             var cart = new Cart(_cartId, _userId);
             var itemId = Guid.NewGuid();
             cart.AddItem(new CartItem(itemId, _cartId, _boothId, _boothTypeId,
-                DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN));
+                DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
             cart.MarkAsAbandoned();
 
             // Act & Assert
