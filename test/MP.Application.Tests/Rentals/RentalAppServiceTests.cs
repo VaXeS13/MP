@@ -119,9 +119,9 @@ namespace MP.Application.Tests.Rentals
         {
             // Arrange
             var booth1 = await CreateTestBoothAsync();
-            var booth2 = await CreateTestBoothAsync("BOOTH02");
+            var booth2 = await CreateTestBoothAsync($"BOOTH{Guid.NewGuid().ToString().Substring(0, 5)}".ToUpper());
             var boothType = await CreateTestBoothTypeAsync();
-            var user = await _userRepository.FirstOrDefaultAsync();
+            var userId = new Guid("00000000-0000-0000-0000-000000000001"); // TestUserId1 from CurrentUser mock
 
             var createDto1 = new CreateMyRentalDto
             {
@@ -148,7 +148,7 @@ namespace MP.Application.Tests.Rentals
             // Assert
             result.Items.ShouldNotBeEmpty();
             result.TotalCount.ShouldBe(2);
-            result.Items.ToList().ForEach(r => r.UserId.ShouldBe(user.Id));
+            result.Items.ToList().ForEach(r => r.UserId.ShouldBe(userId));
         }
 
         [Fact]
