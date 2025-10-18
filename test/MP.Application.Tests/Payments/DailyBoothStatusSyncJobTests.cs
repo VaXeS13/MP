@@ -9,6 +9,7 @@ using MP.Domain.BoothTypes;
 using MP.Domain.Rentals;
 using MP.Rentals;
 using Shouldly;
+using Volo.Abp;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Xunit;
@@ -17,6 +18,8 @@ namespace MP.Application.Tests.Payments
 {
     public class DailyBoothStatusSyncJobTests : MPApplicationTestBase<MPApplicationTestModule>
     {
+        private static readonly Guid TestUserId1 = new Guid("00000000-0000-0000-0000-000000000001");
+
         private readonly DailyBoothStatusSyncJob _dailyBoothStatusSyncJob;
         private readonly IBoothRepository _boothRepository;
         private readonly IRepository<Rental, Guid> _rentalRepository;
@@ -35,256 +38,268 @@ namespace MP.Application.Tests.Payments
         [Fact]
         public async Task DetermineBoothStatus_Should_Return_Rented_When_Active_Rental_Exists()
         {
-            // Arrange
-            var today = DateTime.Today;
-
-            // Create test user
-            var user = await _userRepository.FirstOrDefaultAsync();
-            user.ShouldNotBeNull();
-
-            // Create booth type
-            var boothType = new BoothType(
-                Guid.NewGuid(),
-                "Test Type",
-                "Test Description",
-                10m
-            );
-            await _boothTypeRepository.InsertAsync(boothType);
-
-            // Create booth
-            var booth = new MP.Domain.Booths.Booth(
-                Guid.NewGuid(),
-                "RENTED01",
-                100m
-            );
-            await _boothRepository.InsertAsync(booth);
-
-            // Create active rental with completed payment (period includes today)
-            var rental = new Rental(
-                Guid.NewGuid(),
-                user.Id,
-                booth.Id,
-                boothType.Id,
-                new RentalPeriod(today.AddDays(-5), today.AddDays(5)),
-                1000m,
-                Currency.PLN
-            );
-            rental.MarkAsPaid(1000m, DateTime.Now);
-            await _rentalRepository.InsertAsync(rental);
-
-            // Create lookup dictionaries (simulating job logic)
-            var activeRentalMap = new Dictionary<Guid, Rental>
+            await WithUnitOfWorkAsync(async () =>
             {
-                { booth.Id, rental }
-            };
-            var futureRentalMap = new Dictionary<Guid, Rental>();
+                // Arrange
+                var today = DateTime.Today;
+                var guid1 = Guid.NewGuid().ToString().Replace("-", "");
+                var guid2 = Guid.NewGuid().ToString().Replace("-", "");
 
-            // Act
-            var result = DetermineBoothStatusTestHelper(
-                booth,
-                activeRentalMap,
-                futureRentalMap,
-                today
-            );
+                // Create booth type
+                var boothType = new BoothType(
+                    Guid.NewGuid(),
+                    $"T{guid1.Substring(0, 3)}",
+                    "Test Description",
+                    10m
+                );
+                await _boothTypeRepository.InsertAsync(boothType);
 
-            // Assert
-            result.ShouldBe(BoothStatus.Rented);
+                // Create booth
+                var booth = new MP.Domain.Booths.Booth(
+                    Guid.NewGuid(),
+                    $"R{guid2.Substring(0, 9)}",
+                    100m
+                );
+                await _boothRepository.InsertAsync(booth);
+
+                // Create active rental with completed payment (period includes today)
+                // Using today as start so it overlaps with today (today to today+6 = 7 days)
+                var rental = new Rental(
+                    Guid.NewGuid(),
+                    TestUserId1,
+                    booth.Id,
+                    boothType.Id,
+                    new RentalPeriod(today, today.AddDays(6)),
+                    1000m,
+                    Currency.PLN
+                );
+                rental.MarkAsPaid(1000m, DateTime.Now);
+                await _rentalRepository.InsertAsync(rental);
+
+                // Create lookup dictionaries (simulating job logic)
+                var activeRentalMap = new Dictionary<Guid, Rental>
+                {
+                    { booth.Id, rental }
+                };
+                var futureRentalMap = new Dictionary<Guid, Rental>();
+
+                // Act
+                var result = DetermineBoothStatusTestHelper(
+                    booth,
+                    activeRentalMap,
+                    futureRentalMap,
+                    today
+                );
+
+                // Assert
+                result.ShouldBe(BoothStatus.Rented);
+            });
         }
 
         [Fact]
         public async Task DetermineBoothStatus_Should_Return_Reserved_When_Future_Rental_Exists()
         {
-            // Arrange
-            var today = DateTime.Today;
-
-            // Create test user
-            var user = await _userRepository.FirstOrDefaultAsync();
-            user.ShouldNotBeNull();
-
-            // Create booth type
-            var boothType = new BoothType(
-                Guid.NewGuid(),
-                "Test Type 2",
-                "Test Description",
-                10m
-            );
-            await _boothTypeRepository.InsertAsync(boothType);
-
-            // Create booth
-            var booth = new MP.Domain.Booths.Booth(
-                Guid.NewGuid(),
-                "RESERV01",
-                100m
-            );
-            await _boothRepository.InsertAsync(booth);
-
-            // Create future rental with completed payment (starts tomorrow)
-            var rental = new Rental(
-                Guid.NewGuid(),
-                user.Id,
-                booth.Id,
-                boothType.Id,
-                new RentalPeriod(today.AddDays(1), today.AddDays(10)),
-                1000m,
-                Currency.PLN
-            );
-            rental.MarkAsPaid(1000m, DateTime.Now);
-            await _rentalRepository.InsertAsync(rental);
-
-            // Create lookup dictionaries
-            var activeRentalMap = new Dictionary<Guid, Rental>();
-            var futureRentalMap = new Dictionary<Guid, Rental>
+            await WithUnitOfWorkAsync(async () =>
             {
-                { booth.Id, rental }
-            };
+                // Arrange
+                var today = DateTime.Today;
+                var guid1 = Guid.NewGuid().ToString().Replace("-", "");
+                var guid2 = Guid.NewGuid().ToString().Replace("-", "");
 
-            // Act
-            var result = DetermineBoothStatusTestHelper(
-                booth,
-                activeRentalMap,
-                futureRentalMap,
-                today
-            );
+                // Create booth type
+                var boothType = new BoothType(
+                    Guid.NewGuid(),
+                    $"T{guid1.Substring(0, 3)}",
+                    "Test Description",
+                    10m
+                );
+                await _boothTypeRepository.InsertAsync(boothType);
 
-            // Assert
-            result.ShouldBe(BoothStatus.Reserved);
+                // Create booth
+                var booth = new MP.Domain.Booths.Booth(
+                    Guid.NewGuid(),
+                    $"R{guid2.Substring(0, 9)}",
+                    100m
+                );
+                await _boothRepository.InsertAsync(booth);
+
+                // Create future rental with completed payment (starts tomorrow)
+                var rental = new Rental(
+                    Guid.NewGuid(),
+                    TestUserId1,
+                    booth.Id,
+                    boothType.Id,
+                    new RentalPeriod(today.AddDays(1), today.AddDays(10)),
+                    1000m,
+                    Currency.PLN
+                );
+                rental.MarkAsPaid(1000m, DateTime.Now);
+                await _rentalRepository.InsertAsync(rental);
+
+                // Create lookup dictionaries
+                var activeRentalMap = new Dictionary<Guid, Rental>();
+                var futureRentalMap = new Dictionary<Guid, Rental>
+                {
+                    { booth.Id, rental }
+                };
+
+                // Act
+                var result = DetermineBoothStatusTestHelper(
+                    booth,
+                    activeRentalMap,
+                    futureRentalMap,
+                    today
+                );
+
+                // Assert
+                result.ShouldBe(BoothStatus.Reserved);
+            });
         }
 
         [Fact]
         public async Task DetermineBoothStatus_Should_Return_Available_When_No_Rental_Exists()
         {
-            // Arrange
-            var today = DateTime.Today;
+            await WithUnitOfWorkAsync(async () =>
+            {
+                // Arrange
+                var today = DateTime.Today;
+                var guid1 = Guid.NewGuid().ToString().Replace("-", "");
 
-            // Create booth
-            var booth = new MP.Domain.Booths.Booth(
-                Guid.NewGuid(),
-                "AVAILAB01",
-                100m
-            );
-            await _boothRepository.InsertAsync(booth);
+                // Create booth
+                var booth = new MP.Domain.Booths.Booth(
+                    Guid.NewGuid(),
+                    $"A{guid1.Substring(0, 9)}",
+                    100m
+                );
+                await _boothRepository.InsertAsync(booth);
 
-            // No rentals
-            var activeRentalMap = new Dictionary<Guid, Rental>();
-            var futureRentalMap = new Dictionary<Guid, Rental>();
+                // No rentals
+                var activeRentalMap = new Dictionary<Guid, Rental>();
+                var futureRentalMap = new Dictionary<Guid, Rental>();
 
-            // Act
-            var result = DetermineBoothStatusTestHelper(
-                booth,
-                activeRentalMap,
-                futureRentalMap,
-                today
-            );
+                // Act
+                var result = DetermineBoothStatusTestHelper(
+                    booth,
+                    activeRentalMap,
+                    futureRentalMap,
+                    today
+                );
 
-            // Assert
-            result.ShouldBe(BoothStatus.Available);
+                // Assert
+                result.ShouldBe(BoothStatus.Available);
+            });
         }
 
         [Fact]
         public async Task DetermineBoothStatus_Should_Return_Maintenance_When_Status_Is_Maintenance()
         {
-            // Arrange
-            var today = DateTime.Today;
+            await WithUnitOfWorkAsync(async () =>
+            {
+                // Arrange
+                var today = DateTime.Today;
+                var guid1 = Guid.NewGuid().ToString().Replace("-", "");
 
-            // Create booth in maintenance
-            var booth = new MP.Domain.Booths.Booth(
-                Guid.NewGuid(),
-                "MAINT01",
-                100m
-            );
-            booth.MarkAsMaintenace();
-            await _boothRepository.InsertAsync(booth);
+                // Create booth in maintenance
+                var booth = new MP.Domain.Booths.Booth(
+                    Guid.NewGuid(),
+                    $"M{guid1.Substring(0, 9)}",
+                    100m
+                );
+                booth.MarkAsMaintenace();
+                await _boothRepository.InsertAsync(booth);
 
-            // Even with active rental, maintenance takes priority
-            var activeRentalMap = new Dictionary<Guid, Rental>();
-            var futureRentalMap = new Dictionary<Guid, Rental>();
+                // Even with active rental, maintenance takes priority
+                var activeRentalMap = new Dictionary<Guid, Rental>();
+                var futureRentalMap = new Dictionary<Guid, Rental>();
 
-            // Act
-            var result = DetermineBoothStatusTestHelper(
-                booth,
-                activeRentalMap,
-                futureRentalMap,
-                today
-            );
+                // Act
+                var result = DetermineBoothStatusTestHelper(
+                    booth,
+                    activeRentalMap,
+                    futureRentalMap,
+                    today
+                );
 
-            // Assert
-            result.ShouldBe(BoothStatus.Maintenance);
+                // Assert
+                result.ShouldBe(BoothStatus.Maintenance);
+            });
         }
 
         [Fact]
         public async Task DetermineBoothStatus_Should_Prioritize_Active_Over_Future_Rental()
         {
-            // Arrange
-            var today = DateTime.Today;
-
-            // Create test user
-            var user = await _userRepository.FirstOrDefaultAsync();
-            user.ShouldNotBeNull();
-
-            // Create booth type
-            var boothType = new BoothType(
-                Guid.NewGuid(),
-                "Test Type 3",
-                "Test Description",
-                10m
-            );
-            await _boothTypeRepository.InsertAsync(boothType);
-
-            // Create booth
-            var booth = new MP.Domain.Booths.Booth(
-                Guid.NewGuid(),
-                "PRIOR01",
-                100m
-            );
-            await _boothRepository.InsertAsync(booth);
-
-            // Create active rental (current)
-            var activeRental = new Rental(
-                Guid.NewGuid(),
-                user.Id,
-                booth.Id,
-                boothType.Id,
-                new RentalPeriod(today.AddDays(-2), today.AddDays(2)),
-                1000m,
-                Currency.PLN
-            );
-            activeRental.MarkAsPaid(1000m, DateTime.Now);
-
-            // Create future rental (shouldn't affect status since active exists)
-            var futureRental = new Rental(
-                Guid.NewGuid(),
-                user.Id,
-                booth.Id,
-                boothType.Id,
-                new RentalPeriod(today.AddDays(5), today.AddDays(10)),
-                1000m,
-                Currency.PLN
-            );
-            futureRental.MarkAsPaid(1000m, DateTime.Now);
-
-            await _rentalRepository.InsertAsync(activeRental);
-            await _rentalRepository.InsertAsync(futureRental);
-
-            // Both active and future rentals exist
-            var activeRentalMap = new Dictionary<Guid, Rental>
+            await WithUnitOfWorkAsync(async () =>
             {
-                { booth.Id, activeRental }
-            };
-            var futureRentalMap = new Dictionary<Guid, Rental>
-            {
-                { booth.Id, futureRental }
-            };
+                // Arrange
+                var today = DateTime.Today;
+                var guid1 = Guid.NewGuid().ToString().Replace("-", "");
+                var guid2 = Guid.NewGuid().ToString().Replace("-", "");
 
-            // Act
-            var result = DetermineBoothStatusTestHelper(
-                booth,
-                activeRentalMap,
-                futureRentalMap,
-                today
-            );
+                // Create booth type
+                var boothType = new BoothType(
+                    Guid.NewGuid(),
+                    $"T{guid1.Substring(0, 3)}",
+                    "Test Description",
+                    10m
+                );
+                await _boothTypeRepository.InsertAsync(boothType);
 
-            // Assert
-            result.ShouldBe(BoothStatus.Rented); // Active takes priority
+                // Create booth
+                var booth = new MP.Domain.Booths.Booth(
+                    Guid.NewGuid(),
+                    $"P{guid2.Substring(0, 9)}",
+                    100m
+                );
+                await _boothRepository.InsertAsync(booth);
+
+                // Create active rental (current - today to today+6 = 7 days)
+                var activeRental = new Rental(
+                    Guid.NewGuid(),
+                    TestUserId1,
+                    booth.Id,
+                    boothType.Id,
+                    new RentalPeriod(today, today.AddDays(6)),
+                    1000m,
+                    Currency.PLN
+                );
+                activeRental.MarkAsPaid(1000m, DateTime.Now);
+
+                // Create future rental (shouldn't affect status since active exists)
+                var futureRental = new Rental(
+                    Guid.NewGuid(),
+                    TestUserId1,
+                    booth.Id,
+                    boothType.Id,
+                    new RentalPeriod(today.AddDays(7), today.AddDays(13)),
+                    1000m,
+                    Currency.PLN
+                );
+                futureRental.MarkAsPaid(1000m, DateTime.Now);
+
+                await _rentalRepository.InsertAsync(activeRental);
+                await _rentalRepository.InsertAsync(futureRental);
+
+                // Both active and future rentals exist
+                var activeRentalMap = new Dictionary<Guid, Rental>
+                {
+                    { booth.Id, activeRental }
+                };
+                var futureRentalMap = new Dictionary<Guid, Rental>
+                {
+                    { booth.Id, futureRental }
+                };
+
+                // Act
+                var result = DetermineBoothStatusTestHelper(
+                    booth,
+                    activeRentalMap,
+                    futureRentalMap,
+                    today
+                );
+
+                // Assert
+                result.ShouldBe(BoothStatus.Rented); // Active takes priority
+            });
         }
 
         /// <summary>

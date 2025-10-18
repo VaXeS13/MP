@@ -9,6 +9,7 @@ using MP.Domain.Payments;
 using MP.Domain.Rentals;
 using MP.Rentals;
 using Shouldly;
+using Volo.Abp;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Xunit;
@@ -17,6 +18,7 @@ namespace MP.Application.Tests.Payments
 {
     public class P24StatusCheckRecurringJobTests : MPApplicationTestBase<MPApplicationTestModule>
     {
+        private static readonly Guid TestUserId1 = new Guid("00000000-0000-0000-0000-000000000001");
         private readonly IBoothRepository _boothRepository;
         private readonly IRepository<Rental, Guid> _rentalRepository;
         private readonly IRepository<BoothType, Guid> _boothTypeRepository;
@@ -35,96 +37,97 @@ namespace MP.Application.Tests.Payments
         [Fact]
         public async Task Should_Update_Rental_And_Booth_When_Payment_Verified()
         {
-            // Arrange
-            var today = DateTime.Today;
+            await WithUnitOfWorkAsync(async () =>
+            {
+                // Arrange
+                var today = DateTime.Today;
+                var guid1 = Guid.NewGuid().ToString().Replace("-", "");
+                var guid2 = Guid.NewGuid().ToString().Replace("-", "");
 
-            // Create test user
-            var user = await _userRepository.FirstOrDefaultAsync();
-            user.ShouldNotBeNull();
+                // Create booth type
+                var boothType = new BoothType(
+                    Guid.NewGuid(),
+                    $"T{guid1.Substring(0, 3)}",
+                    "Test Description",
+                    10m
+                );
+                await _boothTypeRepository.InsertAsync(boothType);
 
-            // Create booth type
-            var boothType = new BoothType(
-                Guid.NewGuid(),
-                "Test Type P24",
-                "Test Description",
-                10m
-            );
-            await _boothTypeRepository.InsertAsync(boothType);
+                // Create booth (initially Reserved)
+                var booth = new MP.Domain.Booths.Booth(
+                    Guid.NewGuid(),
+                    $"P{guid2.Substring(0, 9)}",
+                    100m
+                );
+                booth.MarkAsReserved();
+                await _boothRepository.InsertAsync(booth);
 
-            // Create booth (initially Reserved)
-            var booth = new MP.Domain.Booths.Booth(
-                Guid.NewGuid(),
-                "P24TEST01",
-                100m
-            );
-            booth.MarkAsReserved();
-            await _boothRepository.InsertAsync(booth);
-
-            // Create rental (Draft status, not paid yet)
-            var sessionId = $"p24_test_{Guid.NewGuid()}";
-            var rental = new Rental(
-                Guid.NewGuid(),
-                user.Id,
-                booth.Id,
-                boothType.Id,
-                new RentalPeriod(today, today.AddDays(10)),
-                1000m,
-                Currency.PLN
-            );
+                // Create rental (Draft status, not paid yet)
+                var sessionId = $"p24_test_{Guid.NewGuid()}";
+                var rental = new Rental(
+                    Guid.NewGuid(),
+                    TestUserId1,
+                    booth.Id,
+                    boothType.Id,
+                    new RentalPeriod(today, today.AddDays(10)),
+                    1000m,
+                    Currency.PLN
+                );
             rental.Payment.SetTransactionId(sessionId);
             await _rentalRepository.InsertAsync(rental);
 
-            // Create P24 transaction (not yet verified)
-            var transaction = new P24Transaction(
-                Guid.NewGuid(),
-                sessionId,
-                142798, // merchantId
-                142798, // posId
-                1000m,
-                "PLN",
-                user.Email,
-                "Test payment",
-                "test-sign"
-            );
-            await _p24TransactionRepository.InsertAsync(transaction);
+                // Create P24 transaction (not yet verified)
+                var transaction = new P24Transaction(
+                    Guid.NewGuid(),
+                    sessionId,
+                    142798, // merchantId
+                    142798, // posId
+                    1000m,
+                    "PLN",
+                    "test@test.com",
+                    "Test payment",
+                    "test-sign"
+                );
+                await _p24TransactionRepository.InsertAsync(transaction);
 
-            // Act - Simulate payment verification
-            transaction.SetStatus("completed");
-            transaction.SetVerified(true);
-            await _p24TransactionRepository.UpdateAsync(transaction);
+                // Act - Simulate payment verification
+                transaction.SetStatus("completed");
+                transaction.SetVerified(true);
+                await _p24TransactionRepository.UpdateAsync(transaction);
 
-            // Simulate what UpdateRentalsAndBoothsAfterPaymentAsync does:
-            var rentalToUpdate = await _rentalRepository.FirstOrDefaultAsync(r =>
-                r.Payment.Przelewy24TransactionId == sessionId);
-            rentalToUpdate.ShouldNotBeNull();
+                // Simulate what UpdateRentalsAndBoothsAfterPaymentAsync does:
+                var rentalToUpdate = await _rentalRepository.FirstOrDefaultAsync(r =>
+                    r.Payment.Przelewy24TransactionId == sessionId);
+                rentalToUpdate.ShouldNotBeNull();
 
-            if (!rentalToUpdate.Payment.IsPaid)
-            {
-                rentalToUpdate.MarkAsPaid(rentalToUpdate.Payment.TotalAmount, DateTime.Now, sessionId);
-
-                var boothToUpdate = await _boothRepository.GetAsync(rentalToUpdate.BoothId);
-                if (boothToUpdate.Status != BoothStatus.Maintenance)
+                if (!rentalToUpdate.Payment.IsPaid)
                 {
-                    if (rentalToUpdate.Period.StartDate <= DateTime.Today)
+                    rentalToUpdate.MarkAsPaid(rentalToUpdate.Payment.TotalAmount, DateTime.Now, sessionId);
+
+                    var boothToUpdate = await _boothRepository.GetAsync(rentalToUpdate.BoothId);
+                    if (boothToUpdate.Status != BoothStatus.Maintenance)
                     {
-                        boothToUpdate.MarkAsRented();
+                        if (rentalToUpdate.Period.StartDate <= DateTime.Today)
+                        {
+                            boothToUpdate.MarkAsRented();
+                        }
+                        else
+                        {
+                            boothToUpdate.MarkAsReserved();
+                        }
+                        await _boothRepository.UpdateAsync(boothToUpdate);
                     }
-                    else
-                    {
-                        boothToUpdate.MarkAsReserved();
-                    }
-                    await _boothRepository.UpdateAsync(boothToUpdate);
+                    await _rentalRepository.UpdateAsync(rentalToUpdate);
                 }
-                await _rentalRepository.UpdateAsync(rentalToUpdate);
-            }
 
-            // Assert
-            var updatedRental = await _rentalRepository.GetAsync(rental.Id);
-            updatedRental.Payment.IsPaid.ShouldBeTrue();
-            updatedRental.Status.ShouldBe(RentalStatus.Active);
+                // Assert
+                var updatedRental = await _rentalRepository.GetAsync(rental.Id);
+                updatedRental.Payment.IsPaid.ShouldBeTrue();
+                updatedRental.Status.ShouldBe(RentalStatus.Active);
 
-            var updatedBooth = await _boothRepository.GetAsync(booth.Id);
-            updatedBooth.Status.ShouldBe(BoothStatus.Rented); // Since StartDate is today
+                var updatedBooth = await _boothRepository.GetAsync(booth.Id);
+                updatedBooth.Status.ShouldBe(BoothStatus.Rented); // Since StartDate is today
+            });
         }
 
         [Fact]
