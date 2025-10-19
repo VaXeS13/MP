@@ -59,8 +59,8 @@ namespace MP.Application.CustomerDashboard
                         var endDate = period?.EndDate ?? DateTime.Today;
                         var daysRemaining = (int)(endDate - DateTime.Today).TotalDays;
                         var isExpiringSoon = (endDate - DateTime.Today).TotalDays <= 7;
-                        var totalItems = r.GetItemsCount() ?? 0;
-                        var soldItems = r.GetSoldItemsCount() ?? 0;
+                        var totalItems = r.GetItemsCount();
+                        var soldItems = r.GetSoldItemsCount();
 
                         dtos.Add(new MyActiveRentalDto
                         {
@@ -75,8 +75,8 @@ namespace MP.Application.CustomerDashboard
                             TotalItems = totalItems,
                             SoldItems = soldItems,
                             AvailableItems = totalItems - soldItems,
-                            TotalSales = r.GetTotalSalesAmount() ?? 0,
-                            TotalCommission = r.GetTotalCommissionEarned() ?? 0,
+                            TotalSales = r.GetTotalSalesAmount(),
+                            TotalCommission = r.GetTotalCommissionEarned(),
                             CanExtend = r.IsActive()
                         });
                     }
