@@ -1,0 +1,78 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+.npm
+.yarn
+
+# Build artifacts
+dist
+build
+bin
+obj
+*.exe
+*.o
+*.so
+*.dylib
+
+# Dependencies
+.nuget
+packages
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+
+# Testing
+.coverage
+htmlcov
+.pytest_cache
+jest-coverage
+
+# Documentation
+docs
+README.md
+CHANGELOG.md
+LICENSE
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.docker
+
+# Logs
+logs
+*.log
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# OS
+.env.local
+.env.*.local
+
+# Angular specific
+.angular/cache
+dist/
+
+# Development
+angular/dist/
