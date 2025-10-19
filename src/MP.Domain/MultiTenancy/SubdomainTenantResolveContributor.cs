@@ -16,7 +16,7 @@ namespace MP.MultiTenancy
 
         public override string Name => ContributorName;
 
-        protected override async Task<string> GetTenantIdOrNameFromHttpContextOrNullAsync(
+        protected override async Task<string?> GetTenantIdOrNameFromHttpContextOrNullAsync(
             ITenantResolveContext context,
             HttpContext httpContext)
         {
@@ -98,7 +98,7 @@ namespace MP.MultiTenancy
             return resolvedTenant;
         }
 
-        private static string ExtractSubdomainFromUrl(string url)
+        private static string? ExtractSubdomainFromUrl(string url)
         {
             try
             {
@@ -114,7 +114,7 @@ namespace MP.MultiTenancy
             return null;
         }
 
-        private static string ExtractSubdomain(string host)
+        private static string? ExtractSubdomain(string host)
         {
             if (string.IsNullOrEmpty(host))
                 return null;

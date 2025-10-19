@@ -27,7 +27,7 @@ namespace MP.Domain.Services
             _logger = logger;
         }
 
-        public async Task<string> GetClientIdForSubdomainAsync(string subdomain)
+        public async Task<string?> GetClientIdForSubdomainAsync(string subdomain)
         {
             if (string.IsNullOrEmpty(subdomain) || !IsValidSubdomain(subdomain))
                 return null;
@@ -72,7 +72,7 @@ namespace MP.Domain.Services
             }
         }
 
-        public async Task<SubdomainClientInfo> GetClientInfoForSubdomainAsync(string subdomain)
+        public async Task<SubdomainClientInfo?> GetClientInfoForSubdomainAsync(string subdomain)
         {
             var clientId = await GetClientIdForSubdomainAsync(subdomain);
             if (string.IsNullOrEmpty(clientId))
@@ -104,7 +104,7 @@ namespace MP.Domain.Services
             }
         }
 
-        public string ExtractSubdomainFromOrigin(string origin)
+        public string? ExtractSubdomainFromOrigin(string origin)
         {
             if (string.IsNullOrEmpty(origin))
                 return null;
@@ -148,7 +148,7 @@ namespace MP.Domain.Services
             return Regex.IsMatch(subdomain, @"^[a-z0-9]([a-z0-9\-]*[a-z0-9])?$");
         }
 
-        private async Task<string> FindClientByRedirectUriAsync(string subdomain)
+        private async Task<string?> FindClientByRedirectUriAsync(string subdomain)
         {
             try
             {
@@ -186,7 +186,7 @@ namespace MP.Domain.Services
             }
         }
 
-        private string GenerateClientIdFromSubdomain(string subdomain)
+        private string? GenerateClientIdFromSubdomain(string subdomain)
         {
             if (string.IsNullOrEmpty(subdomain))
                 return null;

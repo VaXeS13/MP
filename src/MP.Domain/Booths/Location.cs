@@ -9,7 +9,7 @@ namespace MP.Domain.Booths
 {
     public class Location : Entity<Guid>
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public int TotalBooths { get; set; }
     }
 }
