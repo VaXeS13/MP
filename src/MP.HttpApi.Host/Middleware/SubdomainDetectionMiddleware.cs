@@ -46,7 +46,7 @@ namespace MP.Middleware
             await _next(context);
         }
 
-        private static string ExtractSubdomainFromRequest(HttpContext context)
+        private static string? ExtractSubdomainFromRequest(HttpContext context)
         {
             // 1. Sprawdź redirect_uri (OAuth flow)
             var redirectUri = context.Request.Query["redirect_uri"].FirstOrDefault();
@@ -84,7 +84,7 @@ namespace MP.Middleware
             return null;
         }
 
-        private static string ExtractSubdomainFromUrl(string url)
+        private static string? ExtractSubdomainFromUrl(string url)
         {
             try
             {
@@ -100,7 +100,7 @@ namespace MP.Middleware
             return null;
         }
 
-        private static string ExtractSubdomain(string host)
+        private static string? ExtractSubdomain(string host)
         {
             if (string.IsNullOrEmpty(host))
                 return null;

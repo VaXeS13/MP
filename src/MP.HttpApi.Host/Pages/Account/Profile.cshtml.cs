@@ -38,10 +38,10 @@ namespace MP.HttpApi.Host.Pages.Account
         }
 
         [BindProperty(SupportsGet = true)]
-        public ProfileInputModel Input { get; set; }
+        public ProfileInputModel? Input { get; set; }
 
         [TempData]
-        public string StatusMessage { get; set; }
+        public string? StatusMessage { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -150,20 +150,20 @@ namespace MP.HttpApi.Host.Pages.Account
     {
         [Required(ErrorMessage = "Imię jest wymagane")]
         [StringLength(50, ErrorMessage = "Imię nie może przekraczać 50 znaków")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [Required(ErrorMessage = "Nazwisko jest wymagane")]
         [StringLength(50, ErrorMessage = "Nazwisko nie może przekraczać 50 znaków")]
-        public string Surname { get; set; }
+        public string? Surname { get; set; }
 
         [Required(ErrorMessage = "Email jest wymagany")]
         [EmailAddress(ErrorMessage = "Nieprawidłowy format adresu email")]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
-        
+
         [StringLength(50, ErrorMessage = "Numer konta bankowego nie może przekraczać 50 znaków")]
         [RegularExpression(@"^(PL)?\d{26}$|^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$",
             ErrorMessage = "Nieprawidłowy format numeru konta bankowego (26 cyfr lub format IBAN)")]
-        public string BankAccountNumber { get; set; }
+        public string? BankAccountNumber { get; set; }
     }
 }
