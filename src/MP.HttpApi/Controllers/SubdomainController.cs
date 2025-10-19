@@ -37,7 +37,7 @@ namespace MP.Controllers
             var scope = HttpContext.Request.Query["scope"].FirstOrDefault();
 
             // Informacje o kliencie OAuth
-            object clientInfo = null;
+            object? clientInfo = null;
             if (!string.IsNullOrEmpty(oauthClientId))
             {
                 var application = await _applicationManager.FindByClientIdAsync(oauthClientId);

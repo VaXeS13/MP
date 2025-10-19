@@ -74,8 +74,6 @@ namespace MP;
     )]
 public class MPHttpApiHostModule : AbpModule
 {
-    
-        private readonly ILogger<SubdomainTenantResolveContributor> _logger;
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();

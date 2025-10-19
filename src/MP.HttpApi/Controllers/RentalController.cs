@@ -257,7 +257,7 @@ namespace MP.Controllers
                             });
                         }
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         // Log the error but don't fail the whole request
                         // The event will be published again by Hangfire job if needed
@@ -266,7 +266,7 @@ namespace MP.Controllers
 
                 return Ok("OK");
             }
-            catch (Exception ex)
+            catch
             {
                 // Log error but return OK to Przelewy24
                 return Ok("OK");

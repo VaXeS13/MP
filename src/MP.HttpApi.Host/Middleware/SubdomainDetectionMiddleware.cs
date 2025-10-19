@@ -136,7 +136,7 @@ namespace MP.Middleware
                    host.StartsWith("192.168.");
         }
 
-        private static string GetClientOriginFromRequest(HttpContext context)
+        private static string? GetClientOriginFromRequest(HttpContext context)
         {
             // 1. Origin header
             var origin = context.Request.Headers["Origin"].FirstOrDefault();
