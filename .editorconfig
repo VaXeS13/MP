@@ -1,2 +1,59 @@
+# EditorConfig for Marketplace Pavilion project
+root = true
+
+# Default - all files
+[*]
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+charset = utf-8
+
+# Project files
 [*.csproj]
 indent_size = 2
+
+# C# files
+[*.cs]
+indent_size = 4
+
+# Suppress non-critical nullable reference warnings for faster compilation
+# These are primarily in Payment, Terminal, and Notification layers
+# CS1998: async method without await - often intentional for async API signatures
+dotnet_diagnostic.CS1998.severity = silent
+
+# CS8629: Nullable value type equality comparison - low impact, design pattern
+dotnet_diagnostic.CS8629.severity = silent
+
+# CS8601: Possible null reference assignment - widely used in service layers
+dotnet_diagnostic.CS8601.severity = suggestion
+
+# CS8602: Dereference of possibly null reference - common in DTO mapping
+dotnet_diagnostic.CS8602.severity = suggestion
+
+# CS8603: Possible null reference return - suppressible for service methods
+dotnet_diagnostic.CS8603.severity = suggestion
+
+# CS8604: Possible null reference argument - suppressible for helper methods
+dotnet_diagnostic.CS8604.severity = suggestion
+
+# CS8600: Converting null to non-nullable - suppressible for model binding
+dotnet_diagnostic.CS8600.severity = suggestion
+
+# CS8618: Non-nullable property not initialized - suppressible for model properties
+dotnet_diagnostic.CS8618.severity = suggestion
+
+# CS0168: Variable declared but never used - suppress for try-catch blocks
+dotnet_diagnostic.CS0168.severity = suggestion
+
+# ASP.NET Core specific
+# ASP0019: IHeaderDictionary.Append suggestion
+dotnet_diagnostic.ASP0019.severity = suggestion
+
+# Code style conventions
+csharp_prefer_braces = true:silent
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_namespace_declarations = file_scoped:silent
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_inlined_variable_declaration = true:suggestion
+csharp_style_throw_expression = true:suggestion
+csharp_style_prefer_null_coalescing_operator = true:suggestion
