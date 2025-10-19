@@ -44,12 +44,11 @@ jobs:
         id: commits
         run: |
           # Get commits since last tag or all commits if no tags
-          if git describe --tags --abbrev=0 2>/dev/null; then
-            LAST_TAG=$(git describe --tags --abbrev=0)
-            COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"%H %s" | grep -E "^[a-f0-9]+ (feat|fix|docs|style|refactor|perf|test|chore|ci)(\(.+\))?:")
+          if LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null); then
+            COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"%H %s" | grep -E "^[a-f0-9]+ (feat|fix|docs|style|refactor|perf|test|chore|ci)(\(.+\))?:" || true)
             echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
           else
-            COMMITS=$(git log --pretty=format:"%H %s" | grep -E "^[a-f0-9]+ (feat|fix|docs|style|refactor|perf|test|chore|ci)(\(.+\))?:")
+            COMMITS=$(git log --pretty=format:"%H %s" | grep -E "^[a-f0-9]+ (feat|fix|docs|style|refactor|perf|test|chore|ci)(\(.+\))?:" || true)
             echo "last_tag=initial" >> $GITHUB_OUTPUT
           fi
           echo "commits<<EOF" >> $GITHUB_OUTPUT
@@ -71,9 +70,9 @@ jobs:
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
 
           # Check commit types to determine version bump
-          HAS_BREAKING=$(echo "$COMMITS" | grep -c "feat!:" || true)
-          HAS_FEATURE=$(echo "$COMMITS" | grep -c "feat:" || true)
-          HAS_FIX=$(echo "$COMMITS" | grep -c "fix:" || true)
+          HAS_BREAKING=$(echo "$COMMITS" | grep -c "feat!:" 2>/dev/null || echo 0)
+          HAS_FEATURE=$(echo "$COMMITS" | grep -c "feat:" 2>/dev/null || echo 0)
+          HAS_FIX=$(echo "$COMMITS" | grep -c "fix:" 2>/dev/null || echo 0)
 
           if [ "$HAS_BREAKING" -gt 0 ]; then
             MAJOR=$((MAJOR + 1))
@@ -113,19 +112,19 @@ jobs:
           CHANGELOG="## What's Changed\n\n"
 
           # Features
-          FEATURES=$(echo "$COMMITS" | grep "feat:" | sed 's/^[a-f0-9]* feat(\(.*\)): \(.*\)/- **\1**: \2/g' || true)
+          FEATURES=$(echo "$COMMITS" | grep "feat:" | sed 's/^[a-f0-9]* feat(\(.*\)): \(.*\)/- **\1**: \2/g' 2>/dev/null || true)
           if [ -n "$FEATURES" ]; then
             CHANGELOG="$CHANGELOG### Features\n$FEATURES\n\n"
           fi
 
           # Fixes
-          FIXES=$(echo "$COMMITS" | grep "fix:" | sed 's/^[a-f0-9]* fix(\(.*\)): \(.*\)/- **\1**: \2/g' || true)
+          FIXES=$(echo "$COMMITS" | grep "fix:" | sed 's/^[a-f0-9]* fix(\(.*\)): \(.*\)/- **\1**: \2/g' 2>/dev/null || true)
           if [ -n "$FIXES" ]; then
             CHANGELOG="$CHANGELOG### Fixes\n$FIXES\n\n"
           fi
 
           # Other changes
-          OTHER=$(echo "$COMMITS" | grep -v "feat:\|fix:" | sed 's/^[a-f0-9]* \(.*\): \(.*\)/- \1: \2/g' || true)
+          OTHER=$(echo "$COMMITS" | grep -v "feat:\|fix:" | sed 's/^[a-f0-9]* \(.*\): \(.*\)/- \1: \2/g' 2>/dev/null || true)
           if [ -n "$OTHER" ]; then
             CHANGELOG="$CHANGELOG### Other Changes\n$OTHER\n\n"
           fi
