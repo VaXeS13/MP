@@ -1,0 +1,139 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mp_mssql
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: DevPassword123!
+      MSSQL_PID: Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql/data
+      - mssql_log:/var/opt/mssql/log
+      - mssql_backup:/var/opt/mssql/backup
+    networks:
+      - mp_network
+    healthcheck:
+      test: [
+        "CMD",
+        "/opt/mssql-tools/bin/sqlcmd",
+        "-S",
+        "localhost",
+        "-U",
+        "sa",
+        "-P",
+        "DevPassword123!",
+        "-Q",
+        "SELECT 1"
+      ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis Cache (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: mp_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - mp_network
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # .NET Backend API
+  api:
+    build:
+      context: .
+      dockerfile: src/MP.HttpApi.Host/Dockerfile
+      target: runtime
+    container_name: mp_api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5000
+      ConnectionStrings__Default: "Server=mssql;Database=MP;User Id=sa;Password=DevPassword123!;TrustServerCertificate=True;"
+      Redis__Configuration: "redis:6379"
+      App__SelfUrl: "http://localhost:5000"
+      App__CorsOrigins: "http://localhost:4200"
+    ports:
+      - "5000:5000"
+    depends_on:
+      mssql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - mp_network
+    restart: unless-stopped
+    volumes:
+      - ./logs/api:/app/logs
+
+  # Angular Frontend
+  web:
+    build:
+      context: ./angular
+      dockerfile: Dockerfile.local
+      args:
+        API_URL: http://localhost:5000
+    container_name: mp_web
+    ports:
+      - "4200:4200"
+    environment:
+      - NODE_ENV=development
+      - API_URL=http://localhost:5000
+    depends_on:
+      - api
+    networks:
+      - mp_network
+    restart: unless-stopped
+    volumes:
+      - ./angular/src:/app/src
+      - ./angular/angular.json:/app/angular.json
+      - ./angular/tsconfig.json:/app/tsconfig.json
+      - ./angular/package.json:/app/package.json
+
+  # Nginx Reverse Proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: mp_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - api
+      - web
+    networks:
+      - mp_network
+    restart: unless-stopped
+    profiles:
+      - nginx
+
+volumes:
+  mssql_data:
+    driver: local
+  mssql_log:
+    driver: local
+  mssql_backup:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  mp_network:
+    driver: bridge
+    name: mp_network

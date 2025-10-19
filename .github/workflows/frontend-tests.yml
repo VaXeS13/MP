@@ -1,0 +1,338 @@
+name: Frontend Tests & Analysis
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'angular/**'
+      - '.github/workflows/frontend-tests.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'angular/**'
+  schedule:
+    # Run nightly frontend tests at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  setup:
+    name: Setup Environment
+    runs-on: ubuntu-latest
+
+    outputs:
+      node-version: ${{ steps.setup.outputs.node-version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read Node.js version
+        id: setup
+        run: |
+          NODE_VERSION=$(cat angular/.nvmrc 2>/dev/null || echo "20")
+          echo "node-version=$NODE_VERSION" >> $GITHUB_OUTPUT
+          echo "Using Node.js version: $NODE_VERSION"
+
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.setup.outputs.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'angular/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci --prefix angular
+
+      - name: Run ESLint
+        run: npm run lint --prefix angular
+        continue-on-error: true
+
+      - name: Check formatting
+        run: npm run format:check --prefix angular
+        continue-on-error: true
+
+      - name: Check TypeScript compilation
+        run: npm run type-check --prefix angular
+        continue-on-error: true
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.setup.outputs.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'angular/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci --prefix angular
+
+      - name: Run unit tests with coverage
+        run: npm test -- --no-watch --code-coverage --watch=false --browsers=ChromeHeadless --progress=false
+        working-directory: angular
+        env:
+          CI: true
+          CHROME_BIN: /usr/bin/chromium-browser
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports
+          path: angular/coverage/
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: angular/test-results/
+
+      - name: Generate coverage badge
+        run: |
+          COVERAGE=$(awk -F'[<>]' '/lineCoverage/{print $3}' angular/coverage/lcov-report/index.html 2>/dev/null || echo "0")
+          echo "Coverage: ${COVERAGE}%"
+          echo "COVERAGE=${COVERAGE}" >> $GITHUB_ENV
+
+      - name: Comment on PR with coverage
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const fs = require('fs');
+            const coverage = process.env.COVERAGE || '0';
+            const comment = `## Frontend Test Coverage\n\n📊 Current Coverage: **${coverage}%**\n\nFull report: [Coverage Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.setup.outputs.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'angular/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci --prefix angular
+
+      - name: Install Cypress
+        run: npm install --save-dev cypress @cypress/schematic
+        working-directory: angular
+        continue-on-error: true
+
+      - name: Run E2E tests (if configured)
+        run: npm run e2e -- --headless --watch=false
+        working-directory: angular
+        continue-on-error: true
+
+      - name: Upload E2E videos
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-videos
+          path: angular/cypress/videos/
+          if-no-files-found: ignore
+
+      - name: Upload E2E screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-screenshots
+          path: angular/cypress/screenshots/
+          if-no-files-found: ignore
+
+  bundle-analysis:
+    name: Bundle Analysis
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.setup.outputs.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'angular/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci --prefix angular
+
+      - name: Build for production
+        run: npm run build -- --configuration production --progress=false
+        working-directory: angular
+
+      - name: Analyze bundle size
+        run: |
+          echo "## Bundle Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -d "angular/dist" ]; then
+            echo "### Production Build Size" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            du -sh angular/dist >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Main Bundle Sizes" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            find angular/dist -name "*.js" -type f -exec ls -lh {} \; | awk '{print $9, "(" $5 ")"}' | sort -k2 -rh | head -20 >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload production build
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: angular/dist/
+
+      - name: Check bundle size limits
+        run: |
+          TOTAL_SIZE=$(du -sb angular/dist | cut -f1)
+          MAX_SIZE=$((10 * 1024 * 1024))  # 10 MB
+
+          if [ $TOTAL_SIZE -gt $MAX_SIZE ]; then
+            echo "⚠️ Bundle size exceeds limit: $(numfmt --to=iec $TOTAL_SIZE) > $(numfmt --to=iec $MAX_SIZE)"
+            exit 1
+          else
+            echo "✓ Bundle size within limits: $(numfmt --to=iec $TOTAL_SIZE) < $(numfmt --to=iec $MAX_SIZE)"
+          fi
+
+  dependency-check:
+    name: Dependency & Security Check
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.setup.outputs.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'angular/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci --prefix angular
+
+      - name: Check for vulnerable dependencies
+        run: npm audit --audit-level=moderate
+        working-directory: angular
+        continue-on-error: true
+
+      - name: Check outdated dependencies
+        run: |
+          echo "## Dependency Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Outdated Packages" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          npm outdated --prefix angular >> $GITHUB_STEP_SUMMARY || echo "All dependencies up to date"
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
+
+  accessibility-check:
+    name: Accessibility Check
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.setup.outputs.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'angular/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci --prefix angular
+
+      - name: Run accessibility audit
+        run: npm run a11y --prefix angular
+        continue-on-error: true
+
+  summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests, e2e-tests, bundle-analysis, dependency-check, accessibility-check]
+    if: always()
+
+    steps:
+      - name: Create comprehensive summary
+        run: |
+          echo "## Frontend CI/CD Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Lint" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Check: ESLint, Type Checking, Formatting" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Unit Tests" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ needs.unit-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Framework: Jasmine/Karma" >> $GITHUB_STEP_SUMMARY
+          echo "- Browser: ChromeHeadless" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### E2E Tests" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Framework: Cypress (if configured)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Bundle Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ needs.bundle-analysis.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Max Size: 10 MB" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Dependencies & Security" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ needs.dependency-check.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Check: npm audit, outdated packages" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Accessibility" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ needs.accessibility-check.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- ✓ Coverage reports" >> $GITHUB_STEP_SUMMARY
+          echo "- ✓ Test results" >> $GITHUB_STEP_SUMMARY
+          echo "- ✓ Production build" >> $GITHUB_STEP_SUMMARY
+          echo "- ✓ E2E videos & screenshots (if E2E ran)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check overall status
+        run: |
+          if [[ "${{ needs.lint.result }}" == "failure" || "${{ needs.unit-tests.result }}" == "failure" || "${{ needs.bundle-analysis.result }}" == "failure" ]]; then
+            echo "❌ Frontend tests failed"
+            exit 1
+          else
+            echo "✅ Frontend tests passed"
+          fi
