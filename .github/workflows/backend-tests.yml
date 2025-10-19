@@ -27,11 +27,13 @@ jobs:
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: TestPassword123!
+          MSSQL_SA_PASSWORD: TestPassword123!
         options: >-
           --health-cmd "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'TestPassword123!' -Q 'SELECT 1' || exit 1"
           --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-timeout 10s
+          --health-retries 10
+          --start-period 40s
         ports:
           - 1433:1433
 
@@ -56,27 +58,29 @@ jobs:
 
       - name: Wait for SQL Server
         run: |
-          for i in {1..30}; do
-            if dotnet sqlcmd -S localhost -U sa -P 'TestPassword123!' -Q 'SELECT 1'; then
+          for i in {1..60}; do
+            if nc -z localhost 1433 2>/dev/null; then
+              echo "SQL Server port is open"
+              sleep 2
               break
             fi
-            echo "Waiting for SQL Server... ($i/30)"
+            echo "Waiting for SQL Server... ($i/60)"
             sleep 1
           done
 
       - name: Run Domain Layer Tests
-        run: dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=domain-tests.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+        run: dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=domain-tests.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/
         env:
           ConnectionStrings__Default: "Server=localhost;Database=MP_Test;User Id=sa;Password=TestPassword123!;TrustServerCertificate=True;"
 
       - name: Run Application Layer Tests
-        run: dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=application-tests.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+        run: dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=application-tests.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/
         env:
           ConnectionStrings__Default: "Server=localhost;Database=MP_Test;User Id=sa;Password=TestPassword123!;TrustServerCertificate=True;"
         continue-on-error: true  # Continue if tests fail to collect all results
 
       - name: Run EntityFrameworkCore Tests
-        run: dotnet test test/MP.EntityFrameworkCore.Tests/MP.EntityFrameworkCore.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=ef-tests.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+        run: dotnet test test/MP.EntityFrameworkCore.Tests/MP.EntityFrameworkCore.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=ef-tests.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/
         env:
           ConnectionStrings__Default: "Server=localhost;Database=MP_Test;User Id=sa;Password=TestPassword123!;TrustServerCertificate=True;"
         continue-on-error: true

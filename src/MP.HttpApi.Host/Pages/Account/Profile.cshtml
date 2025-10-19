@@ -115,7 +115,7 @@
                         </label>
                         <input type="text"
                                class="form-control"
-                               value="@User.Identity.Name"
+                               value="@(User?.Identity?.Name ?? "")"
                                readonly
                                disabled
                                style="background-color: #f8f9fa;" />

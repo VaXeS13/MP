@@ -6,11 +6,10 @@ WORKDIR /src
 # Copy solution file and project files
 COPY ["MP.sln", "./"]
 COPY ["src/", "src/"]
-COPY ["test/", "test/"]
 
-# Restore and build
-RUN dotnet restore "MP.sln"
-RUN dotnet build "MP.sln" --configuration Release --no-restore
+# Restore and build (only src projects, skip tests for Docker build)
+RUN dotnet restore "src/MP.HttpApi.Host/MP.HttpApi.Host.csproj"
+RUN dotnet build "src/MP.HttpApi.Host/MP.HttpApi.Host.csproj" --configuration Release --no-restore
 
 # Publish stage
 FROM builder AS publisher

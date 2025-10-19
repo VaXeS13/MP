@@ -105,7 +105,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ outputs.artifact-name }}
+          name: frontend-${{ github.sha }}
           path: angular/dist/
           retention-days: 30
 
@@ -409,16 +409,22 @@ jobs:
           fi
 
       - name: Send Slack notification
-        uses: 8398a7/action-slack@v3
-        if: always()
-        with:
-          status: ${{ job.status }}
-          text: |
-            Frontend Deployment Report
-            Production: ${{ needs.deploy-production.result }}
-            Staging: ${{ needs.deploy-staging.result }}
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_DEPLOYMENT }}
-          fields: repo,message,commit,author,ref
+        if: always() && secrets.SLACK_WEBHOOK_DEPLOYMENT != ''
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_DEPLOYMENT }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "Frontend Deployment Report",
+              "attachments": [{
+                "color": "${{ needs.deploy-production.result == '\''success'\'' && '\''good'\'' || '\''danger'\'}}",
+                "fields": [
+                  {"title": "Production", "value": "${{ needs.deploy-production.result }}", "short": true},
+                  {"title": "Staging", "value": "${{ needs.deploy-staging.result }}", "short": true},
+                  {"title": "Repository", "value": "${{ github.repository }}", "short": true},
+                  {"title": "Ref", "value": "${{ github.ref }}", "short": true}
+                ]
+              }]
+            }'
         continue-on-error: true
 
   summary:
