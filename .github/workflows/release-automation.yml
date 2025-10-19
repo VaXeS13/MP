@@ -59,6 +59,10 @@ jobs:
 
       - name: Determine version
         id: version
+        env:
+          COMMITS: ${{ steps.commits.outputs.commits }}
+          HAS_COMMITS: ${{ steps.commits.outputs.has_commits }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
         run: |
           CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           CURRENT_VERSION=${CURRENT_TAG#v}
@@ -67,7 +71,6 @@ jobs:
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
 
           # Check commit types to determine version bump
-          COMMITS="${{ steps.commits.outputs.commits }}"
           HAS_BREAKING=$(echo "$COMMITS" | grep -c "feat!:" || true)
           HAS_FEATURE=$(echo "$COMMITS" | grep -c "feat:" || true)
           HAS_FIX=$(echo "$COMMITS" | grep -c "fix:" || true)
@@ -85,12 +88,12 @@ jobs:
 
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 
-          if [ "${{ github.event.inputs.version }}" != "" ]; then
-            NEW_VERSION="${{ github.event.inputs.version }}"
+          if [ -n "$INPUT_VERSION" ]; then
+            NEW_VERSION="$INPUT_VERSION"
           fi
 
           echo "version=v$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "should_release=${{ steps.commits.outputs.has_commits }}" >> $GITHUB_OUTPUT
+          echo "should_release=$HAS_COMMITS" >> $GITHUB_OUTPUT
 
           echo "Current version: $CURRENT_VERSION"
           echo "New version: v$NEW_VERSION"
@@ -100,9 +103,13 @@ jobs:
 
       - name: Generate changelog
         id: changelog
+        env:
+          COMMITS: ${{ steps.commits.outputs.commits }}
+          LAST_TAG: ${{ steps.commits.outputs.last_tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          SERVER_URL: ${{ github.server_url }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          COMMITS="${{ steps.commits.outputs.commits }}"
-
           CHANGELOG="## What's Changed\n\n"
 
           # Features
@@ -123,7 +130,7 @@ jobs:
             CHANGELOG="$CHANGELOG### Other Changes\n$OTHER\n\n"
           fi
 
-          CHANGELOG="$CHANGELOG**Full Changelog**: ${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.commits.outputs.last_tag }}...${{ steps.version.outputs.version }}"
+          CHANGELOG="$CHANGELOG**Full Changelog**: $SERVER_URL/$REPOSITORY/compare/$LAST_TAG...$VERSION"
 
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo -e "$CHANGELOG" >> $GITHUB_OUTPUT
@@ -178,8 +185,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-          cache: true
-          cache-dependency-path: '**/packages.lock.json'
+          cache: false
 
       - name: Build backend
         run: dotnet build MP.sln --configuration Release
@@ -240,20 +246,32 @@ jobs:
             echo "color=danger"
           fi
 
-      - name: Slack notification
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          text: |
-            Release ${{ needs.determine-version.outputs.version }} - ${{ steps.status.outputs.status }}
-
-            Changes:
-            - Commit: ${{ github.sha }}
-            - Branch: ${{ github.ref }}
-            - Author: ${{ github.actor }}
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_RELEASES }}
-          fields: repo,message,commit,author
-          username: "Release Bot"
+      - name: Send Slack notification
+        if: always()
+        env:
+          WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_RELEASES }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "Slack webhook not configured, skipping notification"
+            exit 0
+          fi
+          curl -X POST "$WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d @- <<'PAYLOAD'
+          {
+            "text": "Release ${{ needs.determine-version.outputs.version }} - ${{ steps.status.outputs.status }}",
+            "attachments": [{
+              "color": "${{ steps.status.outputs.color }}",
+              "fields": [
+                {"title": "Version", "value": "${{ needs.determine-version.outputs.version }}", "short": true},
+                {"title": "Status", "value": "${{ needs.release.result }}", "short": true},
+                {"title": "Commit", "value": "${{ github.sha }}", "short": true},
+                {"title": "Branch", "value": "${{ github.ref }}", "short": true},
+                {"title": "Author", "value": "${{ github.actor }}", "short": true}
+              ]
+            }]
+          }
+          PAYLOAD
         continue-on-error: true
 
       - name: Create release summary

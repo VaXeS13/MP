@@ -408,23 +408,40 @@ jobs:
             echo "COLOR=warning"
           fi
 
-      - name: Send Slack notification
-        if: always() && secrets.SLACK_WEBHOOK_DEPLOYMENT != ''
+      - name: Determine notification color
+        id: color
         run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_DEPLOYMENT }} \
+          if [ "${{ needs.deploy-production.result }}" == "success" ]; then
+            echo "value=good" >> $GITHUB_OUTPUT
+          else
+            echo "value=danger" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        if: always()
+        env:
+          WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_DEPLOYMENT }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "Slack webhook not configured, skipping notification"
+            exit 0
+          fi
+          curl -X POST "$WEBHOOK_URL" \
             -H 'Content-Type: application/json' \
-            -d '{
-              "text": "Frontend Deployment Report",
-              "attachments": [{
-                "color": "${{ needs.deploy-production.result == '\''success'\'' && '\''good'\'' || '\''danger'\'}}",
-                "fields": [
-                  {"title": "Production", "value": "${{ needs.deploy-production.result }}", "short": true},
-                  {"title": "Staging", "value": "${{ needs.deploy-staging.result }}", "short": true},
-                  {"title": "Repository", "value": "${{ github.repository }}", "short": true},
-                  {"title": "Ref", "value": "${{ github.ref }}", "short": true}
-                ]
-              }]
-            }'
+            -d @- <<'PAYLOAD'
+          {
+            "text": "Frontend Deployment Report",
+            "attachments": [{
+              "color": "${{ steps.color.outputs.value }}",
+              "fields": [
+                {"title": "Production", "value": "${{ needs.deploy-production.result }}", "short": true},
+                {"title": "Staging", "value": "${{ needs.deploy-staging.result }}", "short": true},
+                {"title": "Repository", "value": "${{ github.repository }}", "short": true},
+                {"title": "Ref", "value": "${{ github.ref }}", "short": true}
+              ]
+            }]
+          }
+          PAYLOAD
         continue-on-error: true
 
   summary:

@@ -270,22 +270,30 @@ jobs:
           echo "✓ Rolled back to previous stable version"
 
       - name: Notify team
-        if: always() && secrets.SLACK_WEBHOOK_DEPLOYMENT != ''
+        if: always()
+        env:
+          WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_DEPLOYMENT }}
         run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_DEPLOYMENT }} \
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "Slack webhook not configured, skipping notification"
+            exit 0
+          fi
+          curl -X POST "$WEBHOOK_URL" \
             -H 'Content-Type: application/json' \
-            -d '{
-              "text": "Production deployment failed and was rolled back",
-              "attachments": [{
-                "color": "danger",
-                "fields": [
-                  {"title": "Repository", "value": "${{ github.repository }}", "short": true},
-                  {"title": "Ref", "value": "${{ github.ref }}", "short": true},
-                  {"title": "Commit", "value": "${{ github.sha }}", "short": true},
-                  {"title": "Author", "value": "${{ github.actor }}", "short": true}
-                ]
-              }]
-            }'
+            -d @- <<'PAYLOAD'
+          {
+            "text": "Production deployment failed and was rolled back",
+            "attachments": [{
+              "color": "danger",
+              "fields": [
+                {"title": "Repository", "value": "${{ github.repository }}", "short": true},
+                {"title": "Ref", "value": "${{ github.ref }}", "short": true},
+                {"title": "Commit", "value": "${{ github.sha }}", "short": true},
+                {"title": "Author", "value": "${{ github.actor }}", "short": true}
+              ]
+            }]
+          }
+          PAYLOAD
         continue-on-error: true
 
   notify:
