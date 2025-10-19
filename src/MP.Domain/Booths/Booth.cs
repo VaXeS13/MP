@@ -73,7 +73,7 @@ namespace MP.Domain.Booths
             Status = BoothStatus.Available;
         }
 
-        public void MarkAsMaintenace()
+        public void MarkAsMaintenance()
         {
             if (Status == BoothStatus.Rented || Status == BoothStatus.Reserved)
                 throw new BusinessException("CANNOT_MAINTENANCE_RENTED_OR_RESERVED_BOOTH");

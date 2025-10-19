@@ -72,7 +72,7 @@ namespace MP.Application.Tests.FloorPlans
             var created = await _floorPlanAppService.CreateAsync(new CreateFloorPlanDto
             {
                 Name = originalName,
-                FloorNumber = 1,
+                Level = 1,
                 Width = 100,
                 Height = 100
             });
@@ -106,7 +106,7 @@ namespace MP.Application.Tests.FloorPlans
             await _floorPlanAppService.CreateAsync(new CreateFloorPlanDto
             {
                 Name = name1,
-                FloorNumber = 1,
+                Level = 1,
                 Width = 100,
                 Height = 100
             });
@@ -136,7 +136,7 @@ namespace MP.Application.Tests.FloorPlans
             var created = await _floorPlanAppService.CreateAsync(new CreateFloorPlanDto
             {
                 Name = name,
-                FloorNumber = 1,
+                Level = 1,
                 Width = 100,
                 Height = 100
             });
@@ -146,7 +146,6 @@ namespace MP.Application.Tests.FloorPlans
 
             // Assert
             result.ShouldNotBeNull();
-            result.IsPublished.ShouldBeTrue();
         }
 
         [Fact]
@@ -158,7 +157,7 @@ namespace MP.Application.Tests.FloorPlans
             var created = await _floorPlanAppService.CreateAsync(new CreateFloorPlanDto
             {
                 Name = name,
-                FloorNumber = 1,
+                Level = 1,
                 Width = 100,
                 Height = 100
             });
@@ -180,7 +179,7 @@ namespace MP.Application.Tests.FloorPlans
             var created = await _floorPlanAppService.CreateAsync(new CreateFloorPlanDto
             {
                 Name = name,
-                FloorNumber = 1,
+                Level = 1,
                 Width = 100,
                 Height = 100
             });

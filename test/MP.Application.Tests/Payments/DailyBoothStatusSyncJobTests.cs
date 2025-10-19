@@ -205,7 +205,7 @@ namespace MP.Application.Tests.Payments
                     $"M{guid1.Substring(0, 9)}",
                     100m
                 );
-                booth.MarkAsMaintenace();
+                booth.MarkAsMaintenance();
                 await _boothRepository.InsertAsync(booth);
 
                 // Even with active rental, maintenance takes priority

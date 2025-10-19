@@ -104,7 +104,7 @@ namespace MP.Application.Tests.Rentals
         {
             // Arrange
             var booth = await CreateTestBoothAsync();
-            booth.MarkAsMaintenace();
+            booth.MarkAsMaintenance();
             await _boothRepository.UpdateAsync(booth);
 
             var boothType = await CreateTestBoothTypeAsync();

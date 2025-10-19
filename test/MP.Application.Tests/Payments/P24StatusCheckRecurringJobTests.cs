@@ -150,7 +150,7 @@ namespace MP.Application.Tests.Payments
                 $"M{Guid.NewGuid().ToString().Replace("-", "").Substring(0, 9)}",
                 100m
             );
-            booth.MarkAsMaintenace();
+            booth.MarkAsMaintenance();
             await _boothRepository.InsertAsync(booth);
 
             // Create rental
@@ -167,25 +167,30 @@ namespace MP.Application.Tests.Payments
             rental.Payment.SetTransactionId(sessionId);
             await _rentalRepository.InsertAsync(rental);
 
-            // Act - Mark rental as paid
+            // Act - This is what the job does when payment is verified
+            // It marks rental as paid, then tries to update booth status
             rental.MarkAsPaid(rental.Payment.TotalAmount, DateTime.Now, sessionId);
-            await _rentalRepository.UpdateAsync(rental);
 
-            // Booth should NOT change from Maintenance
             var boothToUpdate = await _boothRepository.GetAsync(rental.BoothId);
-            var originalStatus = boothToUpdate.Status;
-
-            // Simulate the job's logic - should NOT update if Maintenance
+            // The job's logic: only update booth status if NOT in Maintenance
             if (boothToUpdate.Status != BoothStatus.Maintenance)
             {
-                boothToUpdate.MarkAsRented();
+                if (rental.Period.StartDate <= DateTime.Today)
+                {
+                    boothToUpdate.MarkAsRented();
+                }
+                else
+                {
+                    boothToUpdate.MarkAsReserved();
+                }
                 await _boothRepository.UpdateAsync(boothToUpdate);
             }
 
-            // Assert
+            await _rentalRepository.UpdateAsync(rental);
+
+            // Assert - booth should still be in Maintenance
             var updatedBooth = await _boothRepository.GetAsync(booth.Id);
-            updatedBooth.Status.ShouldBe(BoothStatus.Maintenance); // Unchanged
-            updatedBooth.Status.ShouldBe(originalStatus);
+            updatedBooth.Status.ShouldBe(BoothStatus.Maintenance);
         }
 
         [Fact]

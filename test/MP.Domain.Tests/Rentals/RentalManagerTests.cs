@@ -166,7 +166,7 @@ namespace MP.Domain.Tests.Rentals
             // Arrange
             var userId = TestUserId1;
             var booth = new Booth(Guid.NewGuid(), "TEST-05", 100m);
-            booth.MarkAsMaintenace();
+            booth.MarkAsMaintenance();
             await _boothRepository.InsertAsync(booth);
 
             var boothType = new BoothType(Guid.NewGuid(), "Standard", "Standard booth", 10m);

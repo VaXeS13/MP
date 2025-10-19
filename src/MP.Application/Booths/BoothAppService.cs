@@ -143,7 +143,7 @@ namespace MP.Booths
                     booth.MarkAsAvailable();
                     break;
                 case BoothStatus.Maintenance:
-                    booth.MarkAsMaintenace();
+                    booth.MarkAsMaintenance();
                     break;
                     // Rented nie pozwalamy zmieniać ręcznie - to robi się przez wynajęcie
             }
@@ -185,7 +185,7 @@ namespace MP.Booths
                     booth.MarkAsAvailable();
                     break;
                 case BoothStatus.Maintenance:
-                    booth.MarkAsMaintenace();
+                    booth.MarkAsMaintenance();
                     break;
                 case BoothStatus.Rented:
                     booth.MarkAsRented();
