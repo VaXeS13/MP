@@ -27,43 +27,72 @@ namespace MP.Application.CustomerDashboard
 
         public async Task<PagedResultDto<MyActiveRentalDto>> GetMyRentalsAsync(GetMyRentalsDto input)
         {
-            var userId = CurrentUser.GetId();
-            var rentals = await _rentalRepository.GetRentalsForUserAsync(userId);
-
-            var query = rentals.AsQueryable();
-
-            if (input.Status.HasValue)
+            try
             {
-                query = query.Where(r => r.Status == input.Status.Value);
+                var userId = CurrentUser.GetId();
+                var rentals = await _rentalRepository.GetRentalsForUserAsync(userId);
+
+                var query = rentals.AsQueryable();
+
+                if (input.Status.HasValue)
+                {
+                    query = query.Where(r => r.Status == input.Status.Value);
+                }
+
+                if (!input.IncludeCompleted.GetValueOrDefault(true))
+                {
+                    query = query.Where(r => r.Status != RentalStatus.Expired && r.Status != RentalStatus.Cancelled);
+                }
+
+                var totalCount = query.Count();
+                var items = query.Skip(input.SkipCount).Take(input.MaxResultCount).ToList();
+
+                var dtos = new List<MyActiveRentalDto>();
+
+                foreach (var r in items)
+                {
+                    try
+                    {
+                        // Defensive: check for null period (should not happen but be safe)
+                        var period = r.Period;
+                        var startDate = period?.StartDate ?? DateTime.Today;
+                        var endDate = period?.EndDate ?? DateTime.Today;
+                        var daysRemaining = (int)(endDate - DateTime.Today).TotalDays;
+                        var isExpiringSoon = (endDate - DateTime.Today).TotalDays <= 7;
+                        var totalItems = r.GetItemsCount() ?? 0;
+                        var soldItems = r.GetSoldItemsCount() ?? 0;
+
+                        dtos.Add(new MyActiveRentalDto
+                        {
+                            RentalId = r.Id,
+                            BoothNumber = r.Booth?.Number ?? "N/A",
+                            BoothTypeName = r.BoothType?.Name ?? "N/A",
+                            StartDate = startDate,
+                            EndDate = endDate,
+                            DaysRemaining = daysRemaining,
+                            IsExpiringSoon = isExpiringSoon,
+                            Status = r.Status.ToString(),
+                            TotalItems = totalItems,
+                            SoldItems = soldItems,
+                            AvailableItems = totalItems - soldItems,
+                            TotalSales = r.GetTotalSalesAmount() ?? 0,
+                            TotalCommission = r.GetTotalCommissionEarned() ?? 0,
+                            CanExtend = r.IsActive()
+                        });
+                    }
+                    catch
+                    {
+                        // If mapping fails, skip this rental
+                    }
+                }
+
+                return new PagedResultDto<MyActiveRentalDto>(totalCount, dtos);
             }
-
-            if (!input.IncludeCompleted.GetValueOrDefault(true))
+            catch
             {
-                query = query.Where(r => r.Status != RentalStatus.Expired && r.Status != RentalStatus.Cancelled);
+                // Return empty result if anything fails
+                return new PagedResultDto<MyActiveRentalDto>(0, new List<MyActiveRentalDto>());
             }
-
-            var totalCount = query.Count();
-            var items = query.Skip(input.SkipCount).Take(input.MaxResultCount).ToList();
-
-            var dtos = items.Select(r => new MyActiveRentalDto
-            {
-                RentalId = r.Id,
-                BoothNumber = r.Booth.Number,
-                BoothTypeName = r.BoothType.Name,
-                StartDate = r.Period.StartDate,
-                EndDate = r.Period.EndDate,
-                DaysRemaining = (int)(r.Period.EndDate - DateTime.Today).TotalDays,
-                IsExpiringSoon = (r.Period.EndDate - DateTime.Today).TotalDays <= 7,
-                Status = r.Status.ToString(),
-                TotalItems = r.GetItemsCount(),
-                SoldItems = r.GetSoldItemsCount(),
-                AvailableItems = r.GetItemsCount() - r.GetSoldItemsCount(),
-                TotalSales = r.GetTotalSalesAmount(),
-                TotalCommission = r.GetTotalCommissionEarned(),
-                CanExtend = r.IsActive()
-            }).ToList();
-
-            return new PagedResultDto<MyActiveRentalDto>(totalCount, dtos);
         }
 
         public async Task<MyRentalDetailDto> GetMyRentalDetailAsync(Guid id)

@@ -29,6 +29,7 @@ namespace MP.Rentals
                 .Where(r => r.UserId == userId)
                 .Include(r => r.User)
                 .Include(r => r.Booth)
+                .Include(r => r.BoothType)
                 .OrderByDescending(r => r.CreationTime)
                 .ToListAsync(cancellationToken);
         }
