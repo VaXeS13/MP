@@ -89,10 +89,8 @@ namespace MP.Promotions
             {
                 promotion.Activate();
             }
-            else
-            {
-                promotion.Deactivate();
-            }
+            // Note: Promotion is created with IsActive=false by default,
+            // so we don't need to call Deactivate() if input.IsActive is false
 
             var savedPromotion = await _promotionRepository.InsertAsync(promotion);
 

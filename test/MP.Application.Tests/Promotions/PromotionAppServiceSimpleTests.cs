@@ -56,6 +56,7 @@ namespace MP.Application.Tests.Promotions
             {
                 Name = name,
                 Type = PromotionType.PromoCode,
+                PromoCode = "TEST_CODE_12345",
                 DisplayMode = PromotionDisplayMode.StickyBottomLeft,
                 DiscountType = DiscountType.FixedAmount,
                 DiscountValue = 50m,
@@ -219,6 +220,7 @@ namespace MP.Application.Tests.Promotions
             {
                 Name = inactiveName,
                 Type = PromotionType.PromoCode,
+                PromoCode = "INACTIVE_CODE_123",
                 DisplayMode = PromotionDisplayMode.StickyBottomLeft,
                 DiscountType = DiscountType.FixedAmount,
                 DiscountValue = 50m,
