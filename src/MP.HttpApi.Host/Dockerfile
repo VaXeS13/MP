@@ -5,6 +5,8 @@ WORKDIR /src
 
 # Copy solution file and project files
 COPY ["MP.sln", "./"]
+COPY ["common.props", "./"]
+COPY ["Directory.Build.targets", "./"]
 COPY ["src/", "src/"]
 
 # Restore and build (only src projects, skip tests for Docker build)
