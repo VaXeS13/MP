@@ -117,7 +117,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ needs.build.outputs.artifact-name }}
-          path: angular/dist/
+          path: dist/
+
+      - name: Verify build artifacts
+        run: |
+          echo "Checking downloaded artifacts..."
+          ls -la dist/ || echo "dist/ directory not found"
+          echo ""
+          du -sh dist/
 
       - name: Create Dockerfile for distribution
         run: |
@@ -129,7 +136,7 @@ jobs:
           COPY nginx.conf /etc/nginx/nginx.conf
 
           # Copy pre-built application
-          COPY angular/dist /usr/share/nginx/html
+          COPY dist /usr/share/nginx/html
 
           # Health check
           HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
@@ -193,7 +200,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ needs.build.outputs.artifact-name }}
-          path: angular/dist/
+          path: dist/
 
       - name: Deploy to staging
         run: |
@@ -249,7 +256,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ needs.build.outputs.artifact-name }}
-          path: angular/dist/
+          path: dist/
 
       - name: Validate production deployment
         run: |
