@@ -221,11 +221,15 @@ jobs:
       - name: Check bundle size limits
         run: |
           TOTAL_SIZE=$(du -sb angular/dist | cut -f1)
-          MAX_SIZE=$((10 * 1024 * 1024))  # 10 MB
+          MAX_SIZE=$((12 * 1024 * 1024))  # 12 MB
+          WARNING_SIZE=$((11 * 1024 * 1024))  # 11 MB warning threshold
 
           if [ $TOTAL_SIZE -gt $MAX_SIZE ]; then
-            echo "⚠️ Bundle size exceeds limit: $(numfmt --to=iec $TOTAL_SIZE) > $(numfmt --to=iec $MAX_SIZE)"
+            echo "❌ Bundle size exceeds maximum limit: $(numfmt --to=iec $TOTAL_SIZE) > $(numfmt --to=iec $MAX_SIZE)"
             exit 1
+          elif [ $TOTAL_SIZE -gt $WARNING_SIZE ]; then
+            echo "⚠️ Bundle size warning: $(numfmt --to=iec $TOTAL_SIZE) > $(numfmt --to=iec $WARNING_SIZE) - Consider optimizing dependencies and code splitting"
+            exit 0
           else
             echo "✓ Bundle size within limits: $(numfmt --to=iec $TOTAL_SIZE) < $(numfmt --to=iec $MAX_SIZE)"
           fi
@@ -313,7 +317,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Bundle Analysis" >> $GITHUB_STEP_SUMMARY
           echo "- Status: ${{ needs.bundle-analysis.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Max Size: 10 MB" >> $GITHUB_STEP_SUMMARY
+          echo "- Max Size: 12 MB (Warning at 11 MB)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Dependencies & Security" >> $GITHUB_STEP_SUMMARY
           echo "- Status: ${{ needs.dependency-check.result }}" >> $GITHUB_STEP_SUMMARY

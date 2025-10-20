@@ -1,13 +1,16 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { SubdomainService } from './subdomain-info.service';
 
-import { SubdomainInfoService } from './subdomain-info.service';
-
-describe('SubdomainInfoService', () => {
-  let service: SubdomainInfoService;
+describe('SubdomainService', () => {
+  let service: SubdomainService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(SubdomainInfoService);
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [SubdomainService]
+    });
+    service = TestBed.inject(SubdomainService);
   });
 
   it('should be created', () => {
