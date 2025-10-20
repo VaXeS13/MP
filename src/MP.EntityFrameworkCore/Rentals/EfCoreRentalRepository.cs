@@ -70,6 +70,7 @@ namespace MP.Rentals
                 .Where(r => r.Id == rentalId)
                 .Include(r => r.User)
                 .Include(r => r.Booth)
+                .Include(r => r.BoothType)
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
