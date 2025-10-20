@@ -77,7 +77,11 @@ namespace MP.Application.CustomerDashboard
                             AvailableItems = totalItems - soldItems,
                             TotalSales = r.GetTotalSalesAmount(),
                             TotalCommission = r.GetTotalCommissionEarned(),
-                            CanExtend = r.IsActive()
+                            CanExtend = r.IsActive(),
+                            TotalCost = r.Payment.TotalAmount,
+                            DiscountAmount = r.DiscountAmount,
+                            OriginalAmount = r.GetOriginalAmount(),
+                            PromoCodeUsed = r.PromoCodeUsed
                         });
                     }
                     catch
@@ -105,24 +109,37 @@ namespace MP.Application.CustomerDashboard
                 throw new BusinessException("RENTAL_NOT_FOUND");
             }
 
+            // Defensive: get safe values for nullable navigation properties
+            var period = rental.Period;
+            var startDate = period?.StartDate ?? DateTime.Today;
+            var endDate = period?.EndDate ?? DateTime.Today;
+            var boothNumber = rental.Booth?.Number ?? "N/A";
+            var boothTypeName = rental.BoothType?.Name ?? "N/A";
+            var boothPricePerDay = rental.Booth?.PricePerDay ?? 0m;
+            var payment = rental.Payment;
+
             return new MyRentalDetailDto
             {
                 Id = rental.Id,
                 BoothId = rental.BoothId,
-                BoothNumber = rental.Booth.Number,
-                BoothTypeName = rental.BoothType.Name,
-                BoothPricePerDay = rental.Booth.PricePerDay,
-                StartDate = rental.Period.StartDate,
-                EndDate = rental.Period.EndDate,
-                TotalDays = rental.Period.GetDaysCount(),
-                DaysRemaining = (int)(rental.Period.EndDate - DateTime.Today).TotalDays,
-                DaysElapsed = (int)(DateTime.Today - rental.Period.StartDate).TotalDays,
+                BoothNumber = boothNumber,
+                BoothTypeName = boothTypeName,
+                BoothPricePerDay = boothPricePerDay,
+                StartDate = startDate,
+                EndDate = endDate,
+                TotalDays = period?.GetDaysCount() ?? 0,
+                DaysRemaining = (int)(endDate - DateTime.Today).TotalDays,
+                DaysElapsed = (int)(DateTime.Today - startDate).TotalDays,
                 Status = rental.Status,
                 StatusDisplayName = rental.Status.ToString(),
-                TotalCost = rental.Payment.TotalAmount,
-                PaidAmount = rental.Payment.PaidAmount,
-                IsPaid = rental.Payment.IsPaid,
-                PaidDate = rental.Payment.PaidDate,
+                TotalCost = payment?.TotalAmount ?? 0m,
+                PaidAmount = payment?.PaidAmount ?? 0m,
+                IsPaid = payment?.IsPaid ?? false,
+                PaidDate = payment?.PaidDate,
+                AppliedPromotionId = rental.AppliedPromotionId,
+                DiscountAmount = rental.DiscountAmount,
+                OriginalAmount = rental.GetOriginalAmount(),
+                PromoCodeUsed = rental.PromoCodeUsed,
                 Notes = rental.Notes,
                 StartedAt = rental.StartedAt,
                 CompletedAt = rental.CompletedAt,
@@ -135,13 +152,13 @@ namespace MP.Application.CustomerDashboard
                 NetEarnings = rental.GetTotalSalesAmount() - rental.GetTotalCommissionEarned(),
                 CanExtend = rental.IsActive(),
                 CanCancel = rental.Status == RentalStatus.Draft || rental.Status == RentalStatus.Active,
-                IsExpiringSoon = (rental.Period.EndDate - DateTime.Today).TotalDays <= 7,
+                IsExpiringSoon = (endDate - DateTime.Today).TotalDays <= 7,
                 IsOverdue = rental.IsOverdue(),
                 ExtensionOptions = new List<ExtensionOptionDto>
                 {
-                    new ExtensionOptionDto { Days = 7, DisplayName = "1 week", Cost = rental.Booth.PricePerDay * 7, NewEndDate = rental.Period.EndDate.AddDays(7) },
-                    new ExtensionOptionDto { Days = 14, DisplayName = "2 weeks", Cost = rental.Booth.PricePerDay * 14, NewEndDate = rental.Period.EndDate.AddDays(14) },
-                    new ExtensionOptionDto { Days = 30, DisplayName = "1 month", Cost = rental.Booth.PricePerDay * 30, NewEndDate = rental.Period.EndDate.AddDays(30) }
+                    new ExtensionOptionDto { Days = 7, DisplayName = "1 week", Cost = boothPricePerDay * 7, NewEndDate = endDate.AddDays(7) },
+                    new ExtensionOptionDto { Days = 14, DisplayName = "2 weeks", Cost = boothPricePerDay * 14, NewEndDate = endDate.AddDays(14) },
+                    new ExtensionOptionDto { Days = 30, DisplayName = "1 month", Cost = boothPricePerDay * 30, NewEndDate = endDate.AddDays(30) }
                 },
                 RecentActivity = new List<RentalActivityDto>(),
                 CreationTime = rental.CreationTime
@@ -153,15 +170,20 @@ namespace MP.Application.CustomerDashboard
             var userId = CurrentUser.GetId();
             var rentals = await _rentalRepository.GetRentalsForUserAsync(userId);
 
-            var events = rentals.Select(r => new RentalCalendarEventDto
+            var events = rentals.Select(r =>
             {
-                RentalId = r.Id,
-                BoothNumber = r.Booth.Number,
-                StartDate = r.Period.StartDate,
-                EndDate = r.Period.EndDate,
-                Status = r.Status.ToString(),
-                Color = GetColorByStatus(r.Status),
-                IsExpiringSoon = (r.Period.EndDate - DateTime.Today).TotalDays <= 7
+                var period = r.Period;
+                var endDate = period?.EndDate ?? DateTime.Today;
+                return new RentalCalendarEventDto
+                {
+                    RentalId = r.Id,
+                    BoothNumber = r.Booth?.Number ?? "N/A",
+                    StartDate = period?.StartDate ?? DateTime.Today,
+                    EndDate = endDate,
+                    Status = r.Status.ToString(),
+                    Color = GetColorByStatus(r.Status),
+                    IsExpiringSoon = (endDate - DateTime.Today).TotalDays <= 7
+                };
             }).ToList();
 
             return new MyRentalCalendarDto
@@ -186,14 +208,18 @@ namespace MP.Application.CustomerDashboard
                 throw new BusinessException("NOT_YOUR_RENTAL");
             }
 
+            var period = rental.Period;
+            var endDate = period?.EndDate ?? DateTime.Today;
+            var pricePerDay = rental.Booth?.PricePerDay ?? 0m;
+
             return new ExtensionCostCalculationDto
             {
                 RentalId = rentalId,
                 ExtensionDays = days,
-                CurrentEndDate = rental.Period.EndDate,
-                NewEndDate = rental.Period.EndDate.AddDays(days),
-                PricePerDay = rental.Booth.PricePerDay,
-                TotalCost = rental.Booth.PricePerDay * days,
+                CurrentEndDate = endDate,
+                NewEndDate = endDate.AddDays(days),
+                PricePerDay = pricePerDay,
+                TotalCost = pricePerDay * days,
                 IsAvailable = rental.IsActive()
             };
         }
