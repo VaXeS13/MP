@@ -16,6 +16,11 @@ on:
     # Run nightly backend tests at 3 AM UTC
     - cron: '0 3 * * *'
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 jobs:
   build-and-test:
     name: Build & Test (.NET 9.0)
@@ -69,28 +74,38 @@ jobs:
           done
 
       - name: Run Domain Layer Tests
-        run: dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=domain-tests.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/
+        run: dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=domain-tests.trx" --results-directory ./TestResults /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/
         env:
           ConnectionStrings__Default: "Server=localhost;Database=MP_Test;User Id=sa;Password=TestPassword123!;TrustServerCertificate=True;"
 
       - name: Run Application Layer Tests
-        run: dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=application-tests.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/
+        run: dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=application-tests.trx" --results-directory ./TestResults /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/
         env:
           ConnectionStrings__Default: "Server=localhost;Database=MP_Test;User Id=sa;Password=TestPassword123!;TrustServerCertificate=True;"
         continue-on-error: true  # Continue if tests fail to collect all results
 
       - name: Run EntityFrameworkCore Tests
-        run: dotnet test test/MP.EntityFrameworkCore.Tests/MP.EntityFrameworkCore.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=ef-tests.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/
+        run: dotnet test test/MP.EntityFrameworkCore.Tests/MP.EntityFrameworkCore.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=ef-tests.trx" --results-directory ./TestResults /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/
         env:
           ConnectionStrings__Default: "Server=localhost;Database=MP_Test;User Id=sa;Password=TestPassword123!;TrustServerCertificate=True;"
         continue-on-error: true
+
+      - name: Check Test Results Location
+        if: always()
+        run: |
+          echo "Looking for TRX files..."
+          find . -name "*.trx" -type f 2>/dev/null || echo "No TRX files found"
+          echo ""
+          echo "TestResults directory contents:"
+          ls -la TestResults/ 2>/dev/null || echo "TestResults directory not found"
 
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: '**/TestResults/*.trx'
+          path: 'TestResults/'
+          if-no-files-found: warn
 
       - name: Upload Coverage Reports
         if: always()
@@ -103,9 +118,11 @@ jobs:
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: '**/TestResults/*.trx'
+          files: 'TestResults/**/*.trx'
           check_name: 'Backend Test Results'
           comment_mode: 'always'
+          job_summary: true
+        continue-on-error: true
 
   code-quality:
     name: Code Quality Analysis
