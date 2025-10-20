@@ -1,0 +1,256 @@
+.rental-detail-container {
+  padding: 2rem;
+  background: var(--surface-ground);
+  min-height: 100vh;
+
+  .header-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
+
+      .page-title {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin: 0;
+        letter-spacing: -0.5px;
+      }
+    }
+  }
+
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .col-12,
+  .col-12.md\:col-6 {
+    width: 100%;
+  }
+
+  ::ng-deep {
+    p-panel {
+      .p-panel {
+        border: 1px solid var(--surface-border);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .p-panel-header {
+        background: var(--surface-50);
+        border-bottom: 1px solid var(--surface-border);
+        padding: 1rem;
+        font-weight: 600;
+
+        &:hover {
+          background: var(--surface-100);
+        }
+      }
+
+      .p-panel-content {
+        padding: 1.5rem;
+      }
+    }
+
+    p-tabView {
+      .p-tabview {
+        border: none;
+
+        .p-tabview-nav {
+          background: var(--surface-card);
+          border-bottom: 2px solid var(--surface-border);
+          padding: 0 1rem;
+        }
+
+        .p-tabview-panels {
+          padding: 2rem 0;
+        }
+      }
+    }
+
+    p-table {
+      .p-datatable {
+        background: var(--surface-card);
+        border: 1px solid var(--surface-border);
+
+        .p-datatable-thead > tr > th {
+          background: var(--surface-50);
+          color: var(--text-color);
+          border-color: var(--surface-border);
+          font-weight: 600;
+        }
+
+        .p-datatable-tbody > tr {
+          border-color: var(--surface-border);
+
+          &:hover {
+            background: var(--surface-50);
+          }
+        }
+      }
+    }
+
+    p-tag {
+      .p-tag {
+        font-size: 0.85rem;
+      }
+    }
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+
+    .info-item {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 1rem;
+      padding: 0.75rem;
+      border-radius: var(--border-radius);
+      background: var(--surface-50);
+      align-items: center;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+
+      .info-label {
+        font-weight: 600;
+        color: var(--text-color-secondary);
+        font-size: 0.9rem;
+      }
+
+      .info-value {
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+
+        &.highlight {
+          font-weight: 700;
+          color: var(--primary-color);
+          font-size: 1.1rem;
+        }
+
+        .commission-info {
+          font-size: 0.85rem;
+          color: var(--text-color-secondary);
+          font-weight: 500;
+          display: inline;
+        }
+
+        &.discount {
+          color: var(--green-700);
+          font-weight: 700;
+          background: var(--green-50);
+          padding: 0.25rem 0.75rem;
+          border-radius: 999px;
+          display: inline-flex;
+          width: fit-content;
+        }
+
+        &.net-earnings {
+          color: var(--blue-700);
+          background: var(--blue-50);
+          padding: 0.5rem 1rem;
+          border-radius: var(--border-radius);
+          display: inline-flex;
+          width: fit-content;
+        }
+
+        &.promo-code {
+          background: var(--primary-50);
+          color: var(--primary-700);
+          padding: 0.25rem 0.75rem;
+          border-radius: 999px;
+          font-family: 'Courier New', monospace;
+          font-weight: 700;
+          display: inline-flex;
+          width: fit-content;
+        }
+
+        ::ng-deep {
+          p-tag {
+            .p-tag {
+              font-size: 0.85rem;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .text-center {
+    text-align: center;
+
+    i {
+      font-size: 2rem;
+      color: var(--primary-color);
+      opacity: 0.5;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: var(--text-color-secondary);
+      margin-top: 0.5rem;
+    }
+  }
+
+  .text-secondary {
+    color: var(--text-color-secondary);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  .rental-detail-container {
+    padding: 1rem;
+
+    .header-section {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+
+        .page-title {
+          font-size: 1.5rem;
+        }
+      }
+    }
+
+    .info-grid {
+      .info-item {
+        grid-template-columns: 1fr;
+
+        .info-label {
+          font-size: 0.85rem;
+        }
+      }
+    }
+  }
+}

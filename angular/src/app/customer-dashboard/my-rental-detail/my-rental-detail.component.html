@@ -1,0 +1,292 @@
+<div class="rental-detail-container">
+  <!-- Back Button & Header -->
+  <div class="header-section">
+    <p-button
+      icon="pi pi-arrow-left"
+      (onClick)="goBack()"
+      styleClass="p-button-text p-button-sm"
+      pRipple
+    ></p-button>
+
+    <div class="header-content">
+      <h1 class="page-title">
+        Wynajem Stoiska {{ rental?.boothNumber }}
+      </h1>
+      <p-tag
+        *ngIf="rental"
+        [value]="getStatusLabel(rental.status)"
+        [severity]="getStatusSeverity(rental.status)"
+      ></p-tag>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <p-progressSpinner
+    *ngIf="loading"
+    class="loading-spinner"
+  ></p-progressSpinner>
+
+  <!-- Content Tabs -->
+  <p-tabView *ngIf="!loading && rental" [(activeIndex)]="activeTab">
+    <!-- Tab 1: Przegląd (Overview) -->
+    <p-tabPanel header="Przegląd" leftIcon="pi pi-info-circle">
+      <div class="grid">
+        <!-- Rental Information -->
+        <div class="col-12 md:col-6">
+          <p-panel header="Informacje o wynajmie" toggleable="true">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Data rozpoczęcia:</span>
+                <span class="info-value">
+                  {{ rental.startDate | date : 'dd.MM.yyyy' }}
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Data zakończenia:</span>
+                <span class="info-value">
+                  {{ rental.endDate | date : 'dd.MM.yyyy' }}
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Łączna liczba dni:</span>
+                <span class="info-value">{{ rental.totalDays }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Dni pozostało:</span>
+                <p-tag
+                  [value]="rental.daysRemaining + ' dni'"
+                  [severity]="
+                    rental.isExpiringSoon ? 'warning' : 'success'
+                  "
+                ></p-tag>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Dni upłynęło:</span>
+                <span class="info-value">{{ rental.daysElapsed }}</span>
+              </div>
+              <div class="info-item" *ngIf="rental.notes">
+                <span class="info-label">Notatki:</span>
+                <span class="info-value">{{ rental.notes }}</span>
+              </div>
+            </div>
+          </p-panel>
+        </div>
+
+        <!-- Payment Information -->
+        <div class="col-12 md:col-6">
+          <p-panel header="Płatność" toggleable="true">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Stan:</span>
+                <p-tag
+                  [value]="
+                    rental.isPaid ? 'Opłacone' : 'Oczekuje na płatność'
+                  "
+                  [severity]="rental.isPaid ? 'success' : 'warning'"
+                ></p-tag>
+              </div>
+              <div class="info-item" *ngIf="rental.isPaid && rental.paidDate">
+                <span class="info-label">Data płatności:</span>
+                <span class="info-value">
+                  {{ rental.paidDate | date : 'dd.MM.yyyy HH:mm' }}
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Kwota do zapłaty:</span>
+                <span class="info-value highlight">
+                  {{ formatCurrency(rental.totalCost) }}
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Zapłacona kwota:</span>
+                <span class="info-value highlight">
+                  {{ formatCurrency(rental.paidAmount) }}
+                </span>
+              </div>
+              <div class="info-item" *ngIf="hasDiscount()">
+                <span class="info-label">Rabat:</span>
+                <span class="info-value discount">
+                  -{{ formatCurrency(rental.discountAmount) }}
+                </span>
+              </div>
+              <div class="info-item" *ngIf="hasDiscount()">
+                <span class="info-label">Pierwotna kwota:</span>
+                <span class="info-value">
+                  {{ formatCurrency(rental.originalAmount) }}
+                </span>
+              </div>
+              <div class="info-item" *ngIf="rental.promoCodeUsed">
+                <span class="info-label">Kod promocji:</span>
+                <span class="info-value promo-code">
+                  {{ rental.promoCodeUsed }}
+                </span>
+              </div>
+            </div>
+          </p-panel>
+        </div>
+
+        <!-- Sales & Commission Information -->
+        <div class="col-12 md:col-6">
+          <p-panel header="Sprzedaż i Prowizja" toggleable="true">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Całkowita sprzedaż:</span>
+                <span class="info-value highlight">
+                  {{ formatCurrency(rental.totalSalesAmount) }}
+                  <span class="commission-info">(prowizja: {{ formatCurrency(rental.totalCommissionPaid) }})</span>
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Przedmioty sprzedane:</span>
+                <span class="info-value">
+                  {{ rental.soldItems }}/{{ rental.totalItems }}
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Przedmioty dostępne:</span>
+                <span class="info-value">{{ rental.availableItems }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Prowizja zapłacona:</span>
+                <span class="info-value">
+                  {{ formatCurrency(rental.totalCommissionPaid) }}
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Twój przychód netto:</span>
+                <span class="info-value highlight net-earnings">
+                  {{ formatCurrency(rental.netEarnings) }}
+                </span>
+              </div>
+            </div>
+          </p-panel>
+        </div>
+
+        <!-- Timeline -->
+        <div class="col-12 md:col-6" *ngIf="rental.startedAt || rental.completedAt">
+          <p-panel header="Historia" toggleable="true">
+            <div class="info-grid">
+              <div class="info-item" *ngIf="rental.startedAt">
+                <span class="info-label">Rozpoczęty:</span>
+                <span class="info-value">
+                  {{ rental.startedAt | date : 'dd.MM.yyyy HH:mm' }}
+                </span>
+              </div>
+              <div class="info-item" *ngIf="rental.completedAt">
+                <span class="info-label">Zakończony:</span>
+                <span class="info-value">
+                  {{ rental.completedAt | date : 'dd.MM.yyyy HH:mm' }}
+                </span>
+              </div>
+            </div>
+          </p-panel>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Tab 2: Stanowisko (Booth) -->
+    <p-tabPanel header="Stanowisko" leftIcon="pi pi-box">
+      <div class="grid">
+        <div class="col-12 md:col-6">
+          <p-panel header="Informacje o Stanowisku">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Numer stoiska:</span>
+                <span class="info-value highlight">
+                  {{ rental.boothNumber }}
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Typ stanowiska:</span>
+                <span class="info-value">{{ rental.boothTypeName }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Cena za dzień:</span>
+                <span class="info-value highlight">
+                  {{ formatCurrency(rental.boothPricePerDay) }}
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Łączny koszt wynajmu:</span>
+                <span class="info-value highlight">
+                  {{ formatCurrency(rental.totalCost) }}
+                </span>
+              </div>
+            </div>
+          </p-panel>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Tab 3: Przedmioty (Items) -->
+    <p-tabPanel header="Przedmioty" leftIcon="pi pi-shopping-bag">
+      <p-table
+        [value]="items"
+        [loading]="itemsLoading"
+        responsiveLayout="scroll"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[5, 10, 20, 50]"
+        scrollHeight="flex"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn>
+              Nazwa <p-sortIcon field="name"></p-sortIcon>
+            </th>
+            <th pSortableColumn>
+              Kategoria <p-sortIcon field="category"></p-sortIcon>
+            </th>
+            <th pSortableColumn>
+              Status <p-sortIcon field="status"></p-sortIcon>
+            </th>
+            <th pSortableColumn>
+              Cena <p-sortIcon field="estimatedPrice"></p-sortIcon>
+            </th>
+            <th pSortableColumn>
+              Data sprzedaży
+              <p-sortIcon field="soldAt"></p-sortIcon>
+            </th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>
+              <span>{{ item.name }}</span>
+            </td>
+            <td>
+              <span>{{ item.category || 'Brak' }}</span>
+            </td>
+            <td>
+              <p-tag
+                [value]="getItemStatusLabel(item.status)"
+                [severity]="getItemStatusSeverity(item.status)"
+              ></p-tag>
+            </td>
+            <td>
+              <span>{{ formatCurrency(item.estimatedPrice) }}</span>
+            </td>
+            <td>
+              <span *ngIf="item.soldAt; else notSold">
+                {{ item.soldAt | date : 'dd.MM.yyyy' }}
+              </span>
+              <ng-template #notSold>
+                <span class="text-secondary">-</span>
+              </ng-template>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5" class="text-center">
+              <i class="pi pi-inbox"></i>
+              <p>Brak przedmiotów dla tego wynajmu</p>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-tabPanel>
+  </p-tabView>
+</div>
