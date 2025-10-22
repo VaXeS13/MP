@@ -42,10 +42,12 @@
     <ng-template pTemplate="header">
       <tr>
         <th style="width: 3rem">
-          <p-tableHeaderCheckbox
+          <input
+            type="checkbox"
+            [checked]="selectableItems.length > 0 && selectedItems.length === selectableItems.length"
             [disabled]="selectableItems.length === 0"
-            (onChange)="onHeaderCheckboxChange($event)">
-          </p-tableHeaderCheckbox>
+            (change)="onHeaderCheckboxChange($event)"
+            class="header-checkbox">
         </th>
         <th>Name</th>
         <th>Category</th>
