@@ -11327,7 +11327,7 @@
               "uniqueName": "GetBoothsAsyncByFloorPlanId",
               "name": "GetBoothsAsync",
               "httpMethod": "GET",
-              "url": "{floorPlanId}/booths",
+              "url": "api/app/floor-plan/{floorPlanId}/booths",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -11364,7 +11364,7 @@
               "uniqueName": "AddBoothAsyncByFloorPlanIdAndInput",
               "name": "AddBoothAsync",
               "httpMethod": "POST",
-              "url": "{floorPlanId}/booths",
+              "url": "api/app/floor-plan/{floorPlanId}/booths",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -11421,7 +11421,7 @@
               "uniqueName": "UpdateBoothPositionAsyncByFloorPlanIdAndBoothIdAndInput",
               "name": "UpdateBoothPositionAsync",
               "httpMethod": "PUT",
-              "url": "{floorPlanId}/booths/{boothId}",
+              "url": "api/app/floor-plan/{floorPlanId}/booths/{boothId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -11498,7 +11498,7 @@
               "uniqueName": "RemoveBoothAsyncByFloorPlanIdAndBoothId",
               "name": "RemoveBoothAsync",
               "httpMethod": "DELETE",
-              "url": "{floorPlanId}/booths/{boothId}",
+              "url": "api/app/floor-plan/{floorPlanId}/booths/{boothId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -11555,7 +11555,7 @@
               "uniqueName": "GetBoothsAvailabilityAsyncByFloorPlanIdAndStartDateAndEndDate",
               "name": "GetBoothsAvailabilityAsync",
               "httpMethod": "GET",
-              "url": "{floorPlanId}/booths-availability",
+              "url": "api/app/floor-plan/{floorPlanId}/booths-availability",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -27380,6 +27380,18 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PricingPeriods",
+          "jsonName": null,
+          "type": "[MP.Application.Contracts.Booths.BoothPricingPeriodDto]",
+          "typeSimple": "[MP.Application.Contracts.Booths.BoothPricingPeriodDto]",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

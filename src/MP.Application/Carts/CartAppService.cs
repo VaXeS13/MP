@@ -19,6 +19,7 @@ using MP.Domain.BoothTypes;
 using MP.Rentals;
 using MP.Domain.Promotions;
 using MP.Domain.Payments.Events;
+using MP.Application.Contracts.Booths;
 
 namespace MP.Carts
 {
@@ -61,6 +62,24 @@ namespace MP.Carts
         {
             var userId = CurrentUser.GetId();
             var cart = await _cartManager.GetOrCreateActiveCartAsync(userId, CurrentTenant.Id);
+
+            // Recalculate prices based on current booth pricing
+            // This catches pricing changes made by admin
+            foreach (var item in cart.Items)
+            {
+                var priceWasUpdated = await _cartManager.RecalculateCartItemPriceAsync(item);
+                if (priceWasUpdated)
+                {
+                    Logger.LogInformation("Price updated for CartItem {ItemId} in cart {CartId}",
+                        item.Id, cart.Id);
+                }
+            }
+
+            // Save any price updates
+            if (cart.Items.Any(i => i.PriceWasUpdated))
+            {
+                await _cartRepository.UpdateAsync(cart);
+            }
 
             return await MapToCartDtoAsync(cart);
         }
@@ -207,6 +226,24 @@ namespace MP.Carts
                         Success = false,
                         ErrorMessage = "Cart is empty"
                     };
+                }
+
+                // Recalculate prices based on current booth pricing before checkout
+                // This catches pricing changes made by admin since cart was last viewed
+                foreach (var item in cart.Items)
+                {
+                    var priceWasUpdated = await _cartManager.RecalculateCartItemPriceAsync(item);
+                    if (priceWasUpdated)
+                    {
+                        Logger.LogInformation("Price updated for CartItem {ItemId} during checkout in cart {CartId}",
+                            item.Id, cart.Id);
+                    }
+                }
+
+                // Save any price updates
+                if (cart.Items.Any(i => i.PriceWasUpdated))
+                {
+                    await _cartRepository.UpdateAsync(cart);
                 }
 
                 // Check for expired items and validate availability
@@ -503,6 +540,19 @@ namespace MP.Carts
 
                 // Use discount values already set on CartItem by promotion logic
                 // Do not recalculate - the domain layer (Cart.ApplyPromotion) already calculated these
+                // Map pricing periods from booth for detailed price breakdown display
+                List<BoothPricingPeriodDto>? pricingPeriods = null;
+                if (booth.PricingPeriods != null && booth.PricingPeriods.Count > 0)
+                {
+                    pricingPeriods = booth.PricingPeriods
+                        .Select(p => new BoothPricingPeriodDto
+                        {
+                            Days = p.Days,
+                            PricePerPeriod = p.PricePerPeriod
+                        })
+                        .ToList();
+                }
+
                 var itemDto = new CartItemDto
                 {
                     Id = item.Id,
@@ -522,8 +572,11 @@ namespace MP.Carts
                     BoothDescription = $"Booth {booth.Number}",
                     BoothTypeName = boothType.Name,
                     Currency = item.Currency.ToString(),
+                    PricingPeriods = pricingPeriods,
                     ReservationExpiresAt = item.ReservationExpiresAt,
-                    IsExpired = item.IsReservationExpired()
+                    IsExpired = item.IsReservationExpired(),
+                    OldStoredTotalPrice = item.OldStoredTotalPrice,
+                    PriceWasUpdated = item.PriceWasUpdated
                 };
 
                 dto.Items.Add(itemDto);

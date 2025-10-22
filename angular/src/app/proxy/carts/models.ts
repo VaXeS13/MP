@@ -1,5 +1,6 @@
 import type { EntityDto } from '@abp/ng.core';
 import type { CartStatus } from './cart-status.enum';
+import type { BoothPricingPeriodDto } from '../application/contracts/booths/models';
 
 export interface AddToCartDto {
   boothId: string;
@@ -45,6 +46,7 @@ export interface CartItemDto extends EntityDto<string> {
   boothDescription?: string;
   boothTypeName?: string;
   currency?: string;
+  pricingPeriods: BoothPricingPeriodDto[];
   reservationExpiresAt?: string;
   isExpired: boolean;
 }

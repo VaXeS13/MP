@@ -164,4 +164,77 @@ export class EditCartItemDialogComponent implements OnInit, OnChanges {
   trackByBoothTypeId(index: number, boothType: BoothTypeDto): string {
     return boothType.id;
   }
+
+  /**
+   * Get pricing periods display for booth
+   * Shows all available pricing periods (e.g., "1 dzień: 1,00 zł, 3 dni: 2,00 zł, 7 dni: 2,00 zł")
+   */
+  getPricingPeriodsDisplay(): string {
+    if (!this.booth || !this.booth.pricingPeriods || this.booth.pricingPeriods.length === 0) {
+      return this.formatCurrency(this.booth?.pricePerDay || 0) + ' per day';
+    }
+
+    const periods = this.booth.pricingPeriods
+      .sort((a, b) => a.days - b.days)
+      .map(period => {
+        const dayLabel = period.days === 1 ? 'dzień' : 'dni';
+        return `${period.days} ${dayLabel}: ${this.formatCurrency(period.pricePerPeriod)}`;
+      })
+      .join(', ');
+
+    return periods;
+  }
+
+  /**
+   * Get price breakdown text for current selection
+   * Shows detailed breakdown when using multi-period pricing
+   */
+  getPriceBreakdownText(): string {
+    if (!this.booth || !this.booth.pricingPeriods || this.booth.pricingPeriods.length === 0 || !this.calculatedDays) {
+      // Fallback to simple format
+      return `${this.calculatedDays} days × ${this.formatCurrency(this.booth?.pricePerDay || 0)}`;
+    }
+
+    const sortedPeriods = [...this.booth.pricingPeriods].sort((a, b) => b.days - a.days);
+    let remainingDays = this.calculatedDays;
+    const breakdown: string[] = [];
+
+    // Greedy algorithm breakdown
+    for (const period of sortedPeriods) {
+      const count = Math.floor(remainingDays / period.days);
+      if (count > 0) {
+        const dayLabel = period.days === 1 ? 'dzień' : 'dni';
+        const subtotal = count * period.pricePerPeriod;
+        // Only show count if more than 1
+        const countLabel = count === 1 ? '' : `${count}× `;
+        breakdown.push(`${countLabel}${period.days} ${dayLabel} (${this.formatCurrency(subtotal)})`);
+        remainingDays -= count * period.days;
+      }
+
+      if (remainingDays === 0) {
+        break;
+      }
+    }
+
+    // Remaining days
+    if (remainingDays > 0) {
+      const smallestPeriod = sortedPeriods[sortedPeriods.length - 1];
+      const pricePerDay = smallestPeriod.pricePerPeriod / smallestPeriod.days;
+      const subtotal = remainingDays * pricePerDay;
+      const dayLabel = remainingDays === 1 ? 'dzień' : 'dni';
+      breakdown.push(`${remainingDays} ${dayLabel} (${this.formatCurrency(subtotal)})`);
+    }
+
+    return breakdown.join('<br>');
+  }
+
+  /**
+   * Format currency value for display
+   */
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat('pl-PL', {
+      style: 'currency',
+      currency: this.tenantCurrencyCode || 'PLN'
+    }).format(value);
+  }
 }

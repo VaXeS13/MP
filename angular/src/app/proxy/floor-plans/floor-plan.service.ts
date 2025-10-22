@@ -13,7 +13,7 @@ export class FloorPlanService {
   addBooth = (floorPlanId: string, input: CreateFloorPlanBoothDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, FloorPlanBoothDto>({
       method: 'POST',
-      url: `/${floorPlanId}/booths`,
+      url: `/api/app/floor-plan/${floorPlanId}/booths`,
       body: input,
     },
     { apiName: this.apiName,...config });
@@ -55,7 +55,7 @@ export class FloorPlanService {
   getBooths = (floorPlanId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, FloorPlanBoothDto[]>({
       method: 'GET',
-      url: `/${floorPlanId}/booths`,
+      url: `/api/app/floor-plan/${floorPlanId}/booths`,
     },
     { apiName: this.apiName,...config });
   
@@ -63,7 +63,7 @@ export class FloorPlanService {
   getBoothsAvailability = (floorPlanId: string, startDate: string, endDate: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, BoothAvailabilityDto[]>({
       method: 'GET',
-      url: `/${floorPlanId}/booths-availability`,
+      url: `/api/app/floor-plan/${floorPlanId}/booths-availability`,
       params: { startDate, endDate },
     },
     { apiName: this.apiName,...config });
@@ -89,7 +89,7 @@ export class FloorPlanService {
   removeBooth = (floorPlanId: string, boothId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'DELETE',
-      url: `/${floorPlanId}/booths/${boothId}`,
+      url: `/api/app/floor-plan/${floorPlanId}/booths/${boothId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -106,7 +106,7 @@ export class FloorPlanService {
   updateBoothPosition = (floorPlanId: string, boothId: string, input: CreateFloorPlanBoothDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, FloorPlanBoothDto>({
       method: 'PUT',
-      url: `/${floorPlanId}/booths/${boothId}`,
+      url: `/api/app/floor-plan/${floorPlanId}/booths/${boothId}`,
       body: input,
     },
     { apiName: this.apiName,...config });

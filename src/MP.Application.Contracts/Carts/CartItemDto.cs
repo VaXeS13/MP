@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Volo.Abp.Application.Dtos;
+using MP.Application.Contracts.Booths;
 
 namespace MP.Carts
 {
@@ -30,10 +32,17 @@ namespace MP.Carts
         public string? BoothTypeName { get; set; }
         public string? Currency { get; set; }
 
+        // Pricing periods for detailed price breakdown display
+        public List<BoothPricingPeriodDto>? PricingPeriods { get; set; }
+
         // Reservation expiration
         public DateTime? ReservationExpiresAt { get; set; }
 
         // Deprecated: Use ReservationExpiresAt instead
         public bool IsExpired { get; set; }
+
+        // Price update tracking
+        public decimal? OldStoredTotalPrice { get; set; }
+        public bool PriceWasUpdated { get; set; }
     }
 }

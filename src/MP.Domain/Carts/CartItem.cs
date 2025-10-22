@@ -16,6 +16,9 @@ namespace MP.Domain.Carts
         public DateTime EndDate { get; private set; }
 
         public decimal PricePerDay { get; private set; }
+        public decimal? StoredTotalPrice { get; private set; } // Exact total price from multi-period calculation (prevents rounding errors)
+        public decimal? OldStoredTotalPrice { get; private set; } // Previous price before update (for tracking changes)
+        public bool PriceWasUpdated { get; private set; } // Flag indicating price was updated since adding to cart
         public Currency Currency { get; private set; }
         public string? Notes { get; private set; }
 
@@ -116,6 +119,31 @@ namespace MP.Domain.Carts
             PricePerDay = pricePerDay;
         }
 
+        public void SetStoredTotalPrice(decimal totalPrice)
+        {
+            if (totalPrice <= 0)
+                throw new BusinessException("CART_ITEM_INVALID_PRICE")
+                    .WithData("TotalPrice", totalPrice);
+
+            StoredTotalPrice = totalPrice;
+        }
+
+        public void UpdatePrice(decimal newTotalPrice, decimal newPricePerDay)
+        {
+            if (newTotalPrice <= 0 || newPricePerDay <= 0)
+                throw new BusinessException("CART_ITEM_INVALID_PRICE");
+
+            // Track old price
+            OldStoredTotalPrice = StoredTotalPrice;
+
+            // Update prices
+            StoredTotalPrice = newTotalPrice;
+            PricePerDay = newPricePerDay;
+
+            // Mark as updated
+            PriceWasUpdated = true;
+        }
+
         public void UpdateBoothType(Guid boothTypeId)
         {
             BoothTypeId = boothTypeId;
@@ -133,6 +161,12 @@ namespace MP.Domain.Carts
 
         public decimal GetTotalPrice()
         {
+            // If exact total price is stored (from multi-period calculation), use it to avoid rounding errors
+            if (StoredTotalPrice.HasValue)
+            {
+                return StoredTotalPrice.Value;
+            }
+            // Fall back to calculation for legacy items without stored total price
             return GetDaysCount() * PricePerDay;
         }
 

@@ -23,9 +23,21 @@
           Booth #{{ booth.number }}
         </h5>
         <p class="mb-0">
-          <strong>Price per day:</strong>
+          <strong>Pricing:</strong>
           <span class="text-success fw-bold ms-2">
-            {{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
+            {{ getPricingPeriodsDisplay() }}
+          </span>
+        </p>
+        <p *ngIf="calculatedDays > 0" class="mb-0 mt-2">
+          <strong>Selected Period:</strong>
+          <span class="text-info ms-2">
+            <span [innerHTML]="getPriceBreakdownText()"></span>
+          </span>
+        </p>
+        <p *ngIf="calculatedDays > 0" class="mb-0 mt-2">
+          <strong>Total Amount:</strong>
+          <span class="text-success fw-bold ms-2">
+            {{ calculatedPrice | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
           </span>
         </p>
       </div>

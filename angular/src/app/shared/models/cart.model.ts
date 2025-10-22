@@ -4,6 +4,11 @@ export enum CartStatus {
   Abandoned = 2
 }
 
+export interface BoothPricingPeriodDto {
+  days: number;
+  pricePerPeriod: number;
+}
+
 export interface CartItemDto {
   id: string;
   cartId: string;
@@ -22,8 +27,12 @@ export interface CartItemDto {
   boothDescription?: string;
   boothTypeName?: string;
   currency?: string;
+  pricingPeriods?: BoothPricingPeriodDto[]; // Pricing periods for detailed breakdown
   reservationExpiresAt?: string; // ISO datetime string
   isExpired: boolean; // Deprecated: use reservationExpiresAt instead
+  // Price update tracking
+  oldStoredTotalPrice?: number; // Previous price before admin update
+  priceWasUpdated: boolean; // True if admin changed pricing
 }
 
 export interface CartDto {

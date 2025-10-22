@@ -65,13 +65,13 @@
   <ng-template pTemplate="footer">
     <div class="footer-content">
       <div class="footer-left">
-        <div *ngIf="!item?.id" class="flex align-items-center">
+        <div *ngIf="!item?.id" class="field-checkbox">
           <p-checkbox
             [(ngModel)]="createAnother"
             [binary]="true"
             inputId="createAnother">
           </p-checkbox>
-          <label for="createAnother" class="ml-2 cursor-pointer">
+          <label for="createAnother" class="checkbox-label">
             {{ 'Item:CreateAnother' | abpLocalization }}
           </label>
         </div>

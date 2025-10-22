@@ -82,7 +82,6 @@ export class ItemFormComponent implements OnInit {
       name: ['', [Validators.required, Validators.maxLength(200)]],
       category: ['', Validators.maxLength(100)],
       price: [null, [Validators.required, Validators.min(0.01)]]
-      // Note: Currency is automatically set from tenant settings
     });
   }
 
@@ -110,7 +109,6 @@ export class ItemFormComponent implements OnInit {
         name: formValue.name,
         category: formValue.category || undefined,
         price: formValue.price
-        // Note: Currency is NOT updated - items keep their original currency
       };
 
       this.itemService.update(this.item.id, updateDto).subscribe({
@@ -139,7 +137,6 @@ export class ItemFormComponent implements OnInit {
         name: formValue.name,
         category: formValue.category || undefined,
         price: formValue.price
-        // Note: Currency is automatically set from tenant settings on backend
       };
 
       this.itemService.create(createDto).subscribe({

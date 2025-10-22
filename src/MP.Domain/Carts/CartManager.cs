@@ -240,7 +240,10 @@ namespace MP.Domain.Carts
 
             // Calculate price using new multi-period pricing system
             var days = (endDate - startDate).Days + 1;
-            var pricePerDay = CalculatePricePerDayForCart(booth, days);
+
+            // Calculate exact total price to avoid rounding errors (10 zł / 30 days → 0.333... → 9.90 zł)
+            var actualTotalPrice = CalculateTotalPrice(booth, days);
+            var pricePerDay = actualTotalPrice / days;
 
             // Get tenant currency
             var currency = await GetTenantCurrencyAsync();
@@ -262,26 +265,29 @@ namespace MP.Domain.Carts
                 notes
             );
 
+            // Store the exact total price to prevent rounding errors when displayed
+            item.SetStoredTotalPrice(actualTotalPrice);
+
             return item;
         }
 
         /// <summary>
-        /// Calculates effective price per day for cart display purposes.
+        /// Calculates the total price for a rental period.
         /// Uses multi-period pricing if available, falls back to legacy PricePerDay
         /// </summary>
-        private decimal CalculatePricePerDayForCart(Booth booth, int days)
+        private decimal CalculateTotalPrice(Booth booth, int days)
         {
             // Use new pricing system if booth has pricing periods
             if (booth.PricingPeriods != null && booth.PricingPeriods.Count > 0)
             {
                 var calculation = booth.CalculatePrice(days);
-                // Return average price per day for cart display
-                return calculation.TotalPrice / days;
+                // Return exact total price (not average per day)
+                return calculation.TotalPrice;
             }
 
             // Fall back to legacy pricing
 #pragma warning disable CS0618 // Type or member is obsolete
-            return booth.PricePerDay;
+            return days * booth.PricePerDay;
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
@@ -308,6 +314,34 @@ namespace MP.Domain.Carts
 
             // Update the item
             cart.UpdateItem(itemId, boothTypeId, startDate, endDate, notes);
+        }
+
+        /// <summary>
+        /// Recalculates cart item price based on current booth pricing
+        /// Returns true if price was updated (difference > 0.01), false otherwise
+        /// </summary>
+        public async Task<bool> RecalculateCartItemPriceAsync(CartItem item)
+        {
+            // Get booth with current pricing
+            var booth = await _boothRepository.GetAsync(item.BoothId, includeDetails: true);
+
+            // Calculate new total price
+            var days = item.GetDaysCount();
+            var newTotalPrice = CalculateTotalPrice(booth, days);
+            var newPricePerDay = newTotalPrice / days;
+
+            // Check if price changed significantly (more than 0.01)
+            var currentPrice = item.GetTotalPrice();
+            var priceDifference = Math.Abs(newTotalPrice - currentPrice);
+
+            if (priceDifference > 0.01m)
+            {
+                // Update price and track the change
+                item.UpdatePrice(newTotalPrice, newPricePerDay);
+                return true;
+            }
+
+            return false;
         }
 
         private async Task<Currency> GetTenantCurrencyAsync()

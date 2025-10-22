@@ -4,6 +4,7 @@ using MP.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace MP.Migrations
 {
     [DbContext(typeof(MPDbContext))]
-    partial class MPDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251022095204_AddStoredTotalPriceToCartItem")]
+    partial class AddStoredTotalPriceToCartItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -362,15 +365,9 @@ namespace MP.Migrations
                         .HasColumnType("nvarchar(1000)")
                         .HasComment("Notatki do wynajmu");
 
-                    b.Property<decimal?>("OldStoredTotalPrice")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("PricePerDay")
                         .HasColumnType("decimal(18,2)")
                         .HasComment("Cena za dzień");
-
-                    b.Property<bool>("PriceWasUpdated")
-                        .HasColumnType("bit");
 
                     b.Property<Guid?>("RentalId")
                         .HasColumnType("uniqueidentifier");

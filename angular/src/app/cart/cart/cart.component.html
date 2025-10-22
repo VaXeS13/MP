@@ -101,26 +101,36 @@
                       <div class="text-muted">{{ '::Common:To' | abpLocalization }} {{ formatDate(item.endDate) }}</div>
                     </div>
                   </td>
-                  <td>
-                    {{ item.pricePerDay | currency:item.currency:'symbol':'1.2-2' }}
-                  </td>
+                  <td [innerHTML]="getItemPriceBreakdownText(item)"></td>
                   <td>
                     <span class="badge bg-secondary">{{ getDuration(item) }}</span>
                   </td>
                   <td class="fw-bold">
-                    <div *ngIf="item.discountAmount > 0" class="price-with-discount">
-                      <span class="badge bg-success me-2" [pTooltip]="'Obniżona cena w promocji: ' + (item.discountPercentage | number:'1.0-0') + '%'" tooltipPosition="top">
-                        <i class="pi pi-tag me-1"></i>Promocja
+                    <div class="d-flex align-items-start gap-2">
+                      <div class="flex-grow-1">
+                        <div *ngIf="item.discountAmount > 0" class="price-with-discount">
+                          <span class="badge bg-success me-2" [pTooltip]="'Obniżona cena w promocji: ' + (item.discountPercentage | number:'1.0-0') + '%'" tooltipPosition="top">
+                            <i class="pi pi-tag me-1"></i>Promocja
+                          </span>
+                          <div class="original-price">
+                            {{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}
+                          </div>
+                          <div class="discounted-price">
+                            {{ item.finalPrice | currency:item.currency:'symbol':'1.2-2' }}
+                          </div>
+                        </div>
+                        <div *ngIf="item.discountAmount === 0" [pTooltip]="hasPromoCode() ? 'Ta pozycja nie jest objęta promocją' : ''" tooltipPosition="top">
+                          {{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}
+                        </div>
+                      </div>
+                      <!-- Price change badge -->
+                      <span *ngIf="hasPriceChanged(item)"
+                            class="badge price-change-badge"
+                            [style.background-color]="getPriceChangeColor(item)"
+                            [pTooltip]="getPriceChangeTooltip(item)"
+                            tooltipPosition="top">
+                        <i [ngClass]="getPriceChangeIcon(item)"></i>
                       </span>
-                      <div class="original-price">
-                        {{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}
-                      </div>
-                      <div class="discounted-price">
-                        {{ item.finalPrice | currency:item.currency:'symbol':'1.2-2' }}
-                      </div>
-                    </div>
-                    <div *ngIf="item.discountAmount === 0" [pTooltip]="hasPromoCode() ? 'Ta pozycja nie jest objęta promocją' : ''" tooltipPosition="top">
-                      {{ item.totalPrice | currency:item.currency:'symbol':'1.2-2' }}
                     </div>
                   </td>
                   <td class="text-end">

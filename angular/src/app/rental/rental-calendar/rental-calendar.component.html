@@ -24,8 +24,8 @@
             <i class="fas fa-store me-2"></i>
             Booth Details
           </h5>
-          <p class="mb-2"><strong>Price per day:</strong>
-            <span class="text-success fw-bold">{{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</span>
+          <p class="mb-2"><strong>Pricing:</strong>
+            <span class="text-success fw-bold">{{ getPricingPeriodsDisplay() }}</span>
           </p>
           <p class="mb-0"><strong>Description:</strong> {{ booth.description || 'No description available' }}</p>
         </div>
@@ -340,7 +340,7 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>{{ calculatedDays }} days × {{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</td>
+                  <td [innerHTML]="getPriceBreakdownText()"></td>
                   <td class="text-end">{{ calculatedPrice | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</td>
                 </tr>
                 <tr class="table-success">

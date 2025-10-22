@@ -580,6 +580,129 @@ export class CartComponent implements OnInit, OnDestroy {
     return this.cart?.items?.filter(item => this.hasItemDiscount(item)).length || 0;
   }
 
+  /**
+   * Get price breakdown text for cart item with detailed period breakdown
+   * Shows items like "7 dni (2 zł), 3 dni (2 zł)" for 10 days
+   * Displays totalPrice when period breakdown is not available
+   */
+  getItemPriceBreakdownText(item: CartItemDto): string {
+    // If no pricing periods available, show total price
+    if (!item.pricingPeriods || item.pricingPeriods.length === 0 || item.daysCount <= 0) {
+      return `${item.daysCount} days × ${this.formatCurrency(item.pricePerDay, item.currency)}`;
+    }
+
+    const sortedPeriods = [...item.pricingPeriods].sort((a, b) => b.days - a.days);
+    let remainingDays = item.daysCount;
+    const breakdown: string[] = [];
+
+    // Greedy algorithm breakdown
+    for (const period of sortedPeriods) {
+      const count = Math.floor(remainingDays / period.days);
+      if (count > 0) {
+        const dayLabel = period.days === 1 ? 'dzień' : 'dni';
+        const subtotal = count * period.pricePerPeriod;
+        // Only show count if more than 1
+        const countLabel = count === 1 ? '' : `${count}× `;
+        breakdown.push(`${countLabel}${period.days} ${dayLabel} (${this.formatCurrency(subtotal, item.currency)})`);
+        remainingDays -= count * period.days;
+      }
+
+      if (remainingDays === 0) {
+        break;
+      }
+    }
+
+    // Remaining days
+    if (remainingDays > 0) {
+      const smallestPeriod = sortedPeriods[sortedPeriods.length - 1];
+      const pricePerDay = smallestPeriod.pricePerPeriod / smallestPeriod.days;
+      const subtotal = remainingDays * pricePerDay;
+      const dayLabel = remainingDays === 1 ? 'dzień' : 'dni';
+      breakdown.push(`${remainingDays} ${dayLabel} (${this.formatCurrency(subtotal, item.currency)})`);
+    }
+
+    return breakdown.join('<br>');
+  }
+
+  /**
+   * Format currency value for display
+   */
+  private formatCurrency(value: number, currency: string = this.tenantCurrencyCode): string {
+    return new Intl.NumberFormat('pl-PL', {
+      style: 'currency',
+      currency: currency || 'PLN'
+    }).format(value);
+  }
+
+  /**
+   * Check if item price was updated by admin
+   */
+  hasPriceChanged(item: CartItemDto): boolean {
+    return item.priceWasUpdated === true;
+  }
+
+  /**
+   * Get price change icon (up/down arrow)
+   */
+  getPriceChangeIcon(item: CartItemDto): string {
+    if (!this.hasPriceChanged(item) || !item.oldStoredTotalPrice) {
+      return '';
+    }
+
+    const oldPrice = item.oldStoredTotalPrice;
+    const newPrice = item.totalPrice;
+
+    if (newPrice > oldPrice) {
+      return 'pi pi-arrow-up'; // Price increased
+    } else if (newPrice < oldPrice) {
+      return 'pi pi-arrow-down'; // Price decreased
+    }
+    return '';
+  }
+
+  /**
+   * Get color for price change badge
+   */
+  getPriceChangeColor(item: CartItemDto): string {
+    if (!this.hasPriceChanged(item) || !item.oldStoredTotalPrice) {
+      return '';
+    }
+
+    const oldPrice = item.oldStoredTotalPrice;
+    const newPrice = item.totalPrice;
+
+    if (newPrice > oldPrice) {
+      return '#ff6b6b'; // Red for increase
+    } else if (newPrice < oldPrice) {
+      return '#51cf66'; // Green for decrease
+    }
+    return '';
+  }
+
+  /**
+   * Get price change tooltip text
+   */
+  getPriceChangeTooltip(item: CartItemDto): string {
+    if (!this.hasPriceChanged(item) || !item.oldStoredTotalPrice) {
+      return '';
+    }
+
+    const oldPrice = item.oldStoredTotalPrice;
+    const newPrice = item.totalPrice;
+    const difference = newPrice - oldPrice;
+    const absChange = Math.abs(difference);
+
+    const oldFormatted = this.formatCurrency(oldPrice, item.currency);
+    const newFormatted = this.formatCurrency(newPrice, item.currency);
+    const changeFormatted = this.formatCurrency(absChange, item.currency);
+
+    if (difference > 0) {
+      return `Cena wzrosła z ${oldFormatted} na ${newFormatted} (+${changeFormatted})`;
+    } else {
+      return `Cena spadła z ${oldFormatted} na ${newFormatted} (-${changeFormatted})`;
+    }
+  }
+
   triggerNeonBorder(): void {
     // Show neon border animation
     this.showBubbleAnimation = true;
