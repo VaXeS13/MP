@@ -104,21 +104,19 @@ export class ItemListComponent implements OnInit {
   }
 
   onHeaderCheckboxChange(event: any): void {
-    if (event.checked) {
-      // Select only selectable items (Draft status)
-      this.selectedItems = [...this.selectableItems];
-      // Also sync to table
-      if (this.itemTable) {
-        this.itemTable.selection = [...this.selectableItems];
+    // Use setTimeout to ensure PrimeNG has synced the selection first
+    setTimeout(() => {
+      if (event.checked) {
+        // Filter to only Draft items
+        this.selectedItems = this.selectedItems.filter(
+          (item) => item.status === 'Draft'
+        );
+      } else {
+        // Deselect all
+        this.selectedItems = [];
       }
-    } else {
-      // Deselect all
-      this.selectedItems = [];
-      if (this.itemTable) {
-        this.itemTable.selection = [];
-      }
-    }
-    this.cdr.markForCheck();
+      this.cdr.markForCheck();
+    }, 0);
   }
 
   onRowSelect(event: any): void {
