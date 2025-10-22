@@ -68,11 +68,12 @@
   }
 }
 
-::ng-deep .dropdown-panel-smooth {
+::ng-deep .dropdown-panel-sheet {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
   border-radius: 4px !important;
   border: 1px solid #ddd !important;
   margin-top: 4px !important;
+  transform-origin: top center !important;
 
   .p-dropdown-items {
     padding: 0.5rem 0 !important;
@@ -88,6 +89,12 @@
     &.p-dropdown-item-active {
       background-color: #e0e7ff !important;
     }
+  }
+}
+
+::ng-deep .p-dropdown {
+  .p-dropdown-trigger {
+    min-width: 2.5rem;
   }
 }
 
