@@ -1,17 +1,19 @@
 <div class="my-items">
   <div class="page-header">
     <h1>Moje Przedmioty</h1>
-    <button pButton label="Dodaj przedmiot" icon="pi pi-plus" (click)="addNewItem()"></button>
+    <button pButton label="Dodaj przedmiot" icon="pi pi-plus" (click)="navigateToAddItem()"></button>
   </div>
 
   <p-card>
-    <p-table [value]="items" [loading]="loading" responsiveLayout="scroll" [paginator]="true" [rows]="10">
+    <p-table [value]="items" [loading]="loading" responsiveLayout="scroll"
+             [paginator]="true" [rows]="pageSize" [totalRecords]="totalItems"
+             [lazy]="true" (onLazyLoad)="onPageChange($event)"
+             [trackBy]="trackByItemId">
       <ng-template pTemplate="header">
         <tr>
           <th>Nazwa</th>
           <th>Kategoria</th>
           <th>Stoisko</th>
-          <th>Cena szacunkowa</th>
           <th>Cena sprzedaży</th>
           <th>Status</th>
           <th>Data dodania</th>
@@ -23,58 +25,26 @@
           <td>{{ item.name }}</td>
           <td>{{ item.category || '-' }}</td>
           <td>{{ item.boothNumber }}</td>
-          <td>{{ formatCurrency(item.estimatedPrice) }}</td>
-          <td>{{ item.actualPrice ? formatCurrency(item.actualPrice) : '-' }}</td>
+          <td>{{ formatCurrency(item.actualPrice) }}</td>
           <td>
             <p-tag [severity]="getStatusSeverity(item.status)" [value]="getStatusLabel(item.status)"></p-tag>
           </td>
           <td>{{ item.creationTime | date:'dd.MM.yyyy' }}</td>
           <td>
             <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm"
-                    (click)="editItem(item)" [disabled]="item.status === 'Sold'"
-                    pTooltip="Edytuj"></button>
+                    (click)="editItem(item)" [disabled]="!canEditItem(item)"
+                    [pTooltip]="item.barcode ? 'Edycja zablokowana - przedmiot ma wygenerowany QR' : 'Edytuj'"></button>
             <button pButton icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger"
-                    (click)="deleteItem(item)" [disabled]="item.status === 'Sold'"
+                    (click)="deleteItem(item)"
                     pTooltip="Usuń"></button>
           </td>
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="8" class="text-center">Brak przedmiotów do wyświetlenia</td>
+          <td colspan="7" class="text-center">Brak przedmiotów do wyświetlenia</td>
         </tr>
       </ng-template>
     </p-table>
   </p-card>
-
-  <!-- Add/Edit Dialog -->
-  <p-dialog [(visible)]="displayDialog" [header]="isEditMode ? 'Edytuj przedmiot' : 'Dodaj przedmiot'"
-            [modal]="true" [style]="{width: '500px'}">
-    <div class="p-fluid">
-      <div class="field">
-        <label for="name">Nazwa *</label>
-        <input type="text" pInputText id="name" [(ngModel)]="selectedItem.name" required />
-      </div>
-
-      <div class="field">
-        <label for="category">Kategoria</label>
-        <input type="text" pInputText id="category" [(ngModel)]="selectedItem.category" />
-      </div>
-
-      <div class="field">
-        <label for="estimatedPrice">Cena szacunkowa (PLN)</label>
-        <input type="number" pInputText id="estimatedPrice" [(ngModel)]="selectedItem.estimatedPrice" />
-      </div>
-
-      <div class="field">
-        <label for="description">Opis</label>
-        <textarea pInputTextarea id="description" [(ngModel)]="selectedItem.description" rows="3"></textarea>
-      </div>
-    </div>
-
-    <ng-template pTemplate="footer">
-      <button pButton label="Anuluj" (click)="displayDialog = false" class="p-button-text"></button>
-      <button pButton label="Zapisz" (click)="saveItem()" [disabled]="!selectedItem.name"></button>
-    </ng-template>
-  </p-dialog>
 </div>

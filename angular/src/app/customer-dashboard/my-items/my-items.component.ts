@@ -1,4 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { MyItemService } from '@proxy/application/customer-dashboard';
+import { MyItemDto, GetMyItemsDto } from '@proxy/application/contracts/customer-dashboard';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-my-items',
@@ -6,12 +12,21 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./my-items.component.scss'],
   standalone: false
 })
-export class MyItemsComponent implements OnInit {
-  items: any[] = [];
+export class MyItemsComponent implements OnInit, OnDestroy {
+  items: MyItemDto[] = [];
   loading = false;
   displayDialog = false;
-  selectedItem: any = {};
+  selectedItem: MyItemDto | null = null;
   isEditMode = false;
+  totalItems = 0;
+  currentPage = 0;
+  pageSize = 10;
+
+  filterStatus: string | null = null;
+  filterCategory: string | null = null;
+  categories: string[] = [];
+
+  private destroy$ = new Subject<void>();
 
   statuses = [
     { label: 'Na sprzedaż', value: 'ForSale' },
@@ -19,92 +34,132 @@ export class MyItemsComponent implements OnInit {
     { label: 'Odebrane', value: 'Reclaimed' }
   ];
 
-  constructor() {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private myItemService: MyItemService,
+    private messageService: MessageService
+  ) {}
 
   ngOnInit(): void {
-    this.loadItems();
+    this.loadCategories();
+
+    // Subscribe to query params for filtering
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        this.filterStatus = params['filterStatus'] || null;
+        this.filterCategory = params['filterCategory'] || null;
+        this.currentPage = 0;
+        this.loadItems();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadCategories(): void {
+    this.myItemService.getMyItemCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (categories) => {
+          this.categories = categories;
+        },
+        error: (error) => {
+          console.error('Error loading categories:', error);
+        }
+      });
   }
 
   loadItems(): void {
     this.loading = true;
 
-    // Mock data - replace with actual API call
-    this.items = [
-      {
-        id: '1',
-        name: 'Vintage Lamp',
-        category: 'Lighting',
-        estimatedPrice: 150.00,
-        actualPrice: 150.00,
-        status: 'Sold',
-        boothNumber: 'A-101',
-        soldAt: new Date(2025, 0, 15),
-        creationTime: new Date(2025, 0, 1)
-      },
-      {
-        id: '2',
-        name: 'Wooden Chair',
-        category: 'Furniture',
-        estimatedPrice: 120.00,
-        status: 'ForSale',
-        boothNumber: 'A-101',
-        creationTime: new Date(2025, 0, 5)
-      },
-      {
-        id: '3',
-        name: 'Antique Clock',
-        category: 'Decor',
-        estimatedPrice: 250.00,
-        status: 'ForSale',
-        boothNumber: 'B-205',
-        creationTime: new Date(2025, 1, 1)
-      }
-    ];
-
-    setTimeout(() => {
-      this.loading = false;
-    }, 500);
-  }
-
-  addNewItem(): void {
-    this.selectedItem = {
-      name: '',
-      category: '',
-      estimatedPrice: 0,
-      description: ''
+    const input: GetMyItemsDto = {
+      status: this.filterStatus,
+      category: this.filterCategory,
+      searchTerm: null,
+      rentalId: null,
+      createdAfter: null,
+      createdBefore: null,
+      sorting: 'CreationTime DESC',
+      skipCount: this.currentPage * this.pageSize,
+      maxResultCount: this.pageSize
     };
-    this.isEditMode = false;
-    this.displayDialog = true;
+
+    this.myItemService.getMyItems(input)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.items = response.items;
+          this.totalItems = response.totalCount;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading items:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Nie udało się załadować przedmiotów'
+          });
+          this.loading = false;
+        }
+      });
   }
 
-  editItem(item: any): void {
+  onPageChange(event: any): void {
+    this.currentPage = event.first / event.rows;
+    this.pageSize = event.rows;
+    this.loadItems();
+  }
+
+  navigateToAddItem(): void {
+    this.router.navigate(['/items/list']);
+  }
+
+  editItem(item: MyItemDto): void {
+    // Check if item has QR code generated (barcode exists)
+    if (item.barcode) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Edycja zablokowana',
+        detail: 'Ten przedmiot ma już wygenerowany kod QR i nie może być edytowany'
+      });
+      return;
+    }
+
     this.selectedItem = { ...item };
     this.isEditMode = true;
     this.displayDialog = true;
   }
 
-  deleteItem(item: any): void {
+  deleteItem(item: MyItemDto): void {
     if (confirm(`Czy na pewno chcesz usunąć przedmiot "${item.name}"?`)) {
-      this.items = this.items.filter(i => i.id !== item.id);
-    }
-  }
+      this.loading = true;
 
-  saveItem(): void {
-    if (this.isEditMode) {
-      const index = this.items.findIndex(i => i.id === this.selectedItem.id);
-      if (index !== -1) {
-        this.items[index] = { ...this.selectedItem };
-      }
-    } else {
-      this.items.push({
-        ...this.selectedItem,
-        id: Date.now().toString(),
-        status: 'ForSale',
-        creationTime: new Date()
-      });
+      this.myItemService.delete(item.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sukces',
+              detail: 'Przedmiot został usunięty'
+            });
+            this.loadItems();
+          },
+          error: (error) => {
+            console.error('Error deleting item:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Błąd',
+              detail: 'Nie udało się usunąć przedmiotu'
+            });
+            this.loading = false;
+          }
+        });
     }
-
-    this.displayDialog = false;
   }
 
   getStatusSeverity(status: string): string {
@@ -121,10 +176,19 @@ export class MyItemsComponent implements OnInit {
     return found ? found.label : status;
   }
 
-  formatCurrency(amount: number): string {
+  formatCurrency(amount: number | null | undefined): string {
     return new Intl.NumberFormat('pl-PL', {
       style: 'currency',
       currency: 'PLN'
     }).format(amount || 0);
+  }
+
+  canEditItem(item: MyItemDto): boolean {
+    // Block editing if item has QR code (barcode exists)
+    return !item.barcode;
+  }
+
+  trackByItemId(index: number, item: MyItemDto): string {
+    return item.id;
   }
 }

@@ -130,8 +130,12 @@
           </div>
         </div>
 
-        <button pButton label="Zobacz wszystkie przedmioty" (click)="navigateToItems()"
-                class="p-button-outlined w-full mt-3"></button>
+        <div class="buttons-container">
+          <button pButton label="Zobacz wszystkie przedmioty" (click)="navigateToItems()"
+                  class="p-button-outlined w-full mt-3"></button>
+          <button pButton label="Zobacz wszystkie sprzedane przedmioty" (click)="navigateToSoldItems()"
+                  class="p-button-outlined w-full mt-2"></button>
+        </div>
       </p-card>
     </div>
   </div>
@@ -145,7 +149,7 @@
         </ng-template>
 
         <div class="quick-actions">
-          <button pButton label="Dodaj przedmiot" icon="pi pi-plus" (click)="navigateToItems()"
+          <button pButton label="Dodaj przedmiot" icon="pi pi-plus" (click)="navigateToAddItem()"
                   class="p-button-success"></button>
           <button pButton label="Moje wynajmy" icon="pi pi-home" (click)="navigateToRentals()"></button>
           <button pButton label="Rozliczenia" icon="pi pi-money-bill" (click)="navigateToSettlements()"></button>

@@ -79,8 +79,16 @@ export class CustomerDashboardComponent implements OnInit {
     });
   }
 
+  navigateToAddItem(): void {
+    this.router.navigate(['/items/list']);
+  }
+
   navigateToItems(): void {
     this.router.navigate(['/customer-dashboard/my-items']);
+  }
+
+  navigateToSoldItems(): void {
+    this.router.navigate(['/customer-dashboard/my-items'], { queryParams: { filterStatus: 'Sold' } });
   }
 
   navigateToRentals(): void {
