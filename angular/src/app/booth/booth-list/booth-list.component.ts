@@ -390,6 +390,21 @@ this.boothService.getList(input).subscribe({
     return rentalEnd >= today;
   }
 
+  getPricingTooltip(periods: any[]): string {
+    if (!periods || periods.length === 0) {
+      return '';
+    }
+
+    const lines = periods.map(period => {
+      const daysLabel = period.days === 1 ? 'dzień' : 'dni';
+      const price = (period.pricePerPeriod as number).toFixed(2);
+      const perDay = (period.effectivePricePerDay as number).toFixed(2);
+      return `${period.days} ${daysLabel}: ${price} PLN (${perDay} zł/dzień)`;
+    });
+
+    return lines.join('\n');
+  }
+
   trackByBoothId(index: number, booth: BoothListDto): string {
     return booth.id;
   }

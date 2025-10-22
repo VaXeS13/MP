@@ -122,8 +122,19 @@
           </div>
 
           <div class="booth-info-row">
-            <span class="label">{{ '::Booth:PricePerDay' | abpLocalization }}:</span>
-            <span class="price">{{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}</span>
+            <span class="label">{{ '::Booth:Pricing' | abpLocalization }}:</span>
+            <div class="pricing-periods-list">
+              <div *ngIf="booth.pricingPeriods && booth.pricingPeriods.length > 0" class="periods-table">
+                <div *ngFor="let period of booth.pricingPeriods" class="period-row">
+                  <span class="period-days">{{ period.days }}{{ period.days === 1 ? ' dzień' : ' dni' }}:</span>
+                  <span class="period-price">{{ period.pricePerPeriod | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}</span>
+                  <span class="period-per-day">({{ period.effectivePricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}/dzień)</span>
+                </div>
+              </div>
+              <div *ngIf="!booth.pricingPeriods || booth.pricingPeriods.length === 0" class="no-pricing">
+                <span class="price">{{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}/dzień</span>
+              </div>
+            </div>
           </div>
 
           <div class="booth-info-row" *ngIf="booth.currentRentalUserName && booth.status === 2">
@@ -193,7 +204,20 @@
               </p-tag>
             </td>
             <td>
-              <strong class="price-cell">{{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}</strong>
+              <div class="pricing-cell" *ngIf="booth.pricingPeriods && booth.pricingPeriods.length > 0">
+                <p-button
+                  [text]="true"
+                  icon="pi pi-info-circle"
+                  [pTooltip]="getPricingTooltip(booth.pricingPeriods)"
+                  tooltipPosition="right"
+                  styleClass="price-tooltip-btn">
+                  {{ booth.pricingPeriods[0].pricePerPeriod | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}
+                  <small>/ {{ booth.pricingPeriods[0].days }} dni</small>
+                </p-button>
+              </div>
+              <div class="pricing-cell" *ngIf="!booth.pricingPeriods || booth.pricingPeriods.length === 0">
+                <strong class="price-cell">{{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}</strong>
+              </div>
             </td>
             <td>
               <div *ngIf="booth.currentRentalUserName && (booth.status === 2 || booth.status === 3)" class="renter-info">
