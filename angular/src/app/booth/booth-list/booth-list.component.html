@@ -182,7 +182,7 @@
           <tr>
             <th>{{ '::Common:Number' | abpLocalization }}</th>
             <th>{{ '::Common:Status' | abpLocalization }}</th>
-            <th>{{ '::Booth:PricePerDay' | abpLocalization }}</th>
+            <th>{{ '::Booth:Pricing' | abpLocalization }}</th>
             <th>{{ '::Common:Customer' | abpLocalization }}</th>
             <th>{{ '::Common:Created' | abpLocalization }}</th>
             <th>{{ '::Common:Actions' | abpLocalization }}</th>
@@ -205,18 +205,21 @@
             </td>
             <td>
               <div class="pricing-cell" *ngIf="booth.pricingPeriods && booth.pricingPeriods.length > 0">
+                <span class="price-primary">{{ booth.pricingPeriods[0].pricePerPeriod | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}</span>
+                <span class="price-secondary">/ {{ booth.pricingPeriods[0].days }} dni</span>
                 <p-button
+                  *ngIf="booth.pricingPeriods.length > 1"
                   [text]="true"
+                  [rounded]="true"
                   icon="pi pi-info-circle"
                   [pTooltip]="getPricingTooltip(booth.pricingPeriods)"
                   tooltipPosition="right"
-                  styleClass="price-tooltip-btn">
-                  {{ booth.pricingPeriods[0].pricePerPeriod | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}
-                  <small>/ {{ booth.pricingPeriods[0].days }} dni</small>
+                  styleClass="price-info-btn"
+                  [attr.aria-label]="'Więcej opcji cenowych'">
                 </p-button>
               </div>
               <div class="pricing-cell" *ngIf="!booth.pricingPeriods || booth.pricingPeriods.length === 0">
-                <strong class="price-cell">{{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}</strong>
+                <strong class="price-cell">{{ booth.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2':currentLocale }}/dzień</strong>
               </div>
             </td>
             <td>
