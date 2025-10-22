@@ -8,6 +8,7 @@ import {
   CustomerDashboardDto,
   CustomerSalesStatisticsDto
 } from '@proxy/application/contracts/customer-dashboard';
+import { PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
 @Component({
   selector: 'app-customer-dashboard',
@@ -18,6 +19,9 @@ import {
 export class CustomerDashboardComponent implements OnInit {
   loading = false;
   errorMessage: string | null = null;
+  pageSize = 10;
+  totalRentals = 0;
+  currentPage = 0;
 
   overview: CustomerOverviewDto = {
     totalActiveRentals: 0,
@@ -69,6 +73,7 @@ export class CustomerDashboardComponent implements OnInit {
         this.activeRentals = data.activeRentals;
         this.recentSales = data.recentSales;
         this.salesStats = data.salesStatistics;
+        this.totalRentals = data.activeRentals.length;
         this.loading = false;
       },
       error: (error) => {
@@ -77,6 +82,29 @@ export class CustomerDashboardComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  onRentalsPageChange(event: any): void {
+    this.currentPage = event.first / event.rows;
+    this.pageSize = event.rows;
+    this.loadDashboardData();
+  }
+
+  formatTimeRemaining(rental: MyActiveRentalDto): string {
+    const now = new Date();
+    const endDate = new Date(rental.endDate);
+    const diff = endDate.getTime() - now.getTime();
+
+    if (diff < 0) return 'Wygasło';
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    if (hours < 24) {
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    return `${rental.daysRemaining} dni`;
   }
 
   navigateToAddItem(): void {

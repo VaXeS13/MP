@@ -72,12 +72,14 @@
           </div>
         </ng-template>
 
-        <p-table [value]="activeRentals" [loading]="loading" responsiveLayout="scroll">
+        <p-table [value]="activeRentals" [loading]="loading" responsiveLayout="scroll"
+                 [paginator]="true" [rows]="pageSize" [totalRecords]="totalRentals"
+                 [lazy]="false" (onLazyLoad)="onRentalsPageChange($event)">
           <ng-template pTemplate="header">
             <tr>
               <th>Stoisko</th>
               <th>Okres</th>
-              <th>Dni pozostało</th>
+              <th>Czas pozostały</th>
               <th>Przedmioty</th>
               <th>Sprzedaż</th>
               <th>Status</th>
@@ -88,7 +90,7 @@
               <td>{{ rental.boothNumber }}</td>
               <td>{{ rental.startDate | date:'dd.MM.yyyy' }} - {{ rental.endDate | date:'dd.MM.yyyy' }}</td>
               <td>
-                <p-tag [severity]="getStatusClass(rental)" [value]="rental.daysRemaining + ' dni'"></p-tag>
+                <p-tag [severity]="getStatusClass(rental)" [value]="formatTimeRemaining(rental)"></p-tag>
               </td>
               <td>{{ rental.soldItems }}/{{ rental.totalItems }}</td>
               <td>{{ formatCurrency(rental.totalSales) }}</td>

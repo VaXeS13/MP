@@ -27,6 +27,11 @@ namespace MP.Application.Contracts.CustomerDashboard
         Task<List<MyActiveRentalDto>> GetMyActiveRentalsAsync();
 
         /// <summary>
+        /// Get customer active rentals with pagination
+        /// </summary>
+        Task<PagedResultDto<MyActiveRentalDto>> GetMyActiveRentalsPagedAsync(PagedAndSortedResultRequestDto input);
+
+        /// <summary>
         /// Get customer settlements
         /// </summary>
         Task<PagedResultDto<SettlementItemDto>> GetMySettlementsAsync(PagedAndSortedResultRequestDto input);

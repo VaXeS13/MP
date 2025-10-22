@@ -206,6 +206,45 @@ namespace MP.Application.CustomerDashboard
             return await AsyncExecuter.ToListAsync(query);
         }
 
+        [Authorize(MPPermissions.CustomerDashboard.ManageMyRentals)]
+        public async Task<PagedResultDto<MyActiveRentalDto>> GetMyActiveRentalsPagedAsync(PagedAndSortedResultRequestDto input)
+        {
+            var userId = CurrentUser.GetId();
+            var now = DateTime.Today;
+
+            var queryable = await _rentalRepository.GetQueryableAsync();
+            var boothQueryable = await _boothRepository.GetQueryableAsync();
+
+            var query = from r in queryable
+                        join b in boothQueryable on r.BoothId equals b.Id
+                        where r.UserId == userId &&
+                              (r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended)
+                        orderby r.Period.EndDate descending
+                        select new MyActiveRentalDto
+                        {
+                            RentalId = r.Id,
+                            BoothNumber = b.Number,
+                            BoothTypeName = r.BoothType.Name,
+                            StartDate = r.Period.StartDate,
+                            EndDate = r.Period.EndDate,
+                            DaysRemaining = (int)(r.Period.EndDate - now).TotalDays,
+                            IsExpiringSoon = (r.Period.EndDate - now).TotalDays <= 7,
+                            Status = r.Status.ToString(),
+                            TotalItems = r.GetItemsCount(),
+                            SoldItems = r.GetSoldItemsCount(),
+                            AvailableItems = r.GetItemsCount() - r.GetSoldItemsCount(),
+                            TotalSales = r.GetTotalSalesAmount(),
+                            TotalCommission = r.GetTotalCommissionEarned(),
+                            CanExtend = true
+                        };
+
+            var totalCount = await AsyncExecuter.CountAsync(query);
+            var rentals = await AsyncExecuter.ToListAsync(
+                query.Skip(input.SkipCount).Take(input.MaxResultCount));
+
+            return new PagedResultDto<MyActiveRentalDto>(totalCount, rentals);
+        }
+
         [Authorize(MPPermissions.CustomerDashboard.RequestSettlement)]
         public async Task<SettlementSummaryDto> GetSettlementSummaryAsync()
         {
