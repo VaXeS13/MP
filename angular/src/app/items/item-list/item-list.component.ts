@@ -77,10 +77,6 @@ export class ItemListComponent implements OnInit {
     return this.items.filter(item => item.status === 'Draft');
   }
 
-  isRowDisabled = (rowData: ItemDto): boolean => {
-    return rowData.status !== 'Draft';
-  }
-
   loadItems(): void {
     this.loading = true;
 
@@ -123,6 +119,18 @@ export class ItemListComponent implements OnInit {
       }
     }
     this.cdr.markForCheck();
+  }
+
+  onRowSelect(event: any): void {
+    // Prevent selection of non-Draft items
+    const item = event.data;
+    if (item.status !== 'Draft') {
+      // Remove this item from selection
+      this.selectedItems = this.selectedItems.filter(
+        (selected) => selected.id !== item.id
+      );
+      this.cdr.markForCheck();
+    }
   }
 
 

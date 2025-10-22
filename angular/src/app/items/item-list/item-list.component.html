@@ -35,7 +35,7 @@
     (onLazyLoad)="onPageChange($event)"
     [rowsPerPageOptions]="[10, 25, 50]"
     [(selection)]="selectedItems"
-    [selectableRowDisabled]="isRowDisabled"
+    (onRowSelect)="onRowSelect($event)"
     dataKey="id"
     responsiveLayout="scroll">
 
