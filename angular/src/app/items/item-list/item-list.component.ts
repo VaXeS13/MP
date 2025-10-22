@@ -116,6 +116,22 @@ export class ItemListComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  onRowSelect(event: any): void {
+    // Only allow selection of Draft items
+    const item = event.data;
+    if (item.status !== 'Draft') {
+      // Remove non-Draft items from selection
+      this.selectedItems = this.selectedItems.filter(
+        (selected) => selected.id !== item.id
+      );
+      this.cdr.markForCheck();
+    }
+  }
+
+  onRowUnselect(event: any): void {
+    // No action needed, just let it unselect
+  }
+
   openCreateDialog(): void {
     this.selectedItem = null;
     this.displayDialog = true;
