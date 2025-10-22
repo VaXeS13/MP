@@ -110,3 +110,20 @@
   gap: 0.5rem;
   width: 100%;
 }
+
+.header-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+  accent-color: #10b981;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:focus {
+    outline: 2px solid #10b981;
+    outline-offset: 2px;
+  }
+}
