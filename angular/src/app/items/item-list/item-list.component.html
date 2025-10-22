@@ -120,10 +120,12 @@
         optionValue="id"
         placeholder="Select a sheet"
         [loading]="loadingSheets"
+        position="top"
+        appendTo="body"
         [showTransitionOptions]="'150ms'"
         [hideTransitionOptions]="'150ms'"
         [autoDisplayFirst]="false"
-        scrollHeight="250px"
+        scrollHeight="200px"
         [panelStyleClass]="'dropdown-panel-sheet'"
         [style]="{width: '100%'}">
         <ng-template let-sheet pTemplate="item">
