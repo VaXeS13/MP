@@ -76,6 +76,12 @@ public class MPSettingDefinitionProvider : SettingDefinitionProvider
             isVisibleToClients: true
         ).WithProviders(TenantSettingValueProvider.ProviderName));
 
+        context.Add(new SettingDefinition(
+            MPSettings.Booths.MinimumRentalDays,
+            "7",
+            isVisibleToClients: true
+        ).WithProviders(TenantSettingValueProvider.ProviderName));
+
         // Tenant Settings - Tenant level
         context.Add(new SettingDefinition(
             MPSettings.Tenant.Currency,

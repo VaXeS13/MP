@@ -34,7 +34,11 @@ namespace MP.Application.Tests.Booths
             var settings = await _boothSettingsAppService.GetAsync();
             settings.ShouldNotBeNull();
 
-            var updateDto = new BoothSettingsDto();
+            var updateDto = new BoothSettingsDto
+            {
+                MinimumGapDays = 7,
+                MinimumRentalDays = 7
+            };
 
             // Act
             await _boothSettingsAppService.UpdateAsync(updateDto);
@@ -42,6 +46,8 @@ namespace MP.Application.Tests.Booths
             // Assert - verify it was updated
             var updated = await _boothSettingsAppService.GetAsync();
             updated.ShouldNotBeNull();
+            updated.MinimumGapDays.ShouldBe(7);
+            updated.MinimumRentalDays.ShouldBe(7);
         }
     }
 }

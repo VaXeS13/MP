@@ -1,4 +1,4 @@
-import type { CreateItemDto, ItemDto, UpdateItemDto } from './models';
+import type { BulkItemCreationResultDto, CreateBulkItemsDto, CreateItemDto, ItemDto, UpdateItemDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -14,6 +14,15 @@ export class ItemService {
     this.restService.request<any, ItemDto>({
       method: 'POST',
       url: '/api/app/item',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  createBulk = (input: CreateBulkItemsDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, BulkItemCreationResultDto>({
+      method: 'POST',
+      url: '/api/app/item/bulk',
       body: input,
     },
     { apiName: this.apiName,...config });

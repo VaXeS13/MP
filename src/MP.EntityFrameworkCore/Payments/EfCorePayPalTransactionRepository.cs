@@ -23,6 +23,12 @@ namespace MP.EntityFrameworkCore.Payments
             return await dbSet.FirstOrDefaultAsync(t => t.OrderId == orderId);
         }
 
+        public async Task<PayPalTransaction?> FindBySessionIdAsync(string sessionId)
+        {
+            // Session ID is the Order ID for PayPal
+            return await GetByOrderIdAsync(sessionId);
+        }
+
         public async Task<PayPalTransaction?> GetByPaymentIdAsync(string paymentId)
         {
             var dbSet = await GetDbSetAsync();

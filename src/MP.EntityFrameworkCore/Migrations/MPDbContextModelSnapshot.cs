@@ -165,11 +165,14 @@ namespace MP.Migrations
 
                     b.Property<decimal>("PricePerDay")
                         .HasColumnType("decimal(18,2)")
-                        .HasComment("Cena za dzień");
+                        .HasComment("Cena za dzień (legacy - use PricingPeriods)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int")
                         .HasComment("Status stanowiska");
+
+                    b.Property<int?>("StatusBeforeMaintenance")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uniqueidentifier")
@@ -315,10 +318,16 @@ namespace MP.Migrations
                         .HasColumnName("DeletionTime");
 
                     b.Property<decimal>("DiscountAmount")
-                        .HasColumnType("decimal(18,2)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Discount amount applied to this item");
 
                     b.Property<decimal>("DiscountPercentage")
-                        .HasColumnType("decimal(18,2)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasComment("Discount percentage applied to this item");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("date")
@@ -2079,11 +2088,6 @@ namespace MP.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.PrimitiveCollection<string>("ApplicableBoothIds")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasComment("List of specific booth IDs this promotion applies to (empty = all booths)");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -2219,6 +2223,18 @@ namespace MP.Migrations
                         .HasColumnType("datetime2")
                         .HasComment("Promotion end date");
 
+                    b.PrimitiveCollection<string>("_applicableBoothIds")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ApplicableBoothIds")
+                        .HasComment("List of specific booth IDs this promotion applies to (empty = all booths)");
+
+                    b.PrimitiveCollection<string>("_applicableBoothTypeIds")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ApplicableBoothTypeIds")
+                        .HasComment("List of booth type IDs this promotion applies to (empty = all types)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("IsActive")
@@ -2326,6 +2342,9 @@ namespace MP.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("AppliedPromotionId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("BoothId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2362,6 +2381,9 @@ namespace MP.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("DeletionTime");
 
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("ExtraProperties")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
@@ -2384,6 +2406,13 @@ namespace MP.Migrations
                     b.Property<string>("Notes")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("PriceBreakdown")
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Price breakdown JSON showing how total price was calculated");
+
+                    b.Property<string>("PromoCodeUsed")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("StartedAt")
                         .HasColumnType("datetime2");
@@ -4632,6 +4661,46 @@ namespace MP.Migrations
                     b.HasKey("TenantId", "Name");
 
                     b.ToTable("AbpTenantConnectionStrings", (string)null);
+                });
+
+            modelBuilder.Entity("MP.Domain.Booths.Booth", b =>
+                {
+                    b.OwnsMany("MP.Domain.Booths.PricingPeriod", "PricingPeriods", b1 =>
+                        {
+                            b1.Property<Guid>("BoothId")
+                                .HasColumnType("uniqueidentifier")
+                                .HasComment("FK to Booth");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<int>("Days")
+                                .HasColumnType("int")
+                                .HasComment("Number of days in pricing period");
+
+                            b1.Property<decimal>("PricePerPeriod")
+                                .HasColumnType("decimal(18,2)")
+                                .HasComment("Price for this period");
+
+                            b1.HasKey("BoothId", "Id");
+
+                            b1.HasIndex("BoothId")
+                                .HasDatabaseName("IX_BoothPricingPeriods_BoothId");
+
+                            b1.HasIndex("BoothId", "Days")
+                                .IsUnique()
+                                .HasDatabaseName("IX_BoothPricingPeriods_BoothId_Days");
+
+                            b1.ToTable("AppBoothPricingPeriods", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("BoothId");
+                        });
+
+                    b.Navigation("PricingPeriods");
                 });
 
             modelBuilder.Entity("MP.Domain.Carts.Cart", b =>

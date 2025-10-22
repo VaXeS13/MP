@@ -10,6 +10,8 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { MessageService } from 'primeng/api';
 import { ItemService } from '@proxy/items';
 import type { ItemDto, CreateItemDto, UpdateItemDto } from '@proxy/items/models';
+import { TenantCurrencyService } from '../../services/tenant-currency.service';
+import { CoreModule } from '@abp/ng.core';
 
 @Component({
   standalone: true,
@@ -25,7 +27,8 @@ import type { ItemDto, CreateItemDto, UpdateItemDto } from '@proxy/items/models'
     InputTextModule,
     InputNumberModule,
     DropdownModule,
-    CheckboxModule
+    CheckboxModule,
+    CoreModule
   ]
 })
 export class ItemFormComponent implements OnInit {
@@ -37,15 +40,29 @@ export class ItemFormComponent implements OnInit {
   form!: FormGroup;
   saving = false;
   createAnother = false;
+  currency: string = 'PLN';
 
   constructor(
     private fb: FormBuilder,
     private itemService: ItemService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private tenantCurrencyService: TenantCurrencyService
   ) {}
 
   ngOnInit(): void {
     this.buildForm();
+    this.loadTenantCurrency();
+  }
+
+  loadTenantCurrency(): void {
+    this.tenantCurrencyService.getCurrency().subscribe({
+      next: (result) => {
+        this.currency = this.tenantCurrencyService.getCurrencyName(result.currency);
+      },
+      error: () => {
+        this.currency = 'PLN'; // Default fallback
+      }
+    });
   }
 
   ngOnChanges(): void {

@@ -163,9 +163,21 @@ namespace MP.Application.Payments
                         // Direct List<Guid> from CartAppService
                         rentalIds.AddRange(guidList);
                     }
-                    else if (rentalIdsObj is IEnumerable enumerable)
+                    else if (rentalIdsObj is string rentalIdsString && !string.IsNullOrEmpty(rentalIdsString))
                     {
-                        // Fallback for other enumerable types
+                        // Handle comma-separated string of GUIDs (from CartAppService)
+                        var guidStrings = rentalIdsString.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        foreach (var guidString in guidStrings)
+                        {
+                            if (Guid.TryParse(guidString.Trim(), out var rentalId))
+                            {
+                                rentalIds.Add(rentalId);
+                            }
+                        }
+                    }
+                    else if (rentalIdsObj is IEnumerable enumerable && rentalIdsObj is not string)
+                    {
+                        // Fallback for other enumerable types (but not string which is IEnumerable<char>)
                         foreach (var idObj in enumerable)
                         {
                             if (Guid.TryParse(idObj?.ToString(), out var rentalId))
@@ -243,6 +255,26 @@ namespace MP.Application.Payments
                     sessionId = sessionId.Substring(0, 100);
                 }
 
+                // For Stripe, don't include sessionId in path - Stripe adds ?session_id={CHECKOUT_SESSION_ID} automatically
+                // For other providers (P24, PayPal), include sessionId in path for backward compatibility
+                var clientUrlTemplate = _configuration["App:ClientUrl"];
+                var tenantName = (_currentTenant.Name ?? "default").ToLowerInvariant(); // Convert to lowercase for subdomain
+
+                _logger.LogInformation("PaymentProviderAppService: URL Generation Debug");
+                _logger.LogInformation("  ClientUrl Template: {ClientUrlTemplate}", clientUrlTemplate);
+                _logger.LogInformation("  Tenant Name: {TenantName}", tenantName);
+
+                var baseReturnUrl = string.Format(clientUrlTemplate!, tenantName) + "/rentals/payment-success";
+
+                _logger.LogInformation("  Base Return URL: {BaseReturnUrl}", baseReturnUrl);
+
+                var returnUrl = request.ProviderId.ToLowerInvariant() == "stripe"
+                    ? baseReturnUrl
+                    : baseReturnUrl + $"/{sessionId}";
+
+                _logger.LogInformation("  Provider: {ProviderId}", request.ProviderId);
+                _logger.LogInformation("  Final Return URL: {ReturnUrl}", returnUrl);
+
                 var paymentRequest = new PaymentRequest
                 {
                     MerchantId = await GetMerchantIdAsync(request.ProviderId),
@@ -254,7 +286,7 @@ namespace MP.Application.Payments
                     ClientName = _currentUser.Name ?? "Customer",
                     Country = "PL",
                     Language = "pl",
-                    UrlReturn = string.Format(_configuration["App:ClientUrl"]!, _currentTenant.Name ?? "default") + $"/rentals/payment-success/{sessionId}",
+                    UrlReturn = returnUrl,
                     UrlStatus = _configuration["App:ApiUrl"] + "/api/app/rentals/payment/notification",
                     MethodId = request.MethodId,
                     Metadata = request.Metadata

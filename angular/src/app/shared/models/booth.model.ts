@@ -1,9 +1,15 @@
+export interface BoothPricingPeriodDto {
+  days: number;
+  pricePerPeriod: number;
+}
+
 export interface BoothDto {
   id: string;
   number: string;
   status: BoothStatus;
   statusDisplayName: string;
   pricePerDay: number;
+  pricingPeriods: BoothPricingPeriodDto[];
   creationTime: Date;
   lastModificationTime?: Date;
   rentalStartDate?: Date;
@@ -22,6 +28,7 @@ export interface BoothListDto {
   status: BoothStatus;
   statusDisplayName: string;
   pricePerDay: number;
+  pricingPeriods: BoothPricingPeriodDto[];
   creationTime: Date;
   rentalStartDate?: Date;
   rentalEndDate?: Date;

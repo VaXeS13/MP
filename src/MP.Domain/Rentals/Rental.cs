@@ -28,11 +28,21 @@ namespace MP.Domain.Rentals
         public RentalStatus Status { get; private set; }
         public Currency Currency { get; private set; }
 
-        // Szczegóły wynajęcia
+        /// <summary>
+        /// Price breakdown in JSON format showing how total price was calculated
+        /// Example: {"periods":[{"days":7,"count":2,"pricePerPeriod":6,"subtotal":12}],"totalPrice":14}
+        /// </summary>
+        public string? PriceBreakdown { get; private set; }
+
         // Szczegóły wynajęcia
         public string? Notes { get; private set; }
         public DateTime? StartedAt { get; private set; }
         public DateTime? CompletedAt { get; private set; }
+
+        // Promotion details
+        public Guid? AppliedPromotionId { get; private set; }
+        public decimal DiscountAmount { get; private set; }
+        public string? PromoCodeUsed { get; private set; }
 
         // Navigation properties (dla wygody w queries)
         public IdentityUser User { get; set; } = null!;
@@ -217,6 +227,41 @@ namespace MP.Domain.Rentals
         public void SetNotes(string? notes)
         {
             Notes = notes?.Trim();
+        }
+
+        public void SetPromotion(Guid? promotionId, decimal discountAmount, string? promoCode)
+        {
+            if (discountAmount < 0)
+                throw new BusinessException("DISCOUNT_AMOUNT_CANNOT_BE_NEGATIVE");
+
+            AppliedPromotionId = promotionId;
+            DiscountAmount = discountAmount;
+            PromoCodeUsed = promoCode?.Trim();
+        }
+
+        public void RemovePromotion()
+        {
+            AppliedPromotionId = null;
+            DiscountAmount = 0;
+            PromoCodeUsed = null;
+        }
+
+        public decimal GetOriginalAmount()
+        {
+            return Payment.TotalAmount + DiscountAmount;
+        }
+
+        public bool HasPromotionApplied()
+        {
+            return AppliedPromotionId.HasValue && DiscountAmount > 0;
+        }
+
+        /// <summary>
+        /// Sets the price breakdown JSON for this rental
+        /// </summary>
+        public void SetPriceBreakdown(string? priceBreakdownJson)
+        {
+            PriceBreakdown = priceBreakdownJson;
         }
     }
 }

@@ -50,7 +50,13 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.sessionId = this.route.snapshot.paramMap.get('transactionId');
+    // Try query parameter first (for Stripe: ?session_id=cs_test_...)
+    this.sessionId = this.route.snapshot.queryParamMap.get('session_id');
+
+    // Fall back to route parameter (for P24/PayPal: /payment-success/:transactionId)
+    if (!this.sessionId) {
+      this.sessionId = this.route.snapshot.paramMap.get('transactionId');
+    }
 
     if (!this.sessionId) {
       this.showError('PaymentSuccess:InvalidSessionId');
@@ -74,6 +80,11 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
   }
 
   private loadPaymentSuccessDataWithRetry(): void {
+    console.log('[PaymentSuccess] Loading payment success data...');
+    console.log('[PaymentSuccess] Session ID:', this.sessionId);
+    console.log('[PaymentSuccess] Service:', this.paymentTransactionService);
+    console.log('[PaymentSuccess] Service constructor:', this.paymentTransactionService.constructor.name);
+
     this.paymentTransactionService.getPaymentSuccessViewModel(this.sessionId!)
       .pipe(
         takeUntil(this.destroy$),

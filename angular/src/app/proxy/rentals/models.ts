@@ -3,6 +3,7 @@ import type { CalendarDateStatus } from './calendar-date-status.enum';
 import type { ExtensionPaymentType } from './extension-payment-type.enum';
 import type { EntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { RentalStatus } from './rental-status.enum';
+import type { PriceBreakdownDto } from '../application/contracts/rentals/models';
 
 export interface AdminManageBoothRentalDto {
   boothId: string;
@@ -131,6 +132,7 @@ export interface RentalDto extends FullAuditedEntityDto<string> {
   paidDate?: string;
   isPaid: boolean;
   remainingAmount: number;
+  priceBreakdown: PriceBreakdownDto;
   notes?: string;
   startedAt?: string;
   completedAt?: string;

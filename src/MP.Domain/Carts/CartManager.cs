@@ -103,13 +103,14 @@ namespace MP.Domain.Carts
                     .WithData("EndDate", endDate);
             }
 
-            // Validate minimum rental period (e.g., 7 days)
+            // Validate minimum rental period
+            var minimumRentalDays = await GetMinimumRentalDaysAsync();
             var days = (endDate - startDate).Days + 1;
-            if (days < 7)
+            if (days < minimumRentalDays)
             {
                 throw new BusinessException("RENTAL_PERIOD_TOO_SHORT")
                     .WithData("Days", days)
-                    .WithData("MinimumDays", 7);
+                    .WithData("MinimumDays", minimumRentalDays);
             }
 
             // Validate minimum gap between rentals
@@ -211,6 +212,15 @@ namespace MP.Domain.Carts
         }
 
         /// <summary>
+        /// Gets the minimum rental days setting
+        /// </summary>
+        private async Task<int> GetMinimumRentalDaysAsync()
+        {
+            var setting = await _settingProvider.GetOrNullAsync(MPSettings.Booths.MinimumRentalDays);
+            return int.TryParse(setting, out var days) ? days : 7;
+        }
+
+        /// <summary>
         /// Adds an item to the cart with validation and automatic 5-minute reservation
         /// </summary>
         public async Task<CartItem> AddItemToCartAsync(
@@ -228,6 +238,10 @@ namespace MP.Domain.Carts
             // Get booth for pricing
             var booth = await _boothRepository.GetAsync(boothId);
 
+            // Calculate price using new multi-period pricing system
+            var days = (endDate - startDate).Days + 1;
+            var pricePerDay = CalculatePricePerDayForCart(booth, days);
+
             // Get tenant currency
             var currency = await GetTenantCurrencyAsync();
 
@@ -242,13 +256,33 @@ namespace MP.Domain.Carts
                 boothTypeId,
                 startDate,
                 endDate,
-                booth.PricePerDay,
+                pricePerDay,
                 currency,
                 reservationExpires,
                 notes
             );
 
             return item;
+        }
+
+        /// <summary>
+        /// Calculates effective price per day for cart display purposes.
+        /// Uses multi-period pricing if available, falls back to legacy PricePerDay
+        /// </summary>
+        private decimal CalculatePricePerDayForCart(Booth booth, int days)
+        {
+            // Use new pricing system if booth has pricing periods
+            if (booth.PricingPeriods != null && booth.PricingPeriods.Count > 0)
+            {
+                var calculation = booth.CalculatePrice(days);
+                // Return average price per day for cart display
+                return calculation.TotalPrice / days;
+            }
+
+            // Fall back to legacy pricing
+#pragma warning disable CS0618 // Type or member is obsolete
+            return booth.PricePerDay;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Volo.Abp;
@@ -9,6 +10,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 using MP.Application.Contracts.CustomerDashboard;
+using MP.Application.Contracts.Rentals;
 using MP.Domain.Rentals;
 using MP.Permissions;
 using MP.Rentals;
@@ -136,6 +138,7 @@ namespace MP.Application.CustomerDashboard
                 PaidAmount = payment?.PaidAmount ?? 0m,
                 IsPaid = payment?.IsPaid ?? false,
                 PaidDate = payment?.PaidDate,
+                PriceBreakdown = DeserializePriceBreakdown(rental.PriceBreakdown),
                 AppliedPromotionId = rental.AppliedPromotionId,
                 DiscountAmount = rental.DiscountAmount,
                 OriginalAmount = rental.GetOriginalAmount(),
@@ -262,6 +265,24 @@ namespace MP.Application.CustomerDashboard
                 RentalStatus.Cancelled => "#dc3545",
                 _ => "#6c757d"
             };
+        }
+
+        private static PriceBreakdownDto? DeserializePriceBreakdown(string? priceBreakdownJson)
+        {
+            if (string.IsNullOrWhiteSpace(priceBreakdownJson))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<PriceBreakdownDto>(priceBreakdownJson);
+            }
+            catch
+            {
+                // If deserialization fails, return null to avoid breaking the response
+                return null;
+            }
         }
     }
 }

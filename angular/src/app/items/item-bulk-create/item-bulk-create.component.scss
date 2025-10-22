@@ -1,0 +1,35 @@
+.bulk-create-content {
+  .info-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background-color: #e3f2fd;
+    border-radius: 4px;
+    color: #1976d2;
+
+    i {
+      font-size: 1.2rem;
+    }
+  }
+
+  .error-row {
+    background-color: #ffebee;
+
+    input,
+    ::ng-deep .p-inputnumber {
+      border-color: #f44336;
+    }
+  }
+
+  .text-muted {
+    color: #6c757d;
+    font-size: 0.875rem;
+  }
+}
+
+::ng-deep .p-datatable-sm {
+  .p-datatable-tbody > tr > td {
+    padding: 0.5rem;
+  }
+}

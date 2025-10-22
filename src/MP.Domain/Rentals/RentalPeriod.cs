@@ -32,8 +32,8 @@ namespace MP.Domain.Rentals
 
             // Calculate days count using parameters instead of properties (which are not set yet)
             var daysCount = (endDate.Date - startDate.Date).Days + 1;
-            if (daysCount < 7)
-                throw new BusinessException("RENTAL_MINIMUM_7_DAYS_REQUIRED");
+            if (daysCount < 1)
+                throw new BusinessException("RENTAL_PERIOD_MUST_BE_AT_LEAST_ONE_DAY");
         }
 
         public int GetDaysCount()
@@ -59,8 +59,8 @@ namespace MP.Domain.Rentals
 
         public static RentalPeriod Create(DateTime startDate, int daysCount)
         {
-            if (daysCount < 7)
-                throw new BusinessException("RENTAL_MINIMUM_7_DAYS_REQUIRED");
+            if (daysCount < 1)
+                throw new BusinessException("RENTAL_PERIOD_MUST_BE_AT_LEAST_ONE_DAY");
 
             return new RentalPeriod(startDate, startDate.AddDays(daysCount - 1));
         }

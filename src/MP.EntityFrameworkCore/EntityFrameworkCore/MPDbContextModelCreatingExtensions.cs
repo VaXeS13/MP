@@ -91,9 +91,34 @@ namespace MP.EntityFrameworkCore
                     .HasComment("Status stanowiska");
 
                 b.Property(x => x.PricePerDay)
-                    .IsRequired()
                     .HasColumnType("decimal(18,2)")
-                    .HasComment("Cena za dzień");
+                    .HasComment("Cena za dzień (legacy - use PricingPeriods)");
+
+                // Pricing Periods (owned collection - separate table)
+                b.OwnsMany(x => x.PricingPeriods, pp =>
+                {
+                    pp.ToTable(MPConsts.DbTablePrefix + "BoothPricingPeriods", MPConsts.DbSchema);
+
+                    pp.Property(p => p.Days)
+                        .IsRequired()
+                        .HasComment("Number of days in pricing period");
+
+                    pp.Property(p => p.PricePerPeriod)
+                        .IsRequired()
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Price for this period");
+
+                    pp.Property(p => p.BoothId)
+                        .IsRequired()
+                        .HasComment("FK to Booth");
+
+                    pp.HasIndex(p => p.BoothId)
+                        .HasDatabaseName("IX_BoothPricingPeriods_BoothId");
+
+                    pp.HasIndex(p => new { p.BoothId, p.Days })
+                        .IsUnique()
+                        .HasDatabaseName("IX_BoothPricingPeriods_BoothId_Days");
+                });
 
                 // Indeksy
                 // 🔄 Zmieniony indeks: unikalność per TenantId + Number
@@ -184,6 +209,10 @@ namespace MP.EntityFrameworkCore
                 b.Property(x => x.Notes).HasMaxLength(1000);
                 b.Property(x => x.StartedAt).HasColumnType("datetime2");
                 b.Property(x => x.CompletedAt).HasColumnType("datetime2");
+
+                b.Property(x => x.PriceBreakdown)
+                    .HasColumnType("nvarchar(max)")
+                    .HasComment("Price breakdown JSON showing how total price was calculated");
 
                 // Relacje
                 b.HasOne(x => x.User)

@@ -1,11 +1,13 @@
 import type { EntityDto, FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { BoothStatus } from '../domain/booths/booth-status.enum';
+import type { BoothPricingPeriodDto } from '../application/contracts/booths/models';
 
 export interface BoothDto extends FullAuditedEntityDto<string> {
   number?: string;
   status?: BoothStatus;
   statusDisplayName?: string;
   pricePerDay: number;
+  pricingPeriods: BoothPricingPeriodDto[];
   rentalStartDate?: string;
   rentalEndDate?: string;
   currentRentalId?: string;
@@ -20,6 +22,7 @@ export interface BoothListDto extends EntityDto<string> {
   status?: BoothStatus;
   statusDisplayName?: string;
   pricePerDay: number;
+  pricingPeriods: BoothPricingPeriodDto[];
   creationTime?: string;
   rentalStartDate?: string;
   rentalEndDate?: string;
@@ -32,11 +35,13 @@ export interface BoothListDto extends EntityDto<string> {
 
 export interface BoothSettingsDto {
   minimumGapDays: number;
+  minimumRentalDays: number;
 }
 
 export interface CreateBoothDto {
   number: string;
-  pricePerDay: number;
+  pricePerDay?: number;
+  pricingPeriods: BoothPricingPeriodDto[];
 }
 
 export interface CreateManualReservationDto {
@@ -54,6 +59,7 @@ export interface GetBoothListDto extends PagedAndSortedResultRequestDto {
 
 export interface UpdateBoothDto {
   number: string;
-  pricePerDay: number;
+  pricePerDay?: number;
+  pricingPeriods: BoothPricingPeriodDto[];
   status?: BoothStatus;
 }

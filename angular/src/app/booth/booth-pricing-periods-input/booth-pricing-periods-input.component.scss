@@ -1,0 +1,124 @@
+.pricing-periods-container {
+  padding: 1rem;
+  background: var(--surface-50);
+  border-radius: 8px;
+  border: 1px solid var(--surface-200);
+}
+
+.pricing-periods-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--surface-200);
+
+  i {
+    color: var(--primary-color);
+    font-size: 1.25rem;
+  }
+
+  span {
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  small {
+    margin-left: auto;
+    font-size: 0.875rem;
+  }
+}
+
+.pricing-periods-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.pricing-period-item {
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
+  border: 2px solid var(--surface-200);
+  transition: all 0.2s ease;
+
+  &.enabled {
+    border-color: var(--primary-color);
+    background: var(--primary-50);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &:hover {
+    border-color: var(--primary-300);
+  }
+}
+
+.period-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+
+  .period-label {
+    font-weight: 500;
+    color: var(--text-color);
+    cursor: pointer;
+    user-select: none;
+    font-size: 1rem;
+  }
+}
+
+.period-price {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--surface-200);
+
+  ::ng-deep {
+    .price-input {
+      width: 100%;
+
+      input {
+        width: 100%;
+      }
+    }
+  }
+
+  .effective-price {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: var(--surface-100);
+    border-radius: 4px;
+    text-align: center;
+
+    small {
+      display: block;
+      color: var(--text-color-secondary);
+
+      strong {
+        color: var(--primary-color);
+        font-size: 1.1em;
+      }
+    }
+  }
+
+  .field-error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: var(--red-50);
+    border-left: 3px solid var(--red-500);
+    border-radius: 4px;
+    color: var(--red-600);
+    font-size: 0.875rem;
+
+    i {
+      color: var(--red-500);
+    }
+  }
+}
+
+.text-muted {
+  color: var(--text-color-secondary);
+}

@@ -10,7 +10,8 @@ import { MessageService } from 'primeng/api';
 })
 export class BoothSettingsComponent implements OnInit {
   settings: BoothSettingsDto = {
-    minimumGapDays: 7
+    minimumGapDays: 7,
+    minimumRentalDays: 7
   };
 
   loading = false;

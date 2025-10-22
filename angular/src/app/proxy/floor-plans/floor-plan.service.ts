@@ -1,5 +1,6 @@
-import type { BoothAvailabilityDto, CreateFloorPlanBoothDto, CreateFloorPlanDto, FloorPlanBoothDto, FloorPlanDto } from './models';
+import type { BoothAvailabilityDto, CreateFloorPlanBoothDto, CreateFloorPlanDto, FloorPlanBoothDto, FloorPlanDto, GetFloorPlanListDto, UpdateFloorPlanDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
+import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 
 @Injectable({
@@ -30,7 +31,23 @@ export class FloorPlanService {
   deactivate = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, FloorPlanDto>({
       method: 'POST',
-      url: `/${id}/deactivate`,
+      url: `/api/app/floor-plan/${id}/deactivate`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  delete = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/floor-plan/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  get = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, FloorPlanDto>({
+      method: 'GET',
+      url: `/api/app/floor-plan/${id}`,
     },
     { apiName: this.apiName,...config });
   
@@ -52,10 +69,19 @@ export class FloorPlanService {
     { apiName: this.apiName,...config });
   
 
+  getList = (input: GetFloorPlanListDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<FloorPlanDto>>({
+      method: 'GET',
+      url: '/api/app/floor-plan',
+      params: { tenantId: input.tenantId, isActive: input.isActive, level: input.level, filter: input.filter, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
   publish = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, FloorPlanDto>({
       method: 'POST',
-      url: `/${id}/publish`,
+      url: `/api/app/floor-plan/${id}/publish`,
     },
     { apiName: this.apiName,...config });
   
@@ -64,6 +90,15 @@ export class FloorPlanService {
     this.restService.request<any, void>({
       method: 'DELETE',
       url: `/${floorPlanId}/booths/${boothId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  update = (id: string, input: UpdateFloorPlanDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, FloorPlanDto>({
+      method: 'PUT',
+      url: `/api/app/floor-plan/${id}`,
+      body: input,
     },
     { apiName: this.apiName,...config });
   

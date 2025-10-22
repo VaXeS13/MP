@@ -10,6 +10,36 @@
       <div class="grid">
         <div class="col-12 md:col-6">
           <div class="field">
+            <label for="minimumRentalDays">Minimum Rental Period (days)</label>
+            <p-inputNumber
+              id="minimumRentalDays"
+              [(ngModel)]="settings.minimumRentalDays"
+              name="minimumRentalDays"
+              [min]="1"
+              [max]="365"
+              [showButtons]="true"
+              buttonLayout="horizontal"
+              spinnerMode="horizontal"
+              decrementButtonClass="p-button-secondary"
+              incrementButtonClass="p-button-secondary"
+              incrementButtonIcon="pi pi-plus"
+              decrementButtonIcon="pi pi-minus"
+              class="w-full"
+            >
+            </p-inputNumber>
+            <small class="block mt-2">
+              Minimum number of consecutive days required for any rental period.
+              <br><br>
+              <strong>Examples:</strong>
+              <ul class="mt-2">
+                <li>Minimum 7 days → Rental periods must be 7 days or longer ✅</li>
+                <li>Minimum 3 days → Users can rent for 3, 4, 5+ days ✅</li>
+              </ul>
+            </small>
+          </div>
+        </div>
+        <div class="col-12 md:col-6">
+          <div class="field">
             <label for="minimumGapDays">Minimum Gap Between Rentals (days)</label>
             <p-inputNumber
               id="minimumGapDays"

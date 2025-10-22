@@ -78,6 +78,7 @@ export class RentalCalendarComponent implements OnInit, OnDestroy, OnChanges {
   calendarData?: BoothCalendarResponseDto;
   calendarLegend: { [key: string]: string } = {};
   minimumGapDays = 7; // Default value, will be loaded from settings
+  minimumRentalDays = 7; // Default value, will be loaded from settings
 
   // Expose enum for template
   CalendarDateStatus = CalendarDateStatus;
@@ -259,6 +260,7 @@ export class RentalCalendarComponent implements OnInit, OnDestroy, OnChanges {
     this.boothSettingsService.get().subscribe({
       next: (settings) => {
         this.minimumGapDays = settings.minimumGapDays;
+        this.minimumRentalDays = settings.minimumRentalDays;
       },
       error: (error) => {
         console.error('Error loading booth settings:', error);
@@ -827,11 +829,11 @@ export class RentalCalendarComponent implements OnInit, OnDestroy, OnChanges {
       const millisecondsPerDay = 1000 * 60 * 60 * 24;
       const days = Math.round((tempEndDate.getTime() - tempStartDate.getTime()) / millisecondsPerDay) + 1;
 
-      if (days < 7) {
+      if (days < this.minimumRentalDays) {
         this.messageService.add({
           severity: 'warn',
           summary: this.localization.instant('MP::InvalidSelection', 'Invalid Selection'),
-          detail: this.localization.instant('MP::MinimumRentalPeriod', 'Minimum rental period is 7 days')
+          detail: this.localization.instant('MP::MinimumRentalPeriod', `Minimum rental period is ${this.minimumRentalDays} days`)
         });
         return;
       }
@@ -897,7 +899,7 @@ export class RentalCalendarComponent implements OnInit, OnDestroy, OnChanges {
 
     // Calculate price first
     this.calculatedDays = days;
-    this.calculatedPrice = days * this.booth.pricePerDay;
+    this.calculatedPrice = this.calculatePriceWithGreedyAlgorithm(days);
 
     if (this.selectedBoothType) {
       this.commissionPercentage = this.selectedBoothType.commissionPercentage;
@@ -934,7 +936,7 @@ export class RentalCalendarComponent implements OnInit, OnDestroy, OnChanges {
     this.datesSelected.emit({
       startDate: this.selectedStartDate,
       endDate: this.selectedEndDate,
-      isValid: !this.hasGapError && this.calculatedDays >= 7
+      isValid: !this.hasGapError && this.calculatedDays >= this.minimumRentalDays
     });
   }
 
@@ -1107,6 +1109,111 @@ export class RentalCalendarComponent implements OnInit, OnDestroy, OnChanges {
     this.cdr.detectChanges();
   }
 
+  /**
+   * Calculate price using greedy algorithm with multi-period pricing
+   * Example: 10 days with [1day=1zł, 3days=2zł, 7days=6zł]
+   * Result: 1×7days + 1×3days = 1×6zł + 1×2zł = 8zł (not 10×1zł = 10zł)
+   */
+  private calculatePriceWithGreedyAlgorithm(totalDays: number): number {
+    if (!this.booth || !this.booth.pricingPeriods || this.booth.pricingPeriods.length === 0) {
+      // Fallback to legacy pricePerDay if no pricing periods
+      return totalDays * this.booth.pricePerDay;
+    }
+
+    // Sort periods by days descending (greedy: use largest first)
+    const sortedPeriods = [...this.booth.pricingPeriods].sort((a, b) => b.days - a.days);
+
+    let remainingDays = totalDays;
+    let totalPrice = 0;
+
+    // Greedy algorithm: use largest periods first
+    for (const period of sortedPeriods) {
+      const count = Math.floor(remainingDays / period.days);
+      if (count > 0) {
+        totalPrice += count * period.pricePerPeriod;
+        remainingDays -= count * period.days;
+      }
+
+      if (remainingDays === 0) {
+        break;
+      }
+    }
+
+    // If there are remaining days not covered by any period, use smallest period's daily rate
+    if (remainingDays > 0) {
+      const smallestPeriod = sortedPeriods[sortedPeriods.length - 1];
+      const pricePerDay = smallestPeriod.pricePerPeriod / smallestPeriod.days;
+      totalPrice += remainingDays * pricePerDay;
+    }
+
+    return totalPrice;
+  }
+
+  /**
+   * Check if price breakdown should be shown (when using multi-period pricing)
+   */
+  hasPriceBreakdown(): boolean {
+    return !!(this.booth?.pricingPeriods && this.booth.pricingPeriods.length > 1 && this.calculatedDays > 0);
+  }
+
+  /**
+   * Get formatted HTML tooltip with price breakdown
+   */
+  getPriceBreakdownTooltip(): string {
+    if (!this.booth || !this.booth.pricingPeriods || this.booth.pricingPeriods.length === 0 || !this.calculatedDays) {
+      return '';
+    }
+
+    const sortedPeriods = [...this.booth.pricingPeriods].sort((a, b) => b.days - a.days);
+    let remainingDays = this.calculatedDays;
+    let html = '<div class="price-breakdown-tooltip">';
+    html += '<div class="breakdown-title"><strong>Rozliczenie ceny:</strong></div>';
+
+    // Greedy algorithm breakdown
+    for (const period of sortedPeriods) {
+      const count = Math.floor(remainingDays / period.days);
+      if (count > 0) {
+        const subtotal = count * period.pricePerPeriod;
+        const dayLabel = period.days === 1 ? 'dzień' : 'dni';
+        html += '<div class="breakdown-item">';
+        html += `• ${count} × ${period.days} ${dayLabel} = ${this.formatCurrency(subtotal)} (${this.formatCurrency(period.pricePerPeriod)} każdy)`;
+        html += '</div>';
+        remainingDays -= count * period.days;
+      }
+
+      if (remainingDays === 0) {
+        break;
+      }
+    }
+
+    // Remaining days
+    if (remainingDays > 0) {
+      const smallestPeriod = sortedPeriods[sortedPeriods.length - 1];
+      const pricePerDay = smallestPeriod.pricePerPeriod / smallestPeriod.days;
+      const subtotal = remainingDays * pricePerDay;
+      const dayLabel = remainingDays === 1 ? 'dzień' : 'dni';
+      html += '<div class="breakdown-item">';
+      html += `• ${remainingDays} ${dayLabel} × ${this.formatCurrency(pricePerDay)}/dzień = ${this.formatCurrency(subtotal)}`;
+      html += '</div>';
+    }
+
+    html += '<hr class="breakdown-divider">';
+    html += `<div class="breakdown-total"><strong>Suma: ${this.formatCurrency(this.calculatedPrice)}</strong></div>`;
+    html += '</div>';
+
+    return html;
+  }
+
+  /**
+   * Format currency value
+   */
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat('pl-PL', {
+      style: 'currency',
+      currency: this.tenantCurrencyCode || 'PLN'
+    }).format(value);
+  }
+
   clearSelection(): void {
     this.selectedStartDate = undefined;
     this.selectedEndDate = undefined;
@@ -1123,7 +1230,7 @@ export class RentalCalendarComponent implements OnInit, OnDestroy, OnChanges {
               this.selectedEndDate &&
               this.selectedBoothType &&
               this.booth &&
-              this.calculatedDays >= 7 &&
+              this.calculatedDays >= this.minimumRentalDays &&
               !this.hasGapError);
   }
 

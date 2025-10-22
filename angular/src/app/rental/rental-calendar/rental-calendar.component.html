@@ -6,7 +6,7 @@
       Rent Booth #{{ booth.number }}
     </h2>
     <div class="text-muted">
-      <small>Select rental period (minimum 7 days)</small>
+      <small>Select rental period (minimum {{ minimumRentalDays }} days)</small>
       <br>
       <small *ngIf="minimumGapDays > 0" class="text-info">
         <i class="fas fa-info-circle me-1"></i>
@@ -46,7 +46,15 @@
               </tr>
               <tr class="table-success">
                 <td><strong>Total Price:</strong></td>
-                <td class="fw-bold">{{ calculatedPrice | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</td>
+                <td class="fw-bold">
+                  {{ calculatedPrice | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
+                  <i *ngIf="hasPriceBreakdown()"
+                     class="pi pi-info-circle ms-2 price-breakdown-icon"
+                     [pTooltip]="getPriceBreakdownTooltip()"
+                     [escape]="false"
+                     tooltipPosition="right"
+                     [tooltipOptions]="{showDelay: 200}"></i>
+                </td>
               </tr>
               <tr *ngIf="selectedBoothType">
                 <td><strong>Commission:</strong></td>
@@ -294,7 +302,7 @@
       <div *ngIf="!selectedEndDate" class="alert alert-warning">
         <strong>Start Date:</strong> {{ selectedStartDate | date:'fullDate' }}
         <br>
-        <small><i class="fas fa-info-circle me-1"></i>Click another date to complete your selection (minimum 7 days)</small>
+        <small><i class="fas fa-info-circle me-1"></i>Click another date to complete your selection (minimum {{ minimumRentalDays }} days)</small>
       </div>
       <div *ngIf="selectedEndDate">
         <div class="row g-3">
@@ -302,10 +310,10 @@
             <p class="mb-2"><strong>Period:</strong> {{ selectedStartDate | date:'shortDate' }} to {{ selectedEndDate | date:'shortDate' }}</p>
             <p class="mb-0"><strong>Duration:</strong> {{ calculatedDays }} days</p>
           </div>
-          <div class="col-md-6" *ngIf="calculatedDays < 7">
+          <div class="col-md-6" *ngIf="calculatedDays < minimumRentalDays">
             <div class="alert alert-danger mb-0">
               <i class="fas fa-exclamation-triangle me-1"></i>
-              Minimum rental period is 7 days
+              Minimum rental period is {{ minimumRentalDays }} days
             </div>
           </div>
         </div>
@@ -314,7 +322,7 @@
   </div>
 
   <!-- Booking Action -->
-  <div class="card" *ngIf="selectedStartDate && selectedEndDate && calculatedDays >= 7 && !hidePaymentActions">
+  <div class="card" *ngIf="selectedStartDate && selectedEndDate && calculatedDays >= minimumRentalDays && !hidePaymentActions">
     <div class="card-body">
       <h5 class="card-title">
         <i class="fas fa-credit-card me-2"></i>

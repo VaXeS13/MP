@@ -1,0 +1,54 @@
+<div class="pricing-periods-container">
+  <div class="pricing-periods-header">
+    <i class="pi pi-calendar"></i>
+    <span>{{ '::Booth:PricingPeriods' | abpLocalization }}</span>
+    <small class="text-muted">{{ '::Booth:PricingPeriodsHint' | abpLocalization }}</small>
+  </div>
+
+  <div class="pricing-periods-grid">
+    @for (period of predefinedPeriods; track period; let i = $index) {
+      <div class="pricing-period-item" [class.enabled]="isPeriodEnabled(i)" [formGroup]="getPeriodGroup(i)">
+
+        <!-- Checkbox and label -->
+        <div class="period-checkbox">
+          <p-checkbox
+            [binary]="true"
+            formControlName="enabled"
+            [inputId]="'period-' + period">
+          </p-checkbox>
+          <label [for]="'period-' + period" class="period-label">
+            {{ period }} {{ period === 1 ? ('::Common:Day' | abpLocalization) : ('::Common:Days' | abpLocalization) }}
+          </label>
+        </div>
+
+        <!-- Price input -->
+        <div class="period-price" *ngIf="isPeriodEnabled(i)">
+          <input
+            type="number"
+            pInputText
+            formControlName="pricePerPeriod"
+            [placeholder]="'::Common:Price' | abpLocalization"
+            min="0.01"
+            step="0.01"
+            [class.ng-invalid]="isFieldInvalid(i, 'pricePerPeriod')"
+            class="price-input">
+
+          <!-- Effective price per day -->
+          <div class="effective-price" *ngIf="getEffectivePricePerDay(i)">
+            <small class="text-muted">
+              {{ '::Booth:EffectivePricePerDay' | abpLocalization }}:
+              <strong>{{ getEffectivePricePerDay(i) | number:'1.2-2' }}</strong>
+            </small>
+          </div>
+
+          <!-- Error message -->
+          <div class="field-error" *ngIf="isFieldInvalid(i, 'pricePerPeriod')">
+            <i class="pi pi-exclamation-triangle"></i>
+            {{ '::Validation:PriceRequired' | abpLocalization }}
+          </div>
+        </div>
+
+      </div>
+    }
+  </div>
+</div>

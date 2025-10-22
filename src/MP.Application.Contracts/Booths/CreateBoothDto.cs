@@ -1,4 +1,5 @@
 ﻿using MP.Domain.Booths;
+using MP.Application.Contracts.Booths;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -15,10 +16,20 @@ namespace MP.Booths
         [Display(Name = "Numer stanowiska")]
         public string Number { get; set; } = null!;
 
-
-        [Required]
+        /// <summary>
+        /// Legacy price per day - kept for backward compatibility
+        /// Use PricingPeriods for new multi-period pricing
+        /// </summary>
+        [Obsolete("Use PricingPeriods instead. This property is kept for backward compatibility.")]
         [Range(0.01, 9999.99)]
         [Display(Name = "Cena za dzień")]
-        public decimal PricePerDay { get; set; }
+        public decimal? PricePerDay { get; set; }
+
+        /// <summary>
+        /// Multi-period pricing configuration
+        /// At least one pricing period is required
+        /// </summary>
+        [MinLength(1, ErrorMessage = "At least one pricing period is required")]
+        public List<BoothPricingPeriodDto> PricingPeriods { get; set; } = new();
     }
 }

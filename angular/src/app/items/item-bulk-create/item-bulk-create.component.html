@@ -1,0 +1,122 @@
+<p-dialog
+  [header]="'Item:BulkCreateTitle' | abpLocalization"
+  [(visible)]="visible"
+  (onHide)="onHide()"
+  [modal]="true"
+  [style]="{width: '900px'}"
+  [draggable]="false"
+  [resizable]="false"
+  [maximizable]="true">
+
+  <div class="bulk-create-content">
+    <div class="info-message mb-3">
+      <i class="pi pi-info-circle"></i>
+      <span>{{ 'Item:BulkCreateInfo' | abpLocalization }} {{ 'Common:Currency' | abpLocalization }}: <strong>{{ currency }}</strong></span>
+    </div>
+
+    <p-table
+      [value]="items"
+      dataKey="rowId"
+      responsiveLayout="scroll"
+      styleClass="p-datatable-sm">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 40%">{{ 'Common:Name' | abpLocalization }} *</th>
+          <th style="width: 25%">{{ 'Item:Category' | abpLocalization }}</th>
+          <th style="width: 20%">{{ 'Common:Price' | abpLocalization }} ({{ currency }}) *</th>
+          <th style="width: 15%">{{ 'Common:Actions' | abpLocalization }}</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+        <tr [class.error-row]="item.hasError">
+          <td>
+            <input
+              pInputText
+              [(ngModel)]="item.name"
+              placeholder="Item name"
+              [class.ng-invalid]="item.hasError"
+              [maxlength]="200"
+              style="width: 100%" />
+            <small class="p-error" *ngIf="item.hasError && item.errorMessage">
+              {{ item.errorMessage }}
+            </small>
+          </td>
+          <td>
+            <input
+              pInputText
+              [(ngModel)]="item.category"
+              placeholder="Category (optional)"
+              [maxlength]="100"
+              style="width: 100%" />
+          </td>
+          <td>
+            <p-inputNumber
+              [(ngModel)]="item.price"
+              mode="decimal"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              placeholder="0.00"
+              [min]="0"
+              [class.ng-invalid]="item.hasError"
+              [inputStyle]="{width: '100%'}">
+            </p-inputNumber>
+          </td>
+          <td>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              class="p-button-sm p-button-text p-button-danger"
+              (click)="removeRow(item)"
+              [disabled]="items.length === 1">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center">No items added yet</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <div class="mt-3">
+      <button
+        pButton
+        type="button"
+        [label]="'Item:AddRow' | abpLocalization"
+        icon="pi pi-plus"
+        class="p-button-sm p-button-outlined"
+        (click)="addEmptyRow()"
+        [disabled]="saving">
+      </button>
+      <span class="ml-2 text-muted">{{ items.length }} row(s)</span>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="footer-content">
+      <button
+        pButton
+        type="button"
+        [label]="'AbpUi::Cancel' | abpLocalization"
+        icon="pi pi-times"
+        (click)="onHide()"
+        class="p-button-text"
+        [disabled]="saving">
+      </button>
+      <button
+        pButton
+        type="button"
+        [label]="'Item:BulkCreateTitle' | abpLocalization"
+        icon="pi pi-check"
+        (click)="save()"
+        [loading]="saving"
+        [disabled]="saving || !isValid()">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

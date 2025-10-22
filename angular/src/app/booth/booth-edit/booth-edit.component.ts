@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { LocalizationService } from '@abp/ng.core';
-import { BoothService } from '../../services/booth.service';
-import { BoothListDto, UpdateBoothDto, BoothStatus } from '../../shared/models/booth.model';
+import { BoothService } from '../../proxy/booths/booth.service';
+import { BoothListDto, UpdateBoothDto } from '../../proxy/booths/models';
+import { BoothStatus } from '../../proxy/domain/booths/booth-status.enum';
 
 @Component({
   standalone: false,
@@ -11,7 +12,7 @@ import { BoothListDto, UpdateBoothDto, BoothStatus } from '../../shared/models/b
   templateUrl: './booth-edit.component.html',
   styleUrl: './booth-edit.component.scss'
 })
-export class BoothEditComponent implements OnInit {
+export class BoothEditComponent implements OnInit, OnChanges {
   @Input() booth!: BoothListDto;
   @Output() saved = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();
@@ -28,27 +29,32 @@ export class BoothEditComponent implements OnInit {
   ) {
     this.boothForm = this.fb.group({
       number: ['', [Validators.required, Validators.maxLength(10)]],
-      pricePerDay: [null, [Validators.required, Validators.min(0.01), Validators.max(9999.99)]],
-      status: [null, [Validators.required]]
+      pricingPeriods: [null, [Validators.required]]
     });
   }
 
   ngOnInit(): void {
-    this.statusOptions = [
-      { label: this.localization.instant('::Status:Available'), value: BoothStatus.Available },
-      { label: this.localization.instant('::Status:Maintenance'), value: BoothStatus.Maintenance }
-    ];
+    this.loadBoothData();
+  }
 
-    this.boothForm.patchValue({
-      number: this.booth.number,
-      pricePerDay: this.booth.pricePerDay,
-      status: this.booth.status
-    });
-
-    // Jeśli stanowisko zarezerwowane lub wynajęte, nie pozwalaj zmienić statusu
-    if (this.booth.status === BoothStatus.Reserved || this.booth.status === BoothStatus.Rented) {
-      this.boothForm.get('status')?.disable();
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['booth'] && !changes['booth'].firstChange) {
+      // Booth input changed after initial load
+      this.loadBoothData();
     }
+  }
+
+  private loadBoothData(): void {
+    if (!this.booth) {
+      return;
+    }
+
+    // Reset form and set booth data
+    this.boothForm.reset();
+    this.boothForm.patchValue({
+      number: this.booth.number || '',
+      pricingPeriods: this.booth.pricingPeriods || []
+    });
   }
 
   onSave(): void {
@@ -60,7 +66,7 @@ export class BoothEditComponent implements OnInit {
     this.saving = true;
     const input: UpdateBoothDto = {
       ...this.boothForm.value,
-      status: (this.booth.status === BoothStatus.Reserved || this.booth.status === BoothStatus.Rented) ? this.booth.status : this.boothForm.value.status
+      status: this.booth.status // Preserve existing status
     };
 
     this.boothService.update(this.booth.id, input).subscribe({

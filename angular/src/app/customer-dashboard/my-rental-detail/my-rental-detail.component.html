@@ -95,6 +95,12 @@
                 <span class="info-label">Kwota do zapłaty:</span>
                 <span class="info-value highlight">
                   {{ formatCurrency(rental.totalCost) }}
+                  <i *ngIf="hasPriceBreakdown()"
+                     class="pi pi-info-circle price-breakdown-icon"
+                     [pTooltip]="formatPriceBreakdown()"
+                     [escape]="false"
+                     tooltipPosition="right"
+                     [tooltipOptions]="{showDelay: 200}"></i>
                 </span>
               </div>
               <div class="info-item">
@@ -210,6 +216,12 @@
                 <span class="info-label">Łączny koszt wynajmu:</span>
                 <span class="info-value highlight">
                   {{ formatCurrency(rental.totalCost) }}
+                  <i *ngIf="hasPriceBreakdown()"
+                     class="pi pi-info-circle price-breakdown-icon"
+                     [pTooltip]="formatPriceBreakdown()"
+                     [escape]="false"
+                     tooltipPosition="right"
+                     [tooltipOptions]="{showDelay: 200}"></i>
                 </span>
               </div>
             </div>

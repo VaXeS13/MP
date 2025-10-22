@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Volo.Abp.Application.Dtos;
 using MP.Rentals;
+using MP.Application.Contracts.Rentals;
 
 namespace MP.Application.Contracts.CustomerDashboard
 {
@@ -29,6 +30,17 @@ namespace MP.Application.Contracts.CustomerDashboard
         public decimal PaidAmount { get; set; }
         public bool IsPaid { get; set; }
         public DateTime? PaidDate { get; set; }
+
+        /// <summary>
+        /// Price breakdown showing how total price was calculated from multi-period pricing
+        /// </summary>
+        public PriceBreakdownDto? PriceBreakdown { get; set; }
+
+        // Promotion details
+        public Guid? AppliedPromotionId { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal OriginalAmount { get; set; }
+        public string? PromoCodeUsed { get; set; }
 
         public string? Notes { get; set; }
         public DateTime? StartedAt { get; set; }

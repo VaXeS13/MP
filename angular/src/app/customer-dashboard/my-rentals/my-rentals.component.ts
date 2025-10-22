@@ -1,80 +1,89 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { MyRentalService } from '@proxy/application/customer-dashboard';
+import type { MyActiveRentalDto } from '@proxy/application/contracts/customer-dashboard';
 
 @Component({
   selector: 'app-my-rentals',
-  template: `
-    <div class="my-rentals">
-      <h1>Moje Wynajmy</h1>
-      <p-card>
-        <p-table [value]="rentals" [loading]="loading" responsiveLayout="scroll">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Stoisko</th>
-              <th>Okres</th>
-              <th>Dni pozostało</th>
-              <th>Przedmioty</th>
-              <th>Sprzedaż</th>
-              <th>Status</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-rental>
-            <tr>
-              <td>{{ rental.boothNumber }}</td>
-              <td>{{ rental.startDate | date:'dd.MM.yyyy' }} - {{ rental.endDate | date:'dd.MM.yyyy' }}</td>
-              <td>
-                <p-tag [severity]="rental.isExpiringSoon ? 'warning' : 'success'"
-                       [value]="rental.daysRemaining + ' dni'"></p-tag>
-              </td>
-              <td>{{ rental.soldItems }}/{{ rental.totalItems }}</td>
-              <td>{{ formatCurrency(rental.totalSales) }}</td>
-              <td>
-                <p-tag [severity]="rental.status === 'Active' ? 'success' : 'info'"
-                       [value]="rental.status === 'Active' ? 'Aktywny' : rental.status"></p-tag>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </p-card>
-    </div>
-  `,
-  styles: [`
-    .my-rentals {
-      padding: 1rem;
-
-      h1 {
-        margin-bottom: 1.5rem;
-        color: var(--primary-color);
-      }
-    }
-  `],
+  templateUrl: './my-rentals.component.html',
+  styleUrls: ['./my-rentals.component.scss'],
   standalone: false
 })
 export class MyRentalsComponent implements OnInit {
-  rentals: any[] = [];
+  rentals: MyActiveRentalDto[] = [];
   loading = false;
 
+  private statusMap: { [key: string]: string } = {
+    'Draft': 'Projekt',
+    'Active': 'Aktywny',
+    'Expired': 'Wygasły',
+    'Cancelled': 'Anulowany',
+    'Extended': 'Przedłużony'
+  };
+
+  constructor(
+    private myRentalService: MyRentalService,
+    private router: Router
+  ) {}
+
   ngOnInit(): void {
-    this.loading = true;
-    this.rentals = [
-      {
-        boothNumber: 'A-101',
-        startDate: new Date(2025, 0, 1),
-        endDate: new Date(2025, 2, 31),
-        daysRemaining: 45,
-        totalItems: 10,
-        soldItems: 3,
-        totalSales: 450.00,
-        isExpiringSoon: false,
-        status: 'Active'
-      }
-    ];
-    this.loading = false;
+    this.loadRentals();
   }
 
-  formatCurrency(amount: number): string {
+  loadRentals(): void {
+    this.loading = true;
+    this.myRentalService.getMyRentals({
+      skipCount: 0,
+      maxResultCount: 50,
+      includeCompleted: true
+    }).subscribe({
+      next: (result) => {
+        this.rentals = result.items || [];
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading rentals:', error);
+        this.loading = false;
+      }
+    });
+  }
+
+  getStatusLabel(status: string): string {
+    return this.statusMap[status] || status;
+  }
+
+  getStatusSeverity(status: string): string {
+    switch (status) {
+      case 'Active':
+      case 'Extended':
+        return 'success';
+      case 'Draft':
+        return 'warning';
+      case 'Expired':
+      case 'Cancelled':
+        return 'danger';
+      default:
+        return 'info';
+    }
+  }
+
+  formatCurrency(amount: number | undefined): string {
+    if (amount === undefined || amount === null) {
+      amount = 0;
+    }
     return new Intl.NumberFormat('pl-PL', {
       style: 'currency',
       currency: 'PLN'
     }).format(amount);
+  }
+
+  viewDetails(rentalId: string | undefined): void {
+    if (rentalId) {
+      this.router.navigate(['/customer-dashboard/my-rentals', rentalId]);
+    }
+  }
+
+  hasDiscount(rental: MyActiveRentalDto): boolean {
+    return (rental.discountAmount || 0) > 0;
   }
 }

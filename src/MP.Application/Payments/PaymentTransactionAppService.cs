@@ -21,15 +21,21 @@ namespace MP.Application.Payments
         private readonly IRepository<P24Transaction, Guid> _p24TransactionRepository;
         private readonly IRepository<Rental, Guid> _rentalRepository;
         private readonly IP24TransactionRepository _customP24TransactionRepository;
+        private readonly IStripeTransactionRepository _stripeTransactionRepository;
+        private readonly IPayPalTransactionRepository _payPalTransactionRepository;
 
         public PaymentTransactionAppService(
             IRepository<P24Transaction, Guid> p24TransactionRepository,
             IRepository<Rental, Guid> rentalRepository,
-            IP24TransactionRepository customP24TransactionRepository)
+            IP24TransactionRepository customP24TransactionRepository,
+            IStripeTransactionRepository stripeTransactionRepository,
+            IPayPalTransactionRepository payPalTransactionRepository)
         {
             _p24TransactionRepository = p24TransactionRepository;
             _rentalRepository = rentalRepository;
             _customP24TransactionRepository = customP24TransactionRepository;
+            _stripeTransactionRepository = stripeTransactionRepository;
+            _payPalTransactionRepository = payPalTransactionRepository;
         }
 
         public async Task<PagedResultDto<PaymentTransactionDto>> GetListAsync(GetPaymentTransactionListDto input)
@@ -139,26 +145,48 @@ namespace MP.Application.Payments
         [AllowAnonymous]
         public async Task<PaymentSuccessViewModel> GetPaymentSuccessViewModelAsync(string sessionId)
         {
-            var transaction = await _customP24TransactionRepository.FindBySessionIdAsync(sessionId);
+            // Try to find P24 transaction first
+            var p24Transaction = await _customP24TransactionRepository.FindBySessionIdAsync(sessionId);
 
-            if (transaction == null)
+            if (p24Transaction != null)
             {
-                // Fallback: Try to find rental by extracting rental ID from sessionId
-                // SessionId format: rental_{shortGuid}_{timestamp} or rental_{fullGuid}_{timestamp}
-                Logger.LogWarning("P24Transaction not found for sessionId: {SessionId}. Attempting fallback lookup...", sessionId);
-
-                var fallbackRental = await TryFallbackLookupAsync(sessionId);
-                if (fallbackRental != null)
-                {
-                    // Create a synthetic transaction response from rental data
-                    Logger.LogInformation("Fallback lookup successful for rental {RentalId}", fallbackRental.Id);
-                    return CreatePaymentSuccessViewModelFromRental(fallbackRental);
-                }
-
-                throw new BusinessException("MP:PaymentTransactionNotFound")
-                    .WithData("sessionId", sessionId);
+                return await CreatePaymentSuccessViewModelFromP24Async(p24Transaction);
             }
 
+            // Try to find Stripe transaction
+            var stripeTransaction = await _stripeTransactionRepository.FindBySessionIdAsync(sessionId);
+
+            if (stripeTransaction != null)
+            {
+                return await CreatePaymentSuccessViewModelFromStripeAsync(stripeTransaction);
+            }
+
+            // Try to find PayPal transaction
+            var payPalTransaction = await _payPalTransactionRepository.FindBySessionIdAsync(sessionId);
+
+            if (payPalTransaction != null)
+            {
+                return await CreatePaymentSuccessViewModelFromPayPalAsync(payPalTransaction);
+            }
+
+            // Fallback: Try to find rental by extracting rental ID from sessionId
+            // SessionId format: rental_{shortGuid}_{timestamp} or rental_{fullGuid}_{timestamp}
+            Logger.LogWarning("No transaction found for sessionId: {SessionId}. Attempting fallback lookup...", sessionId);
+
+            var fallbackRental = await TryFallbackLookupAsync(sessionId);
+            if (fallbackRental != null)
+            {
+                // Create a synthetic transaction response from rental data
+                Logger.LogInformation("Fallback lookup successful for rental {RentalId}", fallbackRental.Id);
+                return CreatePaymentSuccessViewModelFromRental(fallbackRental);
+            }
+
+            throw new BusinessException("MP:PaymentTransactionNotFound")
+                .WithData("sessionId", sessionId);
+        }
+
+        private async Task<PaymentSuccessViewModel> CreatePaymentSuccessViewModelFromP24Async(P24Transaction transaction)
+        {
             var transactionDto = ObjectMapper.Map<P24Transaction, PaymentTransactionDto>(transaction);
 
             // Set computed properties
@@ -171,39 +199,7 @@ namespace MP.Application.Payments
             transactionDto.FormattedCompletedAt = transactionDto.LastStatusCheck?.ToString("yyyy-MM-dd HH:mm");
 
             // Get related rentals
-            var rentals = new List<RentalDto>();
-            if (transaction.RentalId.HasValue)
-            {
-                var rental = await _rentalRepository.GetAsync(transaction.RentalId.Value);
-                rentals.Add(ObjectMapper.Map<Rental, RentalDto>(rental));
-            }
-            else
-            {
-                // For cart checkout, check ExtraProperties for rental IDs
-                if (!string.IsNullOrEmpty(transaction.ExtraProperties))
-                {
-                    try
-                    {
-                        var extraProps = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(transaction.ExtraProperties);
-                        if (extraProps?.ContainsKey("RentalIds") == true)
-                        {
-                            var rentalIds = extraProps["RentalIds"].ToString().Split(',', StringSplitOptions.RemoveEmptyEntries);
-                            foreach (var rentalId in rentalIds)
-                            {
-                                if (Guid.TryParse(rentalId.Trim(), out var id))
-                                {
-                                    var rental = await _rentalRepository.GetAsync(id);
-                                    rentals.Add(ObjectMapper.Map<Rental, RentalDto>(rental));
-                                }
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // Ignore JSON parsing errors
-                    }
-                }
-            }
+            var rentals = await GetRentalsFromTransactionAsync(transaction.RentalId, transaction.ExtraProperties);
 
             var viewModel = new PaymentSuccessViewModel
             {
@@ -226,6 +222,273 @@ namespace MP.Application.Payments
             };
 
             return viewModel;
+        }
+
+        private async Task<PaymentSuccessViewModel> CreatePaymentSuccessViewModelFromStripeAsync(StripeTransaction transaction)
+        {
+            // Map Stripe transaction to PaymentTransactionDto for consistency
+            var transactionDto = new PaymentTransactionDto
+            {
+                Id = transaction.Id,
+                SessionId = transaction.PaymentIntentId, // Checkout Session ID
+                Amount = transaction.Amount,
+                Currency = transaction.Currency.ToUpperInvariant(),
+                Email = transaction.Email,
+                Status = MapStripeStatus(transaction.Status),
+                StatusDisplayName = GetStripeStatusDisplayName(transaction.Status),
+                IsCompleted = transaction.Status == "succeeded",
+                IsFailed = transaction.Status == "canceled" || transaction.Status == "requires_payment_method",
+                IsPending = transaction.Status == "processing" || transaction.Status == "requires_confirmation",
+                FormattedAmount = transaction.Amount.ToString("N2") + " " + transaction.Currency.ToUpperInvariant(),
+                CreationTime = transaction.CreationTime,
+                FormattedCreatedAt = transaction.CreationTime.ToString("yyyy-MM-dd HH:mm"),
+                FormattedCompletedAt = transaction.CompletedAt?.ToString("yyyy-MM-dd HH:mm"),
+                Verified = transaction.Status == "succeeded",
+                Method = transaction.PaymentMethodType,
+                OrderId = transaction.ChargeId
+            };
+
+            // Get related rentals from StripeMetadata
+            var rentals = await GetRentalsFromStripeMetadataAsync(transaction);
+
+            var viewModel = new PaymentSuccessViewModel
+            {
+                Transaction = transactionDto,
+                Rentals = rentals,
+                Success = transactionDto.IsCompleted,
+                Message = GetSuccessMessage(MapStripeStatus(transaction.Status)),
+                NextStepUrl = "/rentals/my-rentals",
+                NextStepText = L["PaymentSuccess:ViewMyRentals"],
+                TotalAmount = transactionDto.Amount,
+                Currency = transactionDto.Currency,
+                PaymentDate = transaction.CompletedAt ?? transaction.CreationTime,
+                PaymentMethod = "Stripe",
+                FormattedPaymentDate = (transaction.CompletedAt ?? transaction.CreationTime).ToString("yyyy-MM-dd HH:mm"),
+                FormattedTotalAmount = transaction.Amount.ToString("N2") + " " + transaction.Currency.ToUpperInvariant(),
+                OrderId = transaction.ChargeId,
+                PaymentProvider = "Stripe",
+                IsVerified = transaction.Status == "succeeded",
+                Method = transaction.PaymentMethodType
+            };
+
+            return viewModel;
+        }
+
+        private async Task<List<RentalDto>> GetRentalsFromTransactionAsync(Guid? rentalId, string? extraProperties)
+        {
+            var rentals = new List<RentalDto>();
+
+            if (rentalId.HasValue)
+            {
+                var rental = await _rentalRepository.GetAsync(rentalId.Value);
+                rentals.Add(ObjectMapper.Map<Rental, RentalDto>(rental));
+            }
+            else if (!string.IsNullOrEmpty(extraProperties))
+            {
+                // For cart checkout, check ExtraProperties for rental IDs
+                try
+                {
+                    var extraProps = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(extraProperties);
+                    if (extraProps?.ContainsKey("RentalIds") == true)
+                    {
+                        var rentalIds = extraProps["RentalIds"].ToString().Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        foreach (var rentalIdStr in rentalIds)
+                        {
+                            if (Guid.TryParse(rentalIdStr.Trim(), out var id))
+                            {
+                                var rental = await _rentalRepository.GetAsync(id);
+                                rentals.Add(ObjectMapper.Map<Rental, RentalDto>(rental));
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignore JSON parsing errors
+                }
+            }
+
+            return rentals;
+        }
+
+        private async Task<List<RentalDto>> GetRentalsFromStripeMetadataAsync(StripeTransaction transaction)
+        {
+            var rentals = new List<RentalDto>();
+
+            if (transaction.RentalId.HasValue)
+            {
+                var rental = await _rentalRepository.GetAsync(transaction.RentalId.Value);
+                rentals.Add(ObjectMapper.Map<Rental, RentalDto>(rental));
+            }
+            else if (!string.IsNullOrEmpty(transaction.StripeMetadata))
+            {
+                // Parse StripeMetadata JSON to find rental IDs
+                try
+                {
+                    var metadata = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(transaction.StripeMetadata);
+                    if (metadata?.ContainsKey("rentalIds") == true)
+                    {
+                        var rentalIdsStr = metadata["rentalIds"].ToString();
+                        var rentalIds = rentalIdsStr.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        foreach (var rentalIdStr in rentalIds)
+                        {
+                            if (Guid.TryParse(rentalIdStr.Trim(), out var id))
+                            {
+                                var rental = await _rentalRepository.GetAsync(id);
+                                rentals.Add(ObjectMapper.Map<Rental, RentalDto>(rental));
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignore JSON parsing errors
+                }
+            }
+
+            return rentals;
+        }
+
+        private string MapStripeStatus(string stripeStatus)
+        {
+            // Map Stripe statuses to internal payment statuses
+            return stripeStatus switch
+            {
+                "succeeded" => "completed",
+                "processing" => "processing",
+                "requires_payment_method" => "pending",
+                "requires_confirmation" => "pending",
+                "canceled" => "failed",
+                _ => "pending"
+            };
+        }
+
+        private string GetStripeStatusDisplayName(string stripeStatus)
+        {
+            return stripeStatus switch
+            {
+                "succeeded" => L["PaymentStatus:Completed"],
+                "processing" => L["PaymentStatus:Processing"],
+                "requires_payment_method" => L["PaymentStatus:Pending"],
+                "requires_confirmation" => L["PaymentStatus:Pending"],
+                "canceled" => L["PaymentStatus:Failed"],
+                _ => L["PaymentStatus:Unknown"]
+            };
+        }
+
+        private async Task<PaymentSuccessViewModel> CreatePaymentSuccessViewModelFromPayPalAsync(PayPalTransaction transaction)
+        {
+            // Map PayPal transaction to PaymentTransactionDto for consistency
+            var transactionDto = new PaymentTransactionDto
+            {
+                Id = transaction.Id,
+                SessionId = transaction.OrderId, // PayPal Order ID
+                Amount = transaction.Amount,
+                Currency = transaction.Currency.ToUpperInvariant(),
+                Email = transaction.Email,
+                Status = MapPayPalStatus(transaction.Status),
+                StatusDisplayName = GetPayPalStatusDisplayName(transaction.Status),
+                IsCompleted = transaction.Status == "COMPLETED",
+                IsFailed = transaction.Status == "VOIDED" || transaction.Status == "PAYER_ACTION_REQUIRED",
+                IsPending = transaction.Status == "CREATED" || transaction.Status == "APPROVED",
+                FormattedAmount = transaction.Amount.ToString("N2") + " " + transaction.Currency.ToUpperInvariant(),
+                CreationTime = transaction.CreationTime,
+                FormattedCreatedAt = transaction.CreationTime.ToString("yyyy-MM-dd HH:mm"),
+                FormattedCompletedAt = transaction.CompletedAt?.ToString("yyyy-MM-dd HH:mm"),
+                Verified = transaction.Status == "COMPLETED",
+                Method = transaction.FundingSource,
+                OrderId = transaction.CaptureId ?? transaction.OrderId
+            };
+
+            // Get related rentals from PayPalMetadata
+            var rentals = await GetRentalsFromPayPalMetadataAsync(transaction);
+
+            var viewModel = new PaymentSuccessViewModel
+            {
+                Transaction = transactionDto,
+                Rentals = rentals,
+                Success = transactionDto.IsCompleted,
+                Message = GetSuccessMessage(MapPayPalStatus(transaction.Status)),
+                NextStepUrl = "/rentals/my-rentals",
+                NextStepText = L["PaymentSuccess:ViewMyRentals"],
+                TotalAmount = transactionDto.Amount,
+                Currency = transactionDto.Currency,
+                PaymentDate = transaction.CompletedAt ?? transaction.CreationTime,
+                PaymentMethod = "PayPal",
+                FormattedPaymentDate = (transaction.CompletedAt ?? transaction.CreationTime).ToString("yyyy-MM-dd HH:mm"),
+                FormattedTotalAmount = transaction.Amount.ToString("N2") + " " + transaction.Currency.ToUpperInvariant(),
+                OrderId = transaction.CaptureId ?? transaction.OrderId,
+                PaymentProvider = "PayPal",
+                IsVerified = transaction.Status == "COMPLETED",
+                Method = transaction.FundingSource
+            };
+
+            return viewModel;
+        }
+
+        private async Task<List<RentalDto>> GetRentalsFromPayPalMetadataAsync(PayPalTransaction transaction)
+        {
+            var rentals = new List<RentalDto>();
+
+            if (transaction.RentalId.HasValue)
+            {
+                var rental = await _rentalRepository.GetAsync(transaction.RentalId.Value);
+                rentals.Add(ObjectMapper.Map<Rental, RentalDto>(rental));
+            }
+            else if (!string.IsNullOrEmpty(transaction.PayPalMetadata))
+            {
+                // Parse PayPalMetadata JSON to find rental IDs
+                try
+                {
+                    var metadata = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(transaction.PayPalMetadata);
+                    if (metadata?.ContainsKey("rentalIds") == true)
+                    {
+                        var rentalIdsStr = metadata["rentalIds"].ToString();
+                        var rentalIds = rentalIdsStr.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        foreach (var rentalIdStr in rentalIds)
+                        {
+                            if (Guid.TryParse(rentalIdStr.Trim(), out var id))
+                            {
+                                var rental = await _rentalRepository.GetAsync(id);
+                                rentals.Add(ObjectMapper.Map<Rental, RentalDto>(rental));
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignore JSON parsing errors
+                }
+            }
+
+            return rentals;
+        }
+
+        private string MapPayPalStatus(string payPalStatus)
+        {
+            // Map PayPal statuses to internal payment statuses
+            return payPalStatus switch
+            {
+                "COMPLETED" => "completed",
+                "APPROVED" => "processing",
+                "CREATED" => "pending",
+                "VOIDED" => "failed",
+                "PAYER_ACTION_REQUIRED" => "pending",
+                _ => "pending"
+            };
+        }
+
+        private string GetPayPalStatusDisplayName(string payPalStatus)
+        {
+            return payPalStatus switch
+            {
+                "COMPLETED" => L["PaymentStatus:Completed"],
+                "APPROVED" => L["PaymentStatus:Processing"],
+                "CREATED" => L["PaymentStatus:Pending"],
+                "VOIDED" => L["PaymentStatus:Failed"],
+                "PAYER_ACTION_REQUIRED" => L["PaymentStatus:Pending"],
+                _ => L["PaymentStatus:Unknown"]
+            };
         }
 
         public async Task<PaymentTransactionDto> GetAsync(Guid id)

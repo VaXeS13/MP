@@ -12,6 +12,8 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ItemService, ItemSheetService } from '@proxy/items';
 import type { ItemDto, ItemSheetDto } from '@proxy/items/models';
 import { ItemFormComponent } from '../item-form/item-form.component';
+import { ItemBulkCreateComponent } from '../item-bulk-create/item-bulk-create.component';
+import { CoreModule } from '@abp/ng.core';
 
 @Component({
   standalone: true,
@@ -29,7 +31,9 @@ import { ItemFormComponent } from '../item-form/item-form.component';
     ToastModule,
     DialogModule,
     DropdownModule,
-    ItemFormComponent
+    ItemFormComponent,
+    ItemBulkCreateComponent,
+    CoreModule
   ],
   providers: [MessageService, ConfirmationService]
 })
@@ -44,6 +48,7 @@ export class ItemListComponent implements OnInit {
 
   // Dialog
   displayDialog = false;
+  displayBulkCreateDialog = false;
   selectedItem: ItemDto | null = null;
 
   // Mass selection
@@ -68,6 +73,10 @@ export class ItemListComponent implements OnInit {
 
   get selectableItems(): ItemDto[] {
     return this.items.filter(item => item.status === 'Draft');
+  }
+
+  isRowSelectable = (event: any): boolean => {
+    return event.data.status === 'Draft';
   }
 
   loadItems(): void {
@@ -99,6 +108,10 @@ export class ItemListComponent implements OnInit {
   openCreateDialog(): void {
     this.selectedItem = null;
     this.displayDialog = true;
+  }
+
+  openBulkCreateDialog(): void {
+    this.displayBulkCreateDialog = true;
   }
 
   openEditDialog(item: ItemDto): void {

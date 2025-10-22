@@ -283,6 +283,19 @@ The solution follows ABP Framework's layered architecture with these projects:
 7. **Debugging**:
    - Backend: Use Visual Studio or VS Code with C# extension
    - Frontend: Use Chrome DevTools, Angular DevTools extension
+8. **Payment Testing** (Stripe):
+   - **Webhook Forwarding** (REQUIRED for local testing):
+     - Option A: Stripe CLI: `stripe listen --forward-to http://localhost:44377/api/app/payments/stripe/webhook`
+     - Option B: ngrok: `ngrok http 44377` (configure webhook in Stripe Dashboard)
+   - **Configure webhook secret**: Copy from Stripe CLI output or Dashboard to `appsettings.json`
+   - **Enable Stripe provider**: Set `MP.PaymentProviders.Stripe.Enabled = true` in Settings
+   - **Test flow**:
+     1. Add booth to cart
+     2. Checkout with Stripe payment
+     3. Use test card: `4242424242424242`
+     4. Verify webhook received (check Stripe CLI output)
+     5. Verify rental marked as paid, booth status changed to Rented
+   - **Detailed instructions**: See `STRIPE_SETUP.md`
 
 ## Configuration
 
@@ -306,14 +319,35 @@ The solution follows ABP Framework's layered architecture with these projects:
 - Merchant ID: 142798
 - Used for Polish market payments
 
-**Stripe:**
-- Test mode API URLs: `https://api.stripe.com`
-- Test publishable key: `pk_test_51SEbgBQihiXumQfXroAsiten17Fq45ismKEFprs9xtHfcNvtece3fsj5e7IsKSSysvFhMHg2YT5LHP6UeQs5nud6003qa4dfdb`
-- Test secret key: `sk_test_51SEbgBQihiXumQfXiJxoinXPhzMtGPtfOC7zHtKwhCsHjnIACnauSHczuaFQ3yjRX583ynGFN6XW4IhWfkwxmbBQ00MlgoLWQo`
-- Test cards:
+**Stripe (International Payment Processing):**
+- **Status**: ✅ Fully implemented and tested
+- **Account ID**: `acct_1SEbgBQihiXumQfX` (Test Mode)
+- **Implementation**: Stripe Checkout Sessions with webhook integration
+- **Test mode API**: `https://api.stripe.com`
+- **Test publishable key**: `pk_test_51SEbgBQihiXumQfXroAsiten17Fq45ismKEFprs9xtHfcNvtece3fsj5e7IsKSSysvFhMHg2YT5LHP6UeQs5nud6003qa4dfdb`
+- **Test secret key**: `sk_test_51SEbgBQihiXumQfXiJxoinXPhzMtGPtfOC7zHtKwhCsHjnIACnauSHczuaFQ3yjRX583ynGFN6XW4IhWfkwxmbBQ00MlgoLWQo`
+- **⚠️ Webhook secret**: MUST be configured (see STRIPE_SETUP.md)
+- **Webhook endpoint**: `POST /api/app/payments/stripe/webhook`
+- **Supported payment methods**:
+  - Credit/Debit Cards (Visa, Mastercard, Amex)
+  - Google Pay
+  - Apple Pay
+  - Klarna (EUR, SEK, NOK, DKK only)
+- **Test cards**:
   - `4242424242424242` - Success
-  - `4000002500003155` - Requires authentication
+  - `4000002500003155` - Requires 3D Secure authentication
   - `4000000000009995` - Declined
+- **Products created**:
+  - Product: "Booth Rental" (`prod_TH7YyaTAAWdDl2`)
+  - Prices: 100 PLN, 200 PLN, 300 PLN
+- **Documentation**:
+  - **Setup Guide**: See `STRIPE_SETUP.md` for configuration instructions
+  - **Implementation Analysis**: See `STRIPE_IMPLEMENTATION_ANALYSIS.md` for detailed code review
+- **Key Files**:
+  - Provider: `src/MP.Application/Payments/StripeProvider.cs`
+  - Webhook Handler: `src/MP.Application/Payments/StripeWebhookHandler.cs`
+  - Controller: `src/MP.HttpApi/Controllers/PaymentController.cs`
+  - Transaction Entity: `src/MP.Domain/Payments/StripeTransaction.cs`
 
 **PayPal:**
 - Sandbox URL: `https://www.sandbox.paypal.com`

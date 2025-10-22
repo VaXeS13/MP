@@ -15,6 +15,8 @@ namespace MP.Items
 
         Task<ItemDto> CreateAsync(CreateItemDto input);
 
+        Task<BulkItemCreationResultDto> CreateBulkAsync(CreateBulkItemsDto input);
+
         Task<ItemDto> UpdateAsync(Guid id, UpdateItemDto input);
 
         Task DeleteAsync(Guid id);

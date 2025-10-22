@@ -23,6 +23,12 @@ namespace MP.EntityFrameworkCore.Payments
             return await dbSet.FirstOrDefaultAsync(t => t.PaymentIntentId == paymentIntentId);
         }
 
+        public async Task<StripeTransaction?> FindBySessionIdAsync(string sessionId)
+        {
+            // Session ID is stored in PaymentIntentId field (Checkout Session ID)
+            return await GetByPaymentIntentIdAsync(sessionId);
+        }
+
         public async Task<List<StripeTransaction>> GetByRentalIdAsync(Guid rentalId)
         {
             var dbSet = await GetDbSetAsync();

@@ -42,33 +42,16 @@
         </div>
       </div>
 
-      <!-- Price Field -->
+      <!-- Pricing Periods -->
       <div class="form-field">
-        <label for="pricePerDay" class="form-label">
-          <i class="pi pi-money-bill"></i>
-          {{ '::Booth:PricePerDay' | abpLocalization }}
-          <span class="required">*</span>
-        </label>
-        <div class="price-input-container">
-          <p-inputNumber
-            id="pricePerDay"
-            formControlName="pricePerDay"
-            mode="decimal"
-            [minFractionDigits]="2"
-            [maxFractionDigits]="2"
-            [min]="0.01"
-            [max]="99999.99"
-            placeholder="0,00"
-            [class.error]="isFieldInvalid('pricePerDay')"
-            styleClass="modern-price-input">
-          </p-inputNumber>
-        </div>
-        <div class="field-error" *ngIf="isFieldInvalid('pricePerDay')">
+        <app-booth-pricing-periods-input
+          formControlName="pricingPeriods">
+        </app-booth-pricing-periods-input>
+        <div class="field-error" *ngIf="isFieldInvalid('pricingPeriods')">
           <i class="pi pi-exclamation-triangle"></i>
-          {{ '::Validation:MustBeGreaterThanZero' | abpLocalization }}
+          {{ '::Booth:PricingPeriodsRequired' | abpLocalization }}
         </div>
       </div>
-
 
     </div>
 
@@ -77,14 +60,14 @@
       <p-button
         [label]="'::Common:Cancel' | abpLocalization"
         icon="pi pi-times"
-        class="cancel-button"
+        styleClass="cancel-button"
         (click)="onCancel()"
         [disabled]="saving">
       </p-button>
       <p-button
         [label]="'::Booth:CreateBooth' | abpLocalization"
         icon="pi pi-check"
-        class="save-button"
+        styleClass="save-button"
         [disabled]="boothForm.invalid || saving"
         [loading]="saving"
         type="submit">

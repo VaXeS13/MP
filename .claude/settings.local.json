@@ -30,7 +30,15 @@
       "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CartAppServiceTests\" -v q)",
       "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CartAppServiceTests.UpdateItemAsync_Should_Update_Cart_Item_Dates\")",
       "Bash(dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter \"CartAppServiceTests.CheckoutAsync_Should_Throw_When_Cart_Empty\")",
-      "Bash(dotnet test MP.sln --list-tests)"
+      "Bash(dotnet test MP.sln --list-tests)",
+      "mcp__stripe__get_stripe_account_info",
+      "mcp__stripe__list_products",
+      "mcp__stripe__list_prices",
+      "mcp__stripe__list_payment_intents",
+      "mcp__linear-server__list_teams",
+      "mcp__linear-server__list_issue_labels",
+      "mcp__linear-server__list_projects",
+      "mcp__linear-server__list_issue_statuses"
     ],
     "deny": [],
     "ask": []

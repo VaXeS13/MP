@@ -46,7 +46,7 @@ namespace MP.Booths
 
         public async Task<BoothDto> GetAsync(Guid id)
         {
-            var booth = await _boothRepository.GetAsync(id);
+            var booth = await _boothRepository.GetAsync(id, includeDetails: true);
             return ObjectMapper.Map<Booth, BoothDto>(booth);
         }
 
@@ -110,10 +110,34 @@ namespace MP.Booths
         [HttpPost]
         public async Task<BoothDto> CreateAsync(CreateBoothDto input)
         {
-            var booth = await _boothManager.CreateAsync(
-                input.Number,
-                input.PricePerDay
-            );
+            Booth booth;
+
+            // Use new multi-period pricing if provided, otherwise fallback to legacy single price
+            if (input.PricingPeriods != null && input.PricingPeriods.Count > 0)
+            {
+                var pricingPeriods = input.PricingPeriods
+                    .Select(p => (p.Days, p.PricePerPeriod))
+                    .ToList();
+
+                booth = await _boothManager.CreateWithPricingPeriodsAsync(
+                    input.Number,
+                    pricingPeriods
+                );
+            }
+            else
+            {
+                // Backward compatibility - use legacy PricePerDay
+                if (!input.PricePerDay.HasValue)
+                {
+                    throw new BusinessException("BOOTH_PRICE_REQUIRED")
+                        .WithData("message", "Either PricingPeriods or PricePerDay must be provided");
+                }
+
+                booth = await _boothManager.CreateAsync(
+                    input.Number,
+                    input.PricePerDay.Value
+                );
+            }
 
             await _boothRepository.InsertAsync(booth);
             await UnitOfWorkManager.Current!.SaveChangesAsync();
@@ -121,11 +145,10 @@ namespace MP.Booths
             return ObjectMapper.Map<Booth, BoothDto>(booth);
         }
 
-        [NonAction]
         [Authorize(MPPermissions.Booths.Edit)]
         public async Task<BoothDto> UpdateAsync(Guid id, UpdateBoothDto input)
         {
-            var booth = await _boothRepository.GetAsync(id);
+            var booth = await _boothRepository.GetAsync(id, includeDetails: true);
 
             // Zmiana numeru (przez domain service dla walidacji)
             if (booth.Number != input.Number.ToUpper())
@@ -133,8 +156,20 @@ namespace MP.Booths
                 await _boothManager.ChangeNumberAsync(booth, input.Number);
             }
 
-            // Inne zmiany
-            booth.SetPricePerDay(input.PricePerDay);
+            // Update pricing - use new multi-period pricing if provided, otherwise legacy single price
+            if (input.PricingPeriods != null && input.PricingPeriods.Count > 0)
+            {
+                var pricingPeriods = input.PricingPeriods
+                    .Select(p => (p.Days, p.PricePerPeriod))
+                    .ToList();
+
+                _boothManager.UpdatePricingPeriods(booth, pricingPeriods);
+            }
+            else if (input.PricePerDay.HasValue)
+            {
+                // Backward compatibility - use legacy PricePerDay
+                booth.SetPricePerDay(input.PricePerDay.Value);
+            }
 
             // Zmiana statusu
             switch (input.Status)
@@ -149,10 +184,11 @@ namespace MP.Booths
             }
 
             await _boothRepository.UpdateAsync(booth);
+            await UnitOfWorkManager.Current!.SaveChangesAsync();
+
             return ObjectMapper.Map<Booth, BoothDto>(booth);
         }
 
-        [NonAction]
         [Authorize(MPPermissions.Booths.Delete)]
         public async Task DeleteAsync(Guid id)
         {
@@ -174,6 +210,7 @@ namespace MP.Booths
             return ObjectMapper.Map<List<Booth>, List<BoothDto>>(booths);
         }
 
+        [HttpPost("{id}/change-status")]
         [Authorize(MPPermissions.Booths.Edit)]
         public async Task<BoothDto> ChangeStatusAsync(Guid id, BoothStatus newStatus)
         {
@@ -182,7 +219,15 @@ namespace MP.Booths
             switch (newStatus)
             {
                 case BoothStatus.Available:
-                    booth.MarkAsAvailable();
+                    // If booth is in maintenance, restore to previous status instead of forcing Available
+                    if (booth.Status == BoothStatus.Maintenance)
+                    {
+                        booth.RestoreFromMaintenance();
+                    }
+                    else
+                    {
+                        booth.MarkAsAvailable();
+                    }
                     break;
                 case BoothStatus.Maintenance:
                     booth.MarkAsMaintenance();

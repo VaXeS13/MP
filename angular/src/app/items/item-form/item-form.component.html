@@ -41,7 +41,7 @@
 
       <!-- Price -->
       <div class="form-field">
-        <label for="price" class="required">Price</label>
+        <label for="price" class="required">Price ({{ item?.currency || currency }})</label>
         <p-inputNumber
           inputId="price"
           formControlName="price"
@@ -55,20 +55,8 @@
         <small class="p-error" *ngIf="isFieldInvalid('price')">
           {{ getFieldError('price') }}
         </small>
-      </div>
-
-      <!-- Currency Info -->
-      <div class="form-field" *ngIf="item?.currency">
-        <label>Currency</label>
-        <div class="p-inputtext p-component" style="background-color: #f8f9fa; border-color: #ced4da;">
-          {{ item.currency }}
-        </div>
-        <small class="p-text-secondary">Currency cannot be changed for existing items</small>
-      </div>
-
-      <div class="form-field" *ngIf="!item?.id">
-        <small class="p-text-secondary">
-          <i class="pi pi-info-circle"></i> Currency will be automatically set from your tenant settings
+        <small class="p-text-secondary" *ngIf="item?.id">
+          <i class="pi pi-info-circle"></i> Currency cannot be changed for existing items
         </small>
       </div>
     </div>
@@ -77,13 +65,16 @@
   <ng-template pTemplate="footer">
     <div class="footer-content">
       <div class="footer-left">
-        <p-checkbox
-          *ngIf="!item?.id"
-          [(ngModel)]="createAnother"
-          [binary]="true"
-          inputId="createAnother"
-          label="Create another">
-        </p-checkbox>
+        <div *ngIf="!item?.id" class="flex align-items-center">
+          <p-checkbox
+            [(ngModel)]="createAnother"
+            [binary]="true"
+            inputId="createAnother">
+          </p-checkbox>
+          <label for="createAnother" class="ml-2 cursor-pointer">
+            {{ 'Item:CreateAnother' | abpLocalization }}
+          </label>
+        </div>
       </div>
       <div class="footer-right">
         <button

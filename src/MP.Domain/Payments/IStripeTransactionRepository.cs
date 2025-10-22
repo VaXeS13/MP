@@ -13,6 +13,13 @@ namespace MP.Domain.Payments
         Task<StripeTransaction?> GetByPaymentIntentIdAsync(string paymentIntentId);
 
         /// <summary>
+        /// Get transaction by session ID (Checkout Session ID or PaymentIntent ID)
+        /// This is an alias for GetByPaymentIntentIdAsync since Checkout Session ID
+        /// is stored in PaymentIntentId field
+        /// </summary>
+        Task<StripeTransaction?> FindBySessionIdAsync(string sessionId);
+
+        /// <summary>
         /// Get successful transactions within date range
         /// </summary>
         Task<List<StripeTransaction>> GetSuccessfulTransactionsAsync(DateTime fromDate, DateTime toDate);

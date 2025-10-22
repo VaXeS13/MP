@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 export interface BoothSettingsDto {
   minimumGapDays: number;
+  minimumRentalDays: number;
 }
 
 @Injectable({

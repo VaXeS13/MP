@@ -6,6 +6,8 @@ using MP.Carts;
 using MP.Domain.Booths;
 using MP.Domain.BoothTypes;
 using MP.Domain.Rentals;
+using MP.Promotions;
+using MP.Domain.Promotions;
 using Shouldly;
 using Volo.Abp;
 using Volo.Abp.Domain.Repositories;
@@ -21,6 +23,8 @@ namespace MP.Application.Tests.Carts
         private readonly IBoothRepository _boothRepository;
         private readonly IBoothTypeRepository _boothTypeRepository;
         private readonly IRepository<IdentityUser, Guid> _userRepository;
+        private readonly IPromotionAppService _promotionAppService;
+        private readonly IPromotionRepository _promotionRepository;
 
         public CartAppServiceTests()
         {
@@ -28,6 +32,8 @@ namespace MP.Application.Tests.Carts
             _boothRepository = GetRequiredService<IBoothRepository>();
             _boothTypeRepository = GetRequiredService<IBoothTypeRepository>();
             _userRepository = GetRequiredService<IRepository<IdentityUser, Guid>>();
+            _promotionAppService = GetRequiredService<IPromotionAppService>();
+            _promotionRepository = GetRequiredService<IPromotionRepository>();
         }
 
         private async Task CleanupCartAsync()
@@ -349,7 +355,7 @@ namespace MP.Application.Tests.Carts
 
             // Assert
             result.ShouldNotBeNull();
-            result.Success.ShouldBeTrue();
+            result.Success.ShouldBeTrue($"Checkout failed with error: {result.ErrorMessage}");
             result.RentalIds.Count.ShouldBeGreaterThan(0);
 
             // Verify cart is cleared
@@ -377,6 +383,79 @@ namespace MP.Application.Tests.Carts
             result.Success.ShouldBeFalse();
             result.ErrorMessage.ShouldNotBeNullOrEmpty();
             result.ErrorMessage!.ShouldContain("empty");
+        }
+
+        [Fact]
+        [UnitOfWork]
+        public async Task AddItemAsync_Should_Recalculate_Promotion_Discount_For_New_Item()
+        {
+            // Arrange - Create a 10% discount promotion with promo code for booth 0
+            await CleanupCartAsync();
+            var booth1 = await CreateTestBoothAsync("BOOTH-00", 100m);
+            var booth2 = await CreateTestBoothAsync("BOOTH-01", 100m);
+            var boothType = await CreateTestBoothTypeAsync();
+
+            // Create promotion with 10% discount for specific booth (booth 0)
+            var createPromotionDto = new CreatePromotionDto
+            {
+                Name = $"Promo_{Guid.NewGuid().ToString().Substring(0, 8)}",
+                Description = "10% discount",
+                Type = PromotionType.PromoCode,
+                PromoCode = $"PROMO{Guid.NewGuid().ToString().Substring(0, 6)}".ToUpper(),
+                DisplayMode = PromotionDisplayMode.None,
+                DiscountType = DiscountType.Percentage,
+                DiscountValue = 10m,
+                Priority = 1,
+                ApplicableBoothIds = new List<Guid> { booth1.Id } // Only for booth 1
+            };
+
+            var promotion = await _promotionAppService.CreateAsync(createPromotionDto);
+
+            // Add first booth to cart
+            var addDto1 = new AddToCartDto
+            {
+                BoothId = booth1.Id,
+                BoothTypeId = boothType.Id,
+                StartDate = DateTime.Today.AddDays(7),
+                EndDate = DateTime.Today.AddDays(13) // 7 days
+            };
+
+            var cart1 = await _cartAppService.AddItemAsync(addDto1);
+            var item1 = cart1.Items.First();
+            var expectedTotal1 = 100m * 7; // 700
+
+            // Apply promotion to cart
+            var applyPromotionDto = new ApplyPromotionToCartInput { PromoCode = createPromotionDto.PromoCode };
+            await _promotionAppService.ApplyPromotionToCartAsync(applyPromotionDto);
+
+            // Verify discount applied to first item
+            var cartAfterPromo = await _cartAppService.GetMyCartAsync();
+            var item1AfterPromo = cartAfterPromo.Items.First(i => i.BoothId == booth1.Id);
+            item1AfterPromo.DiscountAmount.ShouldBe(70m); // 10% of 700
+            item1AfterPromo.DiscountPercentage.ShouldBe(10m);
+
+            // Act - Add second booth to cart
+            var addDto2 = new AddToCartDto
+            {
+                BoothId = booth2.Id,
+                BoothTypeId = boothType.Id,
+                StartDate = DateTime.Today.AddDays(20),
+                EndDate = DateTime.Today.AddDays(26) // 7 days
+            };
+
+            var cartAfterAddingSecond = await _cartAppService.AddItemAsync(addDto2);
+
+            // Assert - Discount should NOT be applied to second booth (different booth, not in promotion)
+            // But first item should still have discount after automatic recalculation
+            var item1Final = cartAfterAddingSecond.Items.First(i => i.BoothId == booth1.Id);
+            var item2Final = cartAfterAddingSecond.Items.First(i => i.BoothId == booth2.Id);
+
+            item1Final.DiscountAmount.ShouldBe(70m); // First item keeps its discount
+            item1Final.DiscountPercentage.ShouldBe(10m);
+            item2Final.DiscountAmount.ShouldBe(0m); // Second booth not applicable to promotion
+            item2Final.DiscountPercentage.ShouldBe(0m);
+            cartAfterAddingSecond.DiscountAmount.ShouldBe(70m); // Total discount
+            cartAfterAddingSecond.FinalAmount.ShouldBe(1330m); // (700-70) + 700 = 630 + 700 = 1330
         }
 
         // Helper methods

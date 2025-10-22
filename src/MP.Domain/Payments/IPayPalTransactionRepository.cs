@@ -13,6 +13,12 @@ namespace MP.Domain.Payments
         Task<PayPalTransaction?> GetByOrderIdAsync(string orderId);
 
         /// <summary>
+        /// Get transaction by session ID (Order ID)
+        /// This is an alias for GetByOrderIdAsync since Order ID is used as session ID
+        /// </summary>
+        Task<PayPalTransaction?> FindBySessionIdAsync(string sessionId);
+
+        /// <summary>
         /// Get transaction by PayPal Payment ID (legacy API)
         /// </summary>
         Task<PayPalTransaction?> GetByPaymentIdAsync(string paymentId);

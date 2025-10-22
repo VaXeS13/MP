@@ -91,6 +91,49 @@ namespace MP.Items
             return ObjectMapper.Map<Item, ItemDto>(item);
         }
 
+        public async Task<BulkItemCreationResultDto> CreateBulkAsync(CreateBulkItemsDto input)
+        {
+            var userId = CurrentUser.Id.Value;
+            var result = new BulkItemCreationResultDto();
+
+            // Get tenant currency from settings (default to PLN if not set)
+            var currencySettingValue = await _settingProvider.GetOrNullAsync(MPSettings.Tenant.Currency);
+            var currency = string.IsNullOrEmpty(currencySettingValue)
+                ? Currency.PLN
+                : Enum.Parse<Currency>(currencySettingValue);
+
+            for (int i = 0; i < input.Items.Count; i++)
+            {
+                var itemEntry = input.Items[i];
+                try
+                {
+                    var item = await _itemManager.CreateAsync(
+                        userId,
+                        itemEntry.Name,
+                        itemEntry.Price,
+                        currency,
+                        itemEntry.Category,
+                        CurrentTenant.Id
+                    );
+
+                    result.CreatedItems.Add(ObjectMapper.Map<Item, ItemDto>(item));
+                    result.SuccessCount++;
+                }
+                catch (Exception ex)
+                {
+                    result.Errors.Add(new BulkItemErrorDto
+                    {
+                        ItemIndex = i,
+                        ItemName = itemEntry.Name,
+                        ErrorMessage = ex.Message
+                    });
+                    result.FailureCount++;
+                }
+            }
+
+            return result;
+        }
+
         public async Task<ItemDto> UpdateAsync(Guid id, UpdateItemDto input)
         {
             var item = await _itemRepository.GetAsync(id);

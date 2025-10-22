@@ -22,11 +22,13 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CalendarModule } from 'primeng/calendar';
 import { DatePickerModule } from 'primeng/datepicker';
 import { MessageModule } from 'primeng/message';
+import { CheckboxModule } from 'primeng/checkbox';
 import { BoothListComponent } from '../booth-list/booth-list.component';
 import { BoothCreateComponent } from '../booth-create/booth-create.component';
 import { BoothEditComponent } from '../booth-edit/booth-edit.component';
 import { BoothSettingsComponent } from '../booth-settings/booth-settings.component';
 import { AdminBoothRentalDialogComponent } from '../admin-booth-rental-dialog/admin-booth-rental-dialog.component';
+import { BoothPricingPeriodsInputComponent } from '../booth-pricing-periods-input/booth-pricing-periods-input.component';
 import { RentalSharedModule } from '../../rental/rental-shared.module';
 // Components
 
@@ -52,7 +54,8 @@ const routes: Routes = [
     BoothCreateComponent,
     BoothEditComponent,
     BoothSettingsComponent,
-    AdminBoothRentalDialogComponent
+    AdminBoothRentalDialogComponent,
+    BoothPricingPeriodsInputComponent
   ],
   imports: [
     CommonModule,
@@ -79,6 +82,7 @@ const routes: Routes = [
     CalendarModule,
     DatePickerModule,
     MessageModule,
+    CheckboxModule,
 
     // Rental Shared Module (for ExtendRentalDialogComponent)
     RentalSharedModule

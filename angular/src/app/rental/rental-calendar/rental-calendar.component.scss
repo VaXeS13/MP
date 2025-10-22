@@ -480,3 +480,42 @@
     }
   }
 }
+
+// Price breakdown tooltip styles
+.price-breakdown-icon {
+  cursor: help;
+  color: var(--bs-info);
+  font-size: 1.1rem;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--bs-info-dark, #0a58ca);
+  }
+}
+
+// Tooltip content styles (applied via PrimeNG)
+::ng-deep .price-breakdown-tooltip {
+  .breakdown-title {
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    color: var(--bs-dark);
+  }
+
+  .breakdown-item {
+    font-size: 0.875rem;
+    margin: 0.25rem 0;
+    padding-left: 0.5rem;
+    color: var(--bs-secondary);
+  }
+
+  .breakdown-divider {
+    margin: 0.5rem 0;
+    border-top: 1px solid var(--bs-border-color);
+  }
+
+  .breakdown-total {
+    font-size: 1rem;
+    color: var(--bs-success);
+    margin-top: 0.5rem;
+  }
+}

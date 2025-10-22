@@ -20,10 +20,12 @@ namespace MP.Booths
         public async Task<BoothSettingsDto> GetAsync()
         {
             var minimumGapDays = await _settingManager.GetOrNullForCurrentTenantAsync(MPSettings.Booths.MinimumGapDays);
+            var minimumRentalDays = await _settingManager.GetOrNullForCurrentTenantAsync(MPSettings.Booths.MinimumRentalDays);
 
             return new BoothSettingsDto
             {
-                MinimumGapDays = int.TryParse(minimumGapDays, out var gap) ? gap : 7
+                MinimumGapDays = int.TryParse(minimumGapDays, out var gap) ? gap : 7,
+                MinimumRentalDays = int.TryParse(minimumRentalDays, out var rental) ? rental : 7
             };
         }
 
@@ -32,6 +34,11 @@ namespace MP.Booths
             await _settingManager.SetForCurrentTenantAsync(
                 MPSettings.Booths.MinimumGapDays,
                 input.MinimumGapDays.ToString()
+            );
+
+            await _settingManager.SetForCurrentTenantAsync(
+                MPSettings.Booths.MinimumRentalDays,
+                input.MinimumRentalDays.ToString()
             );
         }
     }

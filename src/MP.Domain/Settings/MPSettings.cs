@@ -35,9 +35,15 @@ public static class MPSettings
         /// Minimum gap in days between rentals.
         /// If a booth is rented until day D, the next rental can start on day D+1
         /// OR day D+1+MinimumGapDays (leaving at least MinimumGapDays free).
-        /// Default: 3 days
+        /// Default: 7 days
         /// </summary>
         public const string MinimumGapDays = BoothsPrefix + ".MinimumGapDays";
+
+        /// <summary>
+        /// Minimum number of days for a single rental period.
+        /// Default: 7 days
+        /// </summary>
+        public const string MinimumRentalDays = BoothsPrefix + ".MinimumRentalDays";
     }
 
     public static class Tenant

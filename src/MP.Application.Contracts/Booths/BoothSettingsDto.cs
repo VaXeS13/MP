@@ -11,5 +11,11 @@ namespace MP.Booths
         /// </summary>
         [Range(0, 30)]
         public int MinimumGapDays { get; set; }
+
+        /// <summary>
+        /// Minimum number of days for a single rental period.
+        /// </summary>
+        [Range(1, 365)]
+        public int MinimumRentalDays { get; set; }
     }
 }

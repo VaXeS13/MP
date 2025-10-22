@@ -1,6 +1,7 @@
 import type { NotificationSeverity } from '../../../domain/notifications/notification-severity.enum';
 import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { RentalStatus } from '../../../rentals/rental-status.enum';
+import type { PriceBreakdownDto } from '../rentals/models';
 import type { SettlementStatus } from '../../../domain/settlements/settlement-status.enum';
 
 export interface BulkUpdateMyItemsDto {
@@ -150,6 +151,10 @@ export interface MyActiveRentalDto {
   totalCommission: number;
   canExtend: boolean;
   qrCodeUrl?: string;
+  totalCost: number;
+  discountAmount: number;
+  originalAmount: number;
+  promoCodeUsed?: string;
 }
 
 export interface MyItemDto extends FullAuditedEntityDto<string> {
@@ -208,6 +213,11 @@ export interface MyRentalDetailDto extends FullAuditedEntityDto<string> {
   paidAmount: number;
   isPaid: boolean;
   paidDate?: string;
+  priceBreakdown: PriceBreakdownDto;
+  appliedPromotionId?: string;
+  discountAmount: number;
+  originalAmount: number;
+  promoCodeUsed?: string;
   notes?: string;
   startedAt?: string;
   completedAt?: string;

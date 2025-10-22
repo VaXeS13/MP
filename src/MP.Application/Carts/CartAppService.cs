@@ -80,6 +80,9 @@ namespace MP.Carts
                 input.Notes
             );
 
+            // Reapply promotion if needed to recalculate discounts for the new item
+            await ReapplyPromotionIfNeededAsync(cart);
+
             await _cartRepository.UpdateAsync(cart);
 
             return await MapToCartDtoAsync(cart);
@@ -102,6 +105,9 @@ namespace MP.Carts
                 input.EndDate,
                 input.Notes
             );
+
+            // Reapply promotion if needed to recalculate discounts after item update
+            await ReapplyPromotionIfNeededAsync(cart);
 
             await _cartRepository.UpdateAsync(cart);
 
@@ -140,6 +146,9 @@ namespace MP.Carts
             }
 
             cart.RemoveItem(itemId);
+
+            // Reapply promotion if needed to recalculate discounts after item removal
+            await ReapplyPromotionIfNeededAsync(cart);
 
             await _cartRepository.UpdateAsync(cart);
 
@@ -342,6 +351,12 @@ namespace MP.Carts
                         await _boothRepository.UpdateAsync(booth);
                     }
 
+                    // Set promotion details if cart has promotion applied
+                    if (cart.HasPromotionApplied())
+                    {
+                        rental.SetPromotion(cart.AppliedPromotionId, cart.DiscountAmount, cart.PromoCodeUsed);
+                    }
+
                     rentalIds.Add(rental.Id);
                 }
 
@@ -515,6 +530,52 @@ namespace MP.Carts
             }
 
             return dto;
+        }
+
+        private async Task ReapplyPromotionIfNeededAsync(Cart cart)
+        {
+            // If cart has an applied promotion, reapply it to recalculate discounts
+            if (cart.AppliedPromotionId.HasValue)
+            {
+                try
+                {
+                    var promotion = await _promotionRepository.GetAsync(cart.AppliedPromotionId.Value);
+
+                    // Check if promotion is still valid
+                    if (promotion.IsValid())
+                    {
+                        // Reapply promotion to recalculate discounts for all items
+                        await _promotionManager.ValidateAndApplyToCartAsync(cart, cart.PromoCodeUsed);
+                    }
+                    else
+                    {
+                        // Promotion no longer valid - remove it
+                        cart.RemovePromotion();
+                        Logger.LogInformation("Removed invalid promotion {PromotionId} from cart {CartId}",
+                            cart.AppliedPromotionId, cart.Id);
+                    }
+                }
+                catch (EntityNotFoundException ex)
+                {
+                    // Promotion was deleted - remove it from cart
+                    cart.RemovePromotion();
+                    Logger.LogWarning(ex, "Promotion {PromotionId} not found - removed from cart {CartId}",
+                        cart.AppliedPromotionId, cart.Id);
+                }
+                catch (BusinessException ex)
+                {
+                    // Promotion validation failed (e.g., minimum items not met after item removal)
+                    cart.RemovePromotion();
+                    Logger.LogWarning(ex, "Promotion validation failed for cart {CartId}: {ErrorCode}",
+                        cart.Id, ex.Code);
+                }
+                catch (Exception ex)
+                {
+                    // Generic error - log warning and remove promotion to be safe
+                    cart.RemovePromotion();
+                    Logger.LogWarning(ex, "Error reapplying promotion to cart {CartId}", cart.Id);
+                }
+            }
         }
     }
 }

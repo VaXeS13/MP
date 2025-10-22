@@ -47,7 +47,6 @@ namespace MP.FloorPlans
             _floorPlanListCache = floorPlanListCache;
         }
 
-        [NonAction]
         public async Task<FloorPlanDto> GetAsync(Guid id)
         {
             var cacheKey = $"FloorPlan_{id}";
@@ -75,7 +74,6 @@ namespace MP.FloorPlans
             return cachedData;
         }
 
-        [NonAction]
         public async Task<PagedResultDto<FloorPlanDto>> GetListAsync(GetFloorPlanListDto input)
         {
             var tenantId = input.TenantId ?? CurrentTenant.Id;
@@ -252,7 +250,6 @@ namespace MP.FloorPlans
             return dto;
         }
 
-        [NonAction]
         [Authorize(MPPermissions.FloorPlans.Edit)]
         public async Task<FloorPlanDto> UpdateAsync(Guid id, UpdateFloorPlanDto input)
         {
@@ -331,7 +328,6 @@ namespace MP.FloorPlans
             return dto;
         }
 
-        [NonAction]
         [Authorize(MPPermissions.FloorPlans.Delete)]
         public async Task DeleteAsync(Guid id)
         {
@@ -346,7 +342,6 @@ namespace MP.FloorPlans
         }
 
         [Authorize(MPPermissions.FloorPlans.Publish)]
-        [HttpPost("{id}/publish")]
         public async Task<FloorPlanDto> PublishAsync(Guid id)
         {
             var floorPlan = await _floorPlanRepository.GetAsync(id);
@@ -359,7 +354,6 @@ namespace MP.FloorPlans
         }
 
         [Authorize(MPPermissions.FloorPlans.Edit)]
-        [HttpPost("{id}/deactivate")]
         public async Task<FloorPlanDto> DeactivateAsync(Guid id)
         {
             var floorPlan = await _floorPlanRepository.GetAsync(id);
@@ -371,7 +365,7 @@ namespace MP.FloorPlans
             return await GetAsync(id);
         }
 
-        [HttpGet("{floorPlanId}/booths")]
+        [HttpGet("/api/app/floor-plan/{floorPlanId}/booths")]
         public async Task<List<FloorPlanBoothDto>> GetBoothsAsync(Guid floorPlanId)
         {
             var booths = await _floorPlanBoothRepository.GetListByFloorPlanAsync(floorPlanId);
@@ -379,7 +373,7 @@ namespace MP.FloorPlans
         }
 
         [Authorize(MPPermissions.FloorPlans.Design)]
-        [HttpPost("{floorPlanId}/booths")]
+        [HttpPost("/api/app/floor-plan/{floorPlanId}/booths")]
         public async Task<FloorPlanBoothDto> AddBoothAsync(Guid floorPlanId, CreateFloorPlanBoothDto input)
         {
             // Verify floor plan and booth exist
@@ -409,7 +403,7 @@ namespace MP.FloorPlans
         }
 
         [Authorize(MPPermissions.FloorPlans.Design)]
-        [HttpPut("{floorPlanId}/booths/{boothId}")]
+        [HttpPut("/api/app/floor-plan/{floorPlanId}/booths/{boothId}")]
         public async Task<FloorPlanBoothDto> UpdateBoothPositionAsync(Guid floorPlanId, Guid boothId, CreateFloorPlanBoothDto input)
         {
             var floorPlanBooth = await _floorPlanBoothRepository.FindByFloorPlanAndBoothAsync(floorPlanId, boothId);
@@ -425,7 +419,7 @@ namespace MP.FloorPlans
         }
 
         [Authorize(MPPermissions.FloorPlans.Design)]
-        [HttpDelete("{floorPlanId}/booths/{boothId}")]
+        [HttpDelete("/api/app/floor-plan/{floorPlanId}/booths/{boothId}")]
         public async Task RemoveBoothAsync(Guid floorPlanId, Guid boothId)
         {
             var floorPlanBooth = await _floorPlanBoothRepository.FindByFloorPlanAndBoothAsync(floorPlanId, boothId);
@@ -435,7 +429,7 @@ namespace MP.FloorPlans
             }
         }
 
-        [HttpGet("{floorPlanId}/booths-availability")]
+        [HttpGet("/api/app/floor-plan/{floorPlanId}/booths-availability")]
         public async Task<List<BoothAvailabilityDto>> GetBoothsAvailabilityAsync(
             Guid floorPlanId,
             [FromQuery] DateTime startDate,

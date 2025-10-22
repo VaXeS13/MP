@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
+using MP.Application.Contracts.Rentals;
 
 namespace MP.Rentals
 {
@@ -29,6 +30,11 @@ namespace MP.Rentals
         public DateTime? PaidDate { get; set; }
         public bool IsPaid { get; set; }
         public decimal RemainingAmount { get; set; }
+
+        /// <summary>
+        /// Price breakdown showing how total price was calculated from multi-period pricing
+        /// </summary>
+        public PriceBreakdownDto? PriceBreakdown { get; set; }
 
         public string? Notes { get; set; }
         public DateTime? StartedAt { get; set; }

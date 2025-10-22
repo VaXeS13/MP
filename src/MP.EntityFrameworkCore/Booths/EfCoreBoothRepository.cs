@@ -20,6 +20,12 @@ namespace MP.Booths
         {
         }
 
+        public override async Task<IQueryable<Booth>> WithDetailsAsync()
+        {
+            return (await GetQueryableAsync())
+                .Include(b => b.PricingPeriods);
+        }
+
         public async Task<Booth?> FindByNumberAsync(string number, CancellationToken cancellationToken = default)
         {
             var dbContext = await GetDbContextAsync();
@@ -64,6 +70,7 @@ namespace MP.Booths
             var dbContext = await GetDbContextAsync();
 
             var query = dbContext.Booths
+                .Include(b => b.PricingPeriods)
                 .AsNoTracking()
                 .AsQueryable();
 

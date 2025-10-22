@@ -69,18 +69,20 @@ namespace MP.Domain.Tests.Rentals
         }
 
         [Fact]
-        public void Constructor_Should_Throw_When_Less_Than_7_Days()
+        public void Constructor_Should_Accept_Short_Periods()
         {
-            // Arrange
+            // Arrange - RentalPeriod itself only validates >= 1 day
+            // Actual minimum rental period (7 days) is enforced at CartManager level
             var startDate = DateTime.Today.AddDays(7);
             var endDate = DateTime.Today.AddDays(9); // Only 3 days
 
-            // Act & Assert
-            var exception = Should.Throw<BusinessException>(
-                () => new RentalPeriod(startDate, endDate)
-            );
+            // Act
+            var period = new RentalPeriod(startDate, endDate);
 
-            exception.Code.ShouldBe("RENTAL_MINIMUM_7_DAYS_REQUIRED");
+            // Assert - should create successfully
+            period.StartDate.ShouldBe(startDate.Date);
+            period.EndDate.ShouldBe(endDate.Date);
+            period.GetDaysCount().ShouldBe(3);
         }
 
         [Fact]
@@ -231,18 +233,18 @@ namespace MP.Domain.Tests.Rentals
         }
 
         [Fact]
-        public void Create_Should_Throw_When_Days_Less_Than_7()
+        public void Create_Should_Throw_When_Days_Less_Than_1()
         {
             // Arrange
             var startDate = DateTime.Today.AddDays(7);
-            var daysCount = 5;
+            var daysCount = 0;
 
             // Act & Assert
             var exception = Should.Throw<BusinessException>(
                 () => RentalPeriod.Create(startDate, daysCount)
             );
 
-            exception.Code.ShouldBe("RENTAL_MINIMUM_7_DAYS_REQUIRED");
+            exception.Code.ShouldBe("RENTAL_PERIOD_MUST_BE_AT_LEAST_ONE_DAY");
         }
 
         [Fact]

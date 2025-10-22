@@ -223,6 +223,53 @@
   }
 }
 
+// Price Breakdown Tooltip Styles
+.price-breakdown-icon {
+  color: var(--primary-color);
+  cursor: help;
+  font-size: 1rem;
+  margin-left: 0.5rem;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+::ng-deep {
+  .price-breakdown-tooltip {
+    max-width: 350px;
+    padding: 0.75rem;
+
+    .breakdown-title {
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+      color: var(--text-color);
+    }
+
+    .breakdown-item {
+      padding: 0.4rem 0;
+      font-size: 0.9rem;
+      color: var(--text-color-secondary);
+      line-height: 1.4;
+    }
+
+    .breakdown-divider {
+      margin: 0.75rem 0;
+      border: none;
+      border-top: 1px solid var(--surface-300);
+    }
+
+    .breakdown-total {
+      font-size: 1rem;
+      color: var(--primary-color);
+      padding-top: 0.25rem;
+    }
+  }
+}
+
 // Responsive adjustments
 @media (max-width: 576px) {
   .rental-detail-container {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using AutoMapper;
 using MP.Application.Contracts.BoothTypes;
 using MP.Application.Contracts.Terminals;
@@ -91,6 +92,8 @@ public class MPApplicationAutoMapperProfile : Profile
                 opt => opt.MapFrom(src => src.Payment.IsPaid))
             .ForMember(dest => dest.RemainingAmount,
                 opt => opt.MapFrom(src => src.Payment.GetRemainingAmount()))
+            .ForMember(dest => dest.PriceBreakdown,
+                opt => opt.MapFrom(src => DeserializePriceBreakdown(src.PriceBreakdown)))
             .ForMember(dest => dest.ItemsCount,
                 opt => opt.MapFrom(src => src.GetItemsCount()))
             .ForMember(dest => dest.SoldItemsCount,
@@ -157,6 +160,9 @@ public class MPApplicationAutoMapperProfile : Profile
             .ForMember(dest => dest.CurrentRentalUserEmail, opt => opt.Ignore())
             .ForMember(dest => dest.CurrentRentalStartDate, opt => opt.Ignore())
             .ForMember(dest => dest.CurrentRentalEndDate, opt => opt.Ignore());
+
+        // BOOTH PRICING PERIOD MAPPINGS
+        CreateMap<PricingPeriod, Application.Contracts.Booths.BoothPricingPeriodDto>();
 
         // TERMINAL SETTINGS MAPPINGS
         CreateMap<TenantTerminalSettings, TerminalSettingsDto>();
@@ -299,5 +305,23 @@ public class MPApplicationAutoMapperProfile : Profile
             Currency.CZK => "CZK",
             _ => currency.ToString()
         };
+    }
+
+    private static Application.Contracts.Rentals.PriceBreakdownDto? DeserializePriceBreakdown(string? priceBreakdownJson)
+    {
+        if (string.IsNullOrWhiteSpace(priceBreakdownJson))
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<Application.Contracts.Rentals.PriceBreakdownDto>(priceBreakdownJson);
+        }
+        catch
+        {
+            // If deserialization fails, return null to avoid breaking the mapping
+            return null;
+        }
     }
 }

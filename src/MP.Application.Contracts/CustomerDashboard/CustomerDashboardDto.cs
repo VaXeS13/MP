@@ -54,6 +54,12 @@ namespace MP.Application.Contracts.CustomerDashboard
         public decimal TotalCommission { get; set; }
         public bool CanExtend { get; set; }
         public string? QRCodeUrl { get; set; }
+
+        // Promotion details
+        public decimal TotalCost { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal OriginalAmount { get; set; }
+        public string? PromoCodeUsed { get; set; }
     }
 
     /// <summary>

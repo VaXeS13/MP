@@ -1,0 +1,298 @@
+.my-rentals-container {
+  padding: 2rem;
+  background: var(--surface-ground);
+  min-height: 100vh;
+
+  .header-section {
+    margin-bottom: 2rem;
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin: 0 0 0.5rem 0;
+      letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+      color: var(--text-color-secondary);
+      margin: 0;
+      font-size: 0.95rem;
+    }
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: var(--surface-card);
+    border-radius: var(--border-radius);
+    border: 1px dashed var(--surface-border);
+
+    i {
+      font-size: 3rem;
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    p {
+      font-size: 1.2rem;
+      color: var(--text-color);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    small {
+      color: var(--text-color-secondary);
+      font-size: 0.95rem;
+    }
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+
+    @media (max-width: 1200px) {
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+
+  .col-12,
+  .col-12.md\:col-6,
+  .col-12.md\:col-6.lg\:col-4 {
+    width: 100%;
+  }
+
+  .rental-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: 1px solid var(--surface-border);
+
+    &:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+
+    ::ng-deep {
+      .p-card {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .p-card-body {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+
+      .p-card-footer {
+        padding-top: 0;
+        border-top: 1px solid var(--surface-border);
+        margin-top: auto;
+      }
+    }
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: linear-gradient(
+      135deg,
+      var(--primary-color) 0%,
+      var(--primary-600) 100%
+    );
+    color: var(--primary-color-text);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+
+    .booth-info {
+      flex: 1;
+
+      .booth-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        color: inherit;
+        letter-spacing: -0.5px;
+      }
+
+      .booth-type {
+        font-size: 0.85rem;
+        margin: 0.25rem 0 0 0;
+        opacity: 0.9;
+      }
+    }
+
+    .status-tag {
+      flex-shrink: 0;
+    }
+  }
+
+  .rental-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--surface-border);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &.total-cost {
+        background: var(--surface-50);
+        padding: 0.75rem;
+        margin: 0.5rem -1.5rem -0.5rem -1.5rem;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        border-bottom: none;
+        font-weight: 600;
+      }
+
+      .detail-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-color-secondary);
+        font-size: 0.9rem;
+        font-weight: 500;
+
+        i {
+          color: var(--primary-color);
+          width: 1.2rem;
+        }
+      }
+
+      .detail-value {
+        color: var(--text-color);
+        font-weight: 500;
+        text-align: right;
+
+        &.promo-code {
+          background: var(--primary-50);
+          color: var(--primary-700);
+          padding: 0.25rem 0.75rem;
+          border-radius: 999px;
+          font-size: 0.85rem;
+          font-family: 'Courier New', monospace;
+          font-weight: 600;
+        }
+
+        &.cost-amount {
+          font-size: 1.2rem;
+          color: var(--primary-color);
+        }
+      }
+
+      .discount-badge {
+        background: var(--green-50);
+        color: var(--green-700);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--border-radius);
+        font-size: 0.9rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      ::ng-deep {
+        p-tag {
+          max-width: 120px;
+
+          .p-tag {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+
+  .card-footer {
+    padding: 1rem 0;
+    display: flex;
+    gap: 0.5rem;
+
+    ::ng-deep {
+      .p-button {
+        &.w-full {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  .my-rentals-container {
+    padding: 1rem;
+
+    .header-section {
+      margin-bottom: 1.5rem;
+
+      .page-title {
+        font-size: 1.5rem;
+      }
+    }
+
+    .rental-card {
+      .card-header {
+        padding: 1rem;
+        flex-direction: column;
+
+        .booth-info {
+          width: 100%;
+        }
+
+        .status-tag {
+          align-self: flex-start;
+        }
+      }
+    }
+
+    .rental-details {
+      .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+
+        .detail-label,
+        .detail-value {
+          width: 100%;
+          text-align: left;
+        }
+      }
+    }
+  }
+}

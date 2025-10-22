@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { BoothService } from '../../services/booth.service';
+import { BoothService } from '../../proxy/booths/booth.service';
 import { BoothSignalRService } from '../../services/booth-signalr.service';
 import { TenantCurrencyService } from '../../services/tenant-currency.service';
-import { BoothListDto, BoothStatus, GetBoothListDto } from '../../shared/models/booth.model';
+import { BoothListDto, GetBoothListDto } from '../../proxy/booths/models';
+import { BoothStatus } from '../../proxy/domain/booths/booth-status.enum';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { LocalizationService } from '@abp/ng.core';
 import { Subscription } from 'rxjs';
@@ -139,10 +140,7 @@ export class BoothListComponent implements OnInit, OnDestroy {
 
 this.boothService.getList(input).subscribe({
   next: (result) => {
-    this.booths = result.items.map(booth => ({
-      ...booth,
-      creationTime: booth.creationTime ? new Date(booth.creationTime) : null
-    }));
+    this.booths = result.items;
     this.totalCount = result.totalCount;
     this.loading = false;
     this.cdr.markForCheck();

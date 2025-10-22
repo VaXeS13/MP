@@ -2,8 +2,8 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { LocalizationService } from '@abp/ng.core';
-import { BoothService } from '../../services/booth.service';
-import { CreateBoothDto } from '../../shared/models/booth.model';
+import { BoothService } from '../../proxy/booths/booth.service';
+import { CreateBoothDto } from '../../proxy/booths/models';
 
 @Component({
   standalone: false,
@@ -26,7 +26,7 @@ export class BoothCreateComponent implements OnInit {
   ) {
     this.boothForm = this.fb.group({
       number: ['', [Validators.required, Validators.maxLength(10)]],
-      pricePerDay: [null, [Validators.required, Validators.min(0.01), Validators.max(99999.99)]]
+      pricingPeriods: [null, [Validators.required]]
     });
   }
 

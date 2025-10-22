@@ -1,0 +1,124 @@
+<div class="my-rentals-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div>
+      <h1 class="page-title">Moje Wynajmy</h1>
+      <p class="page-subtitle">Zarządzaj swoimi wynajmami stanowisk</p>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && rentals.length === 0" class="empty-state">
+    <i class="pi pi-inbox"></i>
+    <p>Nie masz żadnych wynajmów</p>
+    <small>Zacznij od dodania nowego wynajmu do koszyka</small>
+  </div>
+
+  <!-- Rentals Grid -->
+  <div *ngIf="!loading && rentals.length > 0" class="grid">
+    <div *ngFor="let rental of rentals" class="col-12 md:col-6 lg:col-4">
+      <p-card class="rental-card">
+        <!-- Card Header -->
+        <ng-template pTemplate="header">
+          <div class="card-header">
+            <div class="booth-info">
+              <h3 class="booth-number">{{ rental.boothNumber }}</h3>
+              <p class="booth-type">{{ rental.boothTypeName }}</p>
+            </div>
+            <p-tag
+              [value]="getStatusLabel(rental.status)"
+              [severity]="getStatusSeverity(rental.status)"
+              class="status-tag"
+            ></p-tag>
+          </div>
+        </ng-template>
+
+        <!-- Card Body -->
+        <div class="rental-details">
+          <!-- Period -->
+          <div class="detail-row">
+            <span class="detail-label">
+              <i class="pi pi-calendar"></i> Okres wynajmu
+            </span>
+            <span class="detail-value">
+              {{ rental.startDate | date : 'dd.MM.yyyy' }} -
+              {{ rental.endDate | date : 'dd.MM.yyyy' }}
+            </span>
+          </div>
+
+          <!-- Days Remaining -->
+          <div class="detail-row">
+            <span class="detail-label">
+              <i class="pi pi-clock"></i> Dni pozostało
+            </span>
+            <p-tag
+              [value]="rental.daysRemaining + ' dni'"
+              [severity]="rental.isExpiringSoon ? 'warning' : 'success'"
+            ></p-tag>
+          </div>
+
+          <!-- Items -->
+          <div class="detail-row">
+            <span class="detail-label">
+              <i class="pi pi-shopping-bag"></i> Przedmioty
+            </span>
+            <span class="detail-value">
+              {{ rental.soldItems }}/{{ rental.totalItems }}
+            </span>
+          </div>
+
+          <!-- Sales -->
+          <div class="detail-row">
+            <span class="detail-label">
+              <i class="pi pi-dollar"></i> Sprzedaż
+            </span>
+            <span class="detail-value">{{ formatCurrency(rental.totalSales) }}</span>
+          </div>
+
+          <!-- Discount Badge -->
+          <div class="detail-row" *ngIf="hasDiscount(rental)">
+            <span class="detail-label">
+              <i class="pi pi-tag"></i> Rabat
+            </span>
+            <span class="discount-badge">
+              -{{ formatCurrency(rental.discountAmount) }}
+            </span>
+          </div>
+
+          <!-- Promo Code -->
+          <div class="detail-row" *ngIf="rental.promoCodeUsed">
+            <span class="detail-label">
+              <i class="pi pi-ticket"></i> Kod promocji
+            </span>
+            <span class="detail-value promo-code">{{ rental.promoCodeUsed }}</span>
+          </div>
+
+          <!-- Total Cost -->
+          <div class="detail-row total-cost">
+            <span class="detail-label">
+              <i class="pi pi-money-bill"></i> Koszt
+            </span>
+            <span class="detail-value cost-amount">
+              {{ formatCurrency(rental.totalCost) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Card Footer -->
+        <ng-template pTemplate="footer">
+          <div class="card-footer">
+            <p-button
+              label="Szczegóły"
+              icon="pi pi-eye"
+              (onClick)="viewDetails(rental.rentalId)"
+              styleClass="p-button-text w-full"
+            ></p-button>
+          </div>
+        </ng-template>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <p-progressSpinner *ngIf="loading" class="loading-spinner"></p-progressSpinner>
+</div>

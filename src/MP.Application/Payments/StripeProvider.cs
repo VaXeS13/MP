@@ -107,6 +107,9 @@ namespace MP.Application.Payments
                 }
 
                 // Create Stripe Checkout Session
+                _logger.LogInformation("StripeProvider: Preparing Checkout Session with SuccessUrl: {SuccessUrl}",
+                    request.UrlReturn + "?session_id={CHECKOUT_SESSION_ID}");
+
                 var options = new SessionCreateOptions
                 {
                     PaymentMethodTypes = paymentMethodTypes,

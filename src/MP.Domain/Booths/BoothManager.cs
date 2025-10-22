@@ -44,6 +44,47 @@ namespace MP.Domain.Booths
             return booth;
         }
 
+        /// <summary>
+        /// Create booth with multi-period pricing
+        /// </summary>
+        public async Task<Booth> CreateWithPricingPeriodsAsync(
+            string number,
+            List<(int Days, decimal Price)> pricingPeriods)
+        {
+            // Sprawdź czy numer jest unikalny w tym tenant
+            if (!await _boothRepository.IsNumberUniqueAsync(number))
+            {
+                throw new BusinessException("BOOTH_NUMBER_ALREADY_EXISTS")
+                    .WithData("number", number);
+            }
+
+            var boothId = GuidGenerator.Create();
+            var periods = pricingPeriods
+                .Select(p => new PricingPeriod(p.Days, p.Price, boothId))
+                .ToList();
+
+            var booth = new Booth(
+                boothId,
+                number,
+                periods,
+                _currentTenant.Id
+            );
+
+            return booth;
+        }
+
+        /// <summary>
+        /// Update pricing periods for existing booth
+        /// </summary>
+        public void UpdatePricingPeriods(Booth booth, List<(int Days, decimal Price)> pricingPeriods)
+        {
+            var periods = pricingPeriods
+                .Select(p => new PricingPeriod(p.Days, p.Price, booth.Id))
+                .ToList();
+
+            booth.SetPricingPeriods(periods);
+        }
+
         public async Task ChangeNumberAsync(Booth booth, string newNumber)
         {
             if (!await _boothRepository.IsNumberUniqueAsync(newNumber, booth.Id))

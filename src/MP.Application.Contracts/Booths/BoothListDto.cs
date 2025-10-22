@@ -1,4 +1,5 @@
-﻿using MP.Domain.Booths;
+﻿using MP.Application.Contracts.Booths;
+using MP.Domain.Booths;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace MP.Booths
         public BoothStatus Status { get; set; }
         public string StatusDisplayName { get; set; } = null!;
         public decimal PricePerDay { get; set; }
+        public List<BoothPricingPeriodDto> PricingPeriods { get; set; } = new();
         public DateTime CreationTime { get; set; }
         public DateTime? RentalStartDate { get; set; }
         public DateTime? RentalEndDate { get; set; }

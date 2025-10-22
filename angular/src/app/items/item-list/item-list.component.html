@@ -6,6 +6,13 @@
     <button
       pButton
       type="button"
+      [label]="'Item:BulkCreate' | abpLocalization"
+      icon="pi pi-plus-circle"
+      class="p-button-outlined"
+      (click)="openBulkCreateDialog()"></button>
+    <button
+      pButton
+      type="button"
       label="Add to Sheet"
       icon="pi pi-file"
       class="p-button-secondary"
@@ -87,6 +94,11 @@
   (saved)="onDialogSaved()">
 </app-item-form>
 
+<app-item-bulk-create
+  [(visible)]="displayBulkCreateDialog"
+  (saved)="onDialogSaved()">
+</app-item-bulk-create>
+
 <p-dialog
   header="Add Items to Sheet"
   [(visible)]="displayAssignDialog"
@@ -109,6 +121,10 @@
         placeholder="Select a sheet"
         [loading]="loadingSheets"
         appendTo="body"
+        [showTransitionOptions]="'0ms'"
+        [hideTransitionOptions]="'0ms'"
+        [autoDisplayFirst]="false"
+        scrollHeight="250px"
         [style]="{width: '100%'}">
         <ng-template let-sheet pTemplate="item">
           <div class="sheet-option">

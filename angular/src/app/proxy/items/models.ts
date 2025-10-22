@@ -27,6 +27,29 @@ export interface BatchItemResultDto {
   errorMessage?: string;
 }
 
+export interface BulkItemCreationResultDto {
+  successCount: number;
+  failureCount: number;
+  createdItems: ItemDto[];
+  errors: BulkItemErrorDto[];
+}
+
+export interface BulkItemEntryDto {
+  name: string;
+  category?: string;
+  price: number;
+}
+
+export interface BulkItemErrorDto {
+  itemIndex: number;
+  itemName?: string;
+  errorMessage?: string;
+}
+
+export interface CreateBulkItemsDto {
+  items: BulkItemEntryDto[];
+}
+
 export interface CreateItemDto {
   name: string;
   category?: string;

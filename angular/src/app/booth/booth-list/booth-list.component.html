@@ -18,7 +18,7 @@
           [label]="'::Booth:NewBooth' | abpLocalization"
           icon="pi pi-plus"
           (click)="showCreateDialog()"
-          class="primary-button">
+          styleClass="primary-button">
         </p-button>
       </div>
     </div>
@@ -88,40 +88,18 @@
               [pTooltip]="'::Common:Edit' | abpLocalization">
             </p-button>
             <p-button
-              *abpPermission="'MP.Booths.ManualReservation'"
-              icon="pi pi-user-plus"
-              class="p-button-text p-button-info p-button-sm"
-              (click)="openManualReservationDialog(booth)"
-              [pTooltip]="'::Booth:ManualReservationTooltip' | abpLocalization">
-            </p-button>
-            <p-button
-              *abpPermission="'MP.Rentals.Manage'"
-              icon="pi pi-calendar-plus"
-              class="p-button-text p-button-success p-button-sm"
-              (click)="openAdminRentalDialog(booth, 'new')"
-              [pTooltip]="'::Rental:AdminCreateRental' | abpLocalization">
-            </p-button>
-            <p-button
-              *ngIf="hasActiveRental(booth)"
-              [abpPermission]="'MP.Rentals.Manage'"
-              icon="pi pi-calendar-plus"
-              class="p-button-text p-button-warning p-button-sm"
-              (click)="openAdminRentalDialog(booth, 'extend')"
-              [pTooltip]="'::Rental:AdminExtendRental' | abpLocalization">
-            </p-button>
-            <p-button
               *ngIf="booth.status === 1"
               icon="pi pi-wrench"
               class="p-button-text p-button-warning p-button-sm"
-              (click)="changeBoothStatus(booth, 3)"
+              (click)="changeBoothStatus(booth, 4)"
               [pTooltip]="'::Booth:SetMaintenance' | abpLocalization">
             </p-button>
             <p-button
-              *ngIf="booth.status === 3"
-              icon="pi pi-check"
+              *ngIf="booth.status === 4"
+              icon="pi pi-refresh"
               class="p-button-text p-button-success p-button-sm"
               (click)="changeBoothStatus(booth, 1)"
-              [pTooltip]="'::Booth:SetAvailable' | abpLocalization">
+              [pTooltip]="'::Booth:RestoreFromMaintenance' | abpLocalization">
             </p-button>
             <p-button
               *ngIf="booth.status !== 2"
@@ -238,44 +216,19 @@
                 </p-button>
 
                 <p-button
-                  *abpPermission="'MP.Booths.ManualReservation'"
-                  icon="pi pi-user-plus"
-                  class="p-button-text p-button-info p-button-sm"
-                  (click)="openManualReservationDialog(booth)"
-                  [pTooltip]="'::Booth:ManualReservationTooltip' | abpLocalization">
-                </p-button>
-
-                <p-button
-                  *abpPermission="'MP.Rentals.Manage'"
-                  icon="pi pi-calendar-plus"
-                  class="p-button-text p-button-success p-button-sm"
-                  (click)="openAdminRentalDialog(booth, 'new')"
-                  [pTooltip]="'::Rental:AdminCreateRental' | abpLocalization">
-                </p-button>
-
-                <p-button
-                  *ngIf="hasActiveRental(booth)"
-                  [abpPermission]="'MP.Rentals.Manage'"
-                  icon="pi pi-calendar-plus"
-                  class="p-button-text p-button-warning p-button-sm"
-                  (click)="openAdminRentalDialog(booth, 'extend')"
-                  [pTooltip]="'::Rental:AdminExtendRental' | abpLocalization">
-                </p-button>
-
-                <p-button
                   *ngIf="booth.status === 1"
                   icon="pi pi-wrench"
                   class="p-button-text p-button-warning p-button-sm"
-                  (click)="changeBoothStatus(booth, 3)"
+                  (click)="changeBoothStatus(booth, 4)"
                   [pTooltip]="'::Booth:SetMaintenance' | abpLocalization">
                 </p-button>
 
                 <p-button
-                  *ngIf="booth.status === 3"
-                  icon="pi pi-check"
+                  *ngIf="booth.status === 4"
+                  icon="pi pi-refresh"
                   class="p-button-text p-button-success p-button-sm"
                   (click)="changeBoothStatus(booth, 1)"
-                  [pTooltip]="'::Booth:SetAvailable' | abpLocalization">
+                  [pTooltip]="'::Booth:RestoreFromMaintenance' | abpLocalization">
                 </p-button>
 
                 <p-button
