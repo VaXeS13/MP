@@ -1,0 +1,45 @@
+.settlements {
+  padding: 1rem;
+
+  h1 {
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+  }
+
+  .stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .stat-icon {
+      font-size: 2rem;
+      color: var(--primary-color);
+    }
+
+    .stat-content {
+      display: flex;
+      flex-direction: column;
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-color-secondary);
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+  }
+}

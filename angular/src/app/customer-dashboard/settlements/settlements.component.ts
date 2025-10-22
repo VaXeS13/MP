@@ -1,141 +1,140 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
+import { CustomerDashboardService } from '@proxy/application/customer-dashboard';
+import { SettlementSummaryDto, SettlementItemDto } from '@proxy/application/contracts/customer-dashboard';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-settlements',
-  template: `
-    <div class="settlements">
-      <h1>Rozliczenia</h1>
-
-      <div class="grid mb-3">
-        <div class="col-12 md:col-4">
-          <p-card>
-            <div class="stat-card">
-              <i class="pi pi-money-bill stat-icon"></i>
-              <div class="stat-content">
-                <span class="stat-label">Całkowite zarobki</span>
-                <span class="stat-value">{{ formatCurrency(1250.00) }}</span>
-              </div>
-            </div>
-          </p-card>
-        </div>
-        <div class="col-12 md:col-4">
-          <p-card>
-            <div class="stat-card">
-              <i class="pi pi-wallet stat-icon"></i>
-              <div class="stat-content">
-                <span class="stat-label">Do wypłaty</span>
-                <span class="stat-value">{{ formatCurrency(950.00) }}</span>
-              </div>
-            </div>
-          </p-card>
-        </div>
-        <div class="col-12 md:col-4">
-          <p-card>
-            <div class="stat-card">
-              <i class="pi pi-clock stat-icon"></i>
-              <div class="stat-content">
-                <span class="stat-label">W trakcie</span>
-                <span class="stat-value">{{ formatCurrency(0) }}</span>
-              </div>
-            </div>
-          </p-card>
-        </div>
-      </div>
-
-      <p-card>
-        <ng-template pTemplate="header">
-          <div class="flex justify-content-between align-items-center p-3">
-            <h3>Historia rozliczeń</h3>
-            <button pButton label="Zgłoś wypłatę" icon="pi pi-send" class="p-button-success"></button>
-          </div>
-        </ng-template>
-        <p-table [value]="settlements" [loading]="loading" responsiveLayout="scroll">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Numer</th>
-              <th>Data</th>
-              <th>Kwota</th>
-              <th>Przedmioty</th>
-              <th>Status</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-settlement>
-            <tr>
-              <td>{{ settlement.number }}</td>
-              <td>{{ settlement.date | date:'dd.MM.yyyy' }}</td>
-              <td>{{ formatCurrency(settlement.amount) }}</td>
-              <td>{{ settlement.itemsCount }}</td>
-              <td>
-                <p-tag [severity]="settlement.status === 'Completed' ? 'success' : 'warning'"
-                       [value]="settlement.status === 'Completed' ? 'Wypłacono' : 'W trakcie'"></p-tag>
-              </td>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="5" class="text-center">Brak rozliczeń</td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </p-card>
-    </div>
-  `,
-  styles: [`
-    .settlements {
-      padding: 1rem;
-
-      h1 {
-        margin-bottom: 1.5rem;
-        color: var(--primary-color);
-      }
-
-      .stat-card {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-
-        .stat-icon {
-          font-size: 2rem;
-          color: var(--primary-color);
-        }
-
-        .stat-content {
-          display: flex;
-          flex-direction: column;
-
-          .stat-label {
-            font-size: 0.875rem;
-            color: var(--text-color-secondary);
-          }
-
-          .stat-value {
-            font-size: 1.5rem;
-            font-weight: 600;
-          }
-        }
-      }
-
-      .text-center {
-        text-align: center;
-      }
-    }
-  `],
+  templateUrl: './settlements.component.html',
+  styleUrls: ['./settlements.component.scss'],
   standalone: false
 })
-export class SettlementsComponent implements OnInit {
-  settlements: any[] = [];
+export class SettlementsComponent implements OnInit, OnDestroy {
+  settlementSummary: SettlementSummaryDto | null = null;
+  settlements: SettlementItemDto[] = [];
   loading = false;
+  settlementsLoading = false;
+  displayRequestDialog = false;
+
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private router: Router,
+    private customerDashboardService: CustomerDashboardService,
+    private messageService: MessageService
+  ) {}
 
   ngOnInit(): void {
-    this.loading = true;
-    this.settlements = [];
-    this.loading = false;
+    this.loadSettlementData();
   }
 
-  formatCurrency(amount: number): string {
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadSettlementData(): void {
+    this.loading = true;
+    this.settlementsLoading = true;
+
+    // Load summary
+    this.customerDashboardService.getSettlementSummary()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (summary) => {
+          this.settlementSummary = summary;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading settlement summary:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Nie udało się załadować podsumowania rozliczeń'
+          });
+          this.loading = false;
+        }
+      });
+
+    // Load settlements history
+    this.customerDashboardService.getMySettlements({
+      skipCount: 0,
+      maxResultCount: 50,
+      sorting: 'CreationTime DESC'
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          this.settlements = result.items || [];
+          this.settlementsLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading settlements history:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Nie udało się załadować historii rozliczeń'
+          });
+          this.settlementsLoading = false;
+        }
+      });
+  }
+
+  requestSettlement(): void {
+    // Check if user has bank account
+    // This will be implemented in next step with proper user profile check
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Ostrzeżenie',
+      detail: 'Proszę uzupełnić numer konta bankowego w profilu przed zgłoszeniem wypłaty',
+      sticky: true
+    });
+
+    // Redirect to profile with return URL
+    this.router.navigate(['/profile'], {
+      queryParams: { returnUrl: '/customer-dashboard/settlements' }
+    });
+  }
+
+  formatCurrency(amount: number | undefined): string {
+    if (amount === undefined || amount === null) {
+      amount = 0;
+    }
     return new Intl.NumberFormat('pl-PL', {
       style: 'currency',
       currency: 'PLN'
     }).format(amount);
+  }
+
+  getStatusLabel(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'Pending': 'Oczekujące',
+      'Processing': 'W trakcie',
+      'Completed': 'Wypłacone',
+      'Cancelled': 'Anulowane'
+    };
+    return statusMap[status] || status;
+  }
+
+  getStatusSeverity(status: string): string {
+    switch (status) {
+      case 'Completed':
+        return 'success';
+      case 'Processing':
+        return 'info';
+      case 'Pending':
+        return 'warning';
+      case 'Cancelled':
+        return 'danger';
+      default:
+        return 'secondary';
+    }
+  }
+
+  trackBySettlementId(index: number, settlement: SettlementItemDto): string {
+    return settlement.id;
   }
 }
