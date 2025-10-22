@@ -1,7 +1,7 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TableModule } from 'primeng/table';
+import { TableModule, Table } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -38,6 +38,8 @@ import { CoreModule } from '@abp/ng.core';
   providers: [MessageService, ConfirmationService]
 })
 export class ItemListComponent implements OnInit {
+  @ViewChild('itemTable') itemTable!: Table;
+
   items: ItemDto[] = [];
   totalCount = 0;
   loading = false;
@@ -75,8 +77,8 @@ export class ItemListComponent implements OnInit {
     return this.items.filter(item => item.status === 'Draft');
   }
 
-  isRowSelectable = (event: any): boolean => {
-    return event.data.status === 'Draft';
+  isRowDisabled = (rowData: ItemDto): boolean => {
+    return rowData.status !== 'Draft';
   }
 
   loadItems(): void {
@@ -109,28 +111,20 @@ export class ItemListComponent implements OnInit {
     if (event.checked) {
       // Select only selectable items (Draft status)
       this.selectedItems = [...this.selectableItems];
+      // Also sync to table
+      if (this.itemTable) {
+        this.itemTable.selection = [...this.selectableItems];
+      }
     } else {
       // Deselect all
       this.selectedItems = [];
+      if (this.itemTable) {
+        this.itemTable.selection = [];
+      }
     }
     this.cdr.markForCheck();
   }
 
-  onRowSelect(event: any): void {
-    // Only allow selection of Draft items
-    const item = event.data;
-    if (item.status !== 'Draft') {
-      // Remove non-Draft items from selection
-      this.selectedItems = this.selectedItems.filter(
-        (selected) => selected.id !== item.id
-      );
-      this.cdr.markForCheck();
-    }
-  }
-
-  onRowUnselect(event: any): void {
-    // No action needed, just let it unselect
-  }
 
   openCreateDialog(): void {
     this.selectedItem = null;
