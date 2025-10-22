@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp;
@@ -90,16 +91,26 @@ namespace MP.Domain.Items
         {
             sheet.GenerateBarcodes();
 
-            var items = await _itemRepository.GetListByIdsAsync(
-                sheet.Items.Select(x => x.ItemId).ToList());
+            // Work with Items already loaded in sheet to avoid EF Core tracking conflicts
+            // Instead of fetching items again from repository, use the loaded navigation properties
+            var itemsToUpdate = new List<Item>();
 
-            foreach (var item in items)
+            foreach (var sheetItem in sheet.Items)
             {
-                item.MarkAsForSale();
+                if (sheetItem.Item != null)
+                {
+                    sheetItem.Item.MarkAsForSale();
+                    itemsToUpdate.Add(sheetItem.Item);
+                }
             }
 
             await _itemSheetRepository.UpdateAsync(sheet);
-            await _itemRepository.UpdateManyAsync(items);
+
+            // Only update items if any were loaded and modified
+            if (itemsToUpdate.Count > 0)
+            {
+                await _itemRepository.UpdateManyAsync(itemsToUpdate);
+            }
         }
 
         public async Task<ItemSheet?> FindSheetByBarcodeAsync(string barcode)

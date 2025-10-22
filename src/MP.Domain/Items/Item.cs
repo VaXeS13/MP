@@ -109,5 +109,16 @@ namespace MP.Domain.Items
 
             Status = ItemStatus.Draft;
         }
+
+        public void MarkAsAvailable()
+        {
+            if (Status == ItemStatus.Sold)
+                throw new BusinessException("CANNOT_RETURN_SOLD_ITEM_TO_AVAILABLE");
+
+            if (Status == ItemStatus.Reclaimed)
+                throw new BusinessException("RECLAIMED_ITEM_CANNOT_BE_MADE_AVAILABLE");
+
+            Status = ItemStatus.Draft;
+        }
     }
 }

@@ -34,6 +34,45 @@ This is an ABP Framework-based (v9.2.0) layered monolith application built with 
 - **Run tests with coverage**: `dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover`
 - **Run tests with detailed coverage**: `dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/`
 
+### Running Tests by Category
+**Domain Tests (fastest - unit tests)**
+```
+dotnet test test/MP.Domain.Tests/MP.Domain.Tests.csproj --no-build -v q
+```
+
+**Booth Tests**
+```
+dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter "BoothAppServiceTests"
+```
+
+**Rental Tests**
+```
+dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter "RentalAppServiceTests"
+```
+
+**Cart Tests**
+```
+dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter "CartAppServiceTests"
+```
+
+**Payment Tests**
+```
+dotnet test test/MP.Application.Tests/MP.Application.Tests.csproj --no-build --filter "DailyBoothStatusSyncJobTests|P24StatusCheckRecurringJobTests"
+```
+
+### Current Test Status (Phase 2 Complete)
+- **Total**: 38/50 tests passing (76%)
+- **Domain**: 12/12 (100%) ✅
+- **Booth**: 6/6 (100%) ✅
+- **Rental**: 13/14 (93%)
+- **Cart**: 8/12 (67%)
+- **Payment Jobs**: 5/10 (50%)
+
+**Remaining Issues** (12 failing tests):
+- Cart: 4 failing tests (business logic: UpdateItem, Checkout recalculation)
+- Rental: 1 failing test (GetMyRentalsAsync - data pollution with DbContext disposal)
+- Payment: 7 failing tests (P24StatusCheckRecurringJob - complex payment logic, DbContext scoping)
+
 ### Angular Frontend Commands (in `/angular` directory)
 - **Install dependencies**: `npm install`
 - **Development server**: `ng serve` or `npm start` (runs on http://localhost:4200)
@@ -58,6 +97,27 @@ This is an ABP Framework-based (v9.2.0) layered monolith application built with 
 - **Remove last migration**: `dotnet ef migrations remove --project src/MP.EntityFrameworkCore/MP.EntityFrameworkCore.csproj`
 - **Apply migrations to database**: `dotnet ef database update --project src/MP.EntityFrameworkCore/MP.EntityFrameworkCore.csproj`
 - **Preferred migration approach**: Run `MP.DbMigrator` project for migrations (includes seeding)
+
+### Database and Migration Notes
+
+**Important Guidelines:**
+- **Always use `MP.DbMigrator`** for production and development - it handles both migrations and data seeding consistently
+- **Never use `dotnet ef database update`** directly in production - use the migrator console app instead
+- **Multi-tenancy consideration**: All data includes `TenantId` for isolation - migrations must account for this
+- **Connection string location**: Update in both `src/MP.HttpApi.Host/appsettings.json` and `src/MP.DbMigrator/appsettings.json`
+
+**After Adding/Modifying Entities:**
+1. Create migration: `dotnet ef migrations add DescriptiveName --project src/MP.EntityFrameworkCore`
+2. Review generated migration files in `src/MP.EntityFrameworkCore/Migrations/` - ensure data seeding safety
+3. Run `MP.DbMigrator` project to apply migration and seed data
+4. Test with multiple tenants to verify data isolation works correctly
+5. If adding navigation properties, update repository methods with `.WithDetails()` includes
+
+**Common Migration Issues:**
+- **Shadow properties not in migration**: Add navigation properties to DbContext entity configuration
+- **Seeding failures**: Ensure seed contributors handle tenant-specific data correctly
+- **Data loss with concurrent operations**: Use transactions via `[UnitOfWork]` attribute
+- **Migration naming**: Use PascalCase and be descriptive (e.g., `AddRentalExtensionFields`, not `Update1`)
 
 ## Architecture
 
@@ -380,6 +440,66 @@ The solution follows ABP Framework's layered architecture with these projects:
 - **Transparency**: If stuck after 2 attempts, ask the user for help
 - **Pair programming approach**: Collaborate with user to generate best solutions (human-in-the-loop)
 
+### Common Test Patterns
+
+**Test Structure (Application Layer Integration Tests):**
+```csharp
+[Fact]
+public async Task MethodName_Should_ExpectedBehavior_When_Condition()
+{
+    // Arrange
+    var input = new CreateUpdateDto { /* ... */ };
+
+    // Act
+    var result = await _appService.MethodName(input);
+
+    // Assert
+    result.Should().NotBeNull();
+    result.Property.Should().Be(expected);
+}
+```
+
+**Using TestData and Fixtures:**
+- Define test data constants in test classes (e.g., `TestUserId1`, `TestBootId`)
+- Use `GuidGenerator.Create()` for generating entity IDs in tests
+- Use `WithUnitOfWorkAsync()` to wrap multi-step test scenarios with database transactions
+- Avoid `[UnitOfWork]` attribute on test methods - use `WithUnitOfWorkAsync()` instead for better isolation
+
+**Testing Multi-Tenant Scenarios:**
+- Use `using (CurrentTenant.Change(tenantId))` to switch tenant context
+- Always verify `TenantId` is set correctly on created entities
+- Test without tenant context (host tenant) separately from tenant-specific tests
+
+**Database Assertion Tips:**
+- Always reload entities from database before assertions to catch real persistence issues
+- Use `await repository.GetAsync(id, includeDetails: true)` to ensure navigation properties are loaded
+- Check dates carefully - use future dates for rentals, avoid date overlap issues
+- Verify business invariants: booth availability, rental periods, cart expiration
+
+### Performance Considerations
+
+**Caching Strategy:**
+- **Frontend**: Use `shareReplay(1)` on `TenantCurrencyService` - avoids redundant API calls
+- **Backend**: Cache booth pricing, tenant settings, and currency rates - invalidate on changes
+- **Redis**: Configure for tenant currency caching (15-minute sliding expiration)
+- **Query optimization**: Always use `.WithDetails()` for navigation properties to avoid N+1 queries
+
+**Query Optimization Tips:**
+- **Specification pattern**: Use for complex queries with multiple includes and filters
+- **Pagination**: Implement on list endpoints to handle large datasets (booths, items, rentals)
+- **Indexing**: Keep database indexes current - review slow queries in logs
+- **Lazy loading disabled**: Explicitly include related data to catch missing includes at dev time
+
+**Database Performance:**
+- **Connection pooling**: Ensure connection strings have `Max Pool Size` appropriate for workload
+- **Batch operations**: Use batch create/update for bulk data changes (seeding, imports)
+- **Soft deletes**: Use `IsDeleted` flag instead of hard deletes for audit trail - filter in queries
+
+**Background Worker Performance:**
+- **ExpiredCartCleanupWorker** runs every 5 minutes - monitor CPU impact on high-traffic periods
+- **P24StatusCheckRecurringJob** - batch check payments to avoid individual API calls per payment
+- Log execution time and record counts for monitoring - use structured logging with durations
+
 ### ABP Framework Best Practices
 - Always run `abp install-libs` after adding new ABP packages
 - Run `MP.DbMigrator` after creating new database migrations
@@ -568,6 +688,110 @@ The solution follows ABP Framework's layered architecture with these projects:
 4. Access tenant: `http://newclient.localhost:4200` (lowercase subdomain)
 5. Login will use OAuth client `MP_App_NEWCLIENT` (uppercase)
 6. Set tenant currency via settings management UI
+
+## CI/CD and Deployment
+
+### Pre-Deployment Checklist
+
+**Code Quality:**
+- All tests pass: `dotnet test MP.sln` (minimum: Domain + Booth at 100%)
+- No compiler warnings: `dotnet build MP.sln` with no warnings
+- Code review completed for all changes
+- No hardcoded secrets or API keys in code
+
+**Database:**
+- All migrations applied via `MP.DbMigrator`
+- Data seeding completed and validated
+- Backup taken before production migration
+- Migration tested in staging environment first
+
+**Configuration:**
+- `appsettings.json` updated with production values (connection strings, API keys)
+- `openiddict.pfx` certificate generated with strong passphrase
+- CORS origins updated for production domain
+- Payment provider keys configured (Stripe webhook secret, etc.)
+- Redis connection string configured if caching enabled
+
+**Frontend:**
+- Build production bundle: `npm run build:prod` in `angular/` directory
+- No console errors in production build
+- Environment files configured (`environment.prod.ts`)
+- API endpoints point to production server
+
+### Deployment Process
+
+**Step 1: Build and Test**
+```bash
+dotnet clean MP.sln
+dotnet build MP.sln
+dotnet test MP.sln --verbosity minimal
+```
+
+**Step 2: Database Migration**
+```bash
+# In staging first
+dotnet run --project src/MP.DbMigrator/MP.DbMigrator.csproj
+
+# Verify data integrity
+# Then deploy to production with backup
+```
+
+**Step 3: Backend Deployment**
+- Publish API Host: `dotnet publish src/MP.HttpApi.Host/MP.HttpApi.Host.csproj -c Release`
+- Deploy to hosting (IIS, Docker, Azure, etc.)
+- Verify API is responding: `https://your-domain.com/swagger`
+- Check health endpoint: `https://your-domain.com/health-status`
+
+**Step 4: Frontend Deployment**
+```bash
+cd angular
+npm ci  # Use package-lock.json for reproducible builds
+npm run build:prod
+# Deploy dist folder to web server or CDN
+```
+
+**Step 5: Post-Deployment Validation**
+- Test login flow with OAuth
+- Verify multi-tenant resolution (test subdomains)
+- Test payment flow (use Stripe test mode initially)
+- Check background worker execution (cart cleanup logs)
+- Monitor error logs for unexpected exceptions
+- Verify SignalR connections work for real-time features
+
+### Monitoring and Logging
+
+**Production Logging:**
+- Set log levels in `appsettings.json` for production (avoid verbose logging)
+- Monitor `Logs/logs.txt` for errors and warnings
+- Use structured logging with context for troubleshooting
+- Archive logs regularly to avoid disk space issues
+
+**Key Metrics to Monitor:**
+- API response times (target: <500ms for most endpoints)
+- Database connection pool usage
+- Payment processing success rate (stripe webhooks received)
+- Background worker execution frequency
+- Cart cleanup effectiveness (reservations released on schedule)
+- User authentication success/failure rates
+
+**Backup Strategy:**
+- Daily automated database backups (retain 30 days)
+- Regular code repository backups
+- Document recovery procedures
+- Test restoration process monthly
+
+### Rollback Strategy
+
+**If Deployment Fails:**
+1. Revert code to last known good version
+2. Keep database in current state (if migrations are backward compatible)
+3. Restore from pre-deployment backup if data corruption occurred
+4. Test thoroughly before re-deploying
+
+**Database Rollback:**
+- For schema changes: Use migrations to script rollback steps
+- For data changes: Use transaction logs or restore from backup
+- Always test rollback procedures before production deployment
 
 ## Useful Resources
 - [ABP Framework Documentation](https://abp.io/docs/latest)

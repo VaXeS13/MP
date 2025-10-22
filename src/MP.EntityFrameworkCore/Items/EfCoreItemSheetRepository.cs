@@ -49,6 +49,7 @@ namespace MP.EntityFrameworkCore.Items
             return await dbSet
                 .AsNoTracking()
                 .Include(x => x.Items)
+                    .ThenInclude(x => x.Item)
                 .Where(x => x.RentalId == rentalId)
                 .OrderByDescending(x => x.CreationTime)
                 .ToListAsync(cancellationToken);

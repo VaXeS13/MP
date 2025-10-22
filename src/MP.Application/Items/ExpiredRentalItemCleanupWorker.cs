@@ -73,17 +73,17 @@ namespace MP.Items
 
                 _logger.LogInformation("ExpiredRentalItemCleanupWorker: Found {ExpiredRentalCount} expired rentals to process", expiredRentals.Count);
 
-                var totalSheetsUnassigned = 0;
+                var totalSheetsProcessed = 0;
 
                 foreach (var rental in expiredRentals)
                 {
                     try
                     {
-                        var sheetsUnassigned = await ProcessExpiredRentalAsync(rental, itemSheetRepository);
-                        totalSheetsUnassigned += sheetsUnassigned;
+                        var sheetsProcessed = await ProcessExpiredRentalAsync(rental, itemSheetRepository);
+                        totalSheetsProcessed += sheetsProcessed;
 
-                        _logger.LogInformation("ExpiredRentalItemCleanupWorker: Processed expired rental {RentalId} ({BoothId}), unassigned {SheetsCount} item sheets",
-                            rental.Id, rental.BoothId, sheetsUnassigned);
+                        _logger.LogInformation("ExpiredRentalItemCleanupWorker: Processed expired rental {RentalId} ({BoothId}), processed {SheetsCount} item sheets",
+                            rental.Id, rental.BoothId, sheetsProcessed);
                     }
                     catch (Exception ex)
                     {
@@ -92,8 +92,8 @@ namespace MP.Items
                     }
                 }
 
-                _logger.LogInformation("ExpiredRentalItemCleanupWorker: Completed cleanup, unassigned {TotalSheets} item sheets from {RentalCount} rentals",
-                    totalSheetsUnassigned, expiredRentals.Count);
+                _logger.LogInformation("ExpiredRentalItemCleanupWorker: Completed cleanup, processed {TotalSheets} item sheets from {RentalCount} rentals",
+                    totalSheetsProcessed, expiredRentals.Count);
             }
             catch (Exception ex)
             {
@@ -121,38 +121,78 @@ namespace MP.Items
                 return 0;
             }
 
-            var sheetsUnassigned = 0;
+            var sheetsProcessed = 0;
 
             foreach (var sheet in assignedSheets)
             {
                 try
                 {
-                    // Only unassign sheets that are in Assigned status
-                    // Sheets in Ready status cannot be unassigned (they have generated barcodes)
                     if (sheet.Status == ItemSheetStatus.Assigned)
                     {
+                        // Unassign sheets that are in Assigned status
                         sheet.UnassignFromRental();
                         await itemSheetRepository.UpdateAsync(sheet);
-                        sheetsUnassigned++;
+                        sheetsProcessed++;
 
                         _logger.LogDebug("ExpiredRentalItemCleanupWorker: Unassigned item sheet {SheetId} from expired rental {RentalId}",
                             sheet.Id, rental.Id);
                     }
                     else if (sheet.Status == ItemSheetStatus.Ready)
                     {
-                        _logger.LogWarning("ExpiredRentalItemCleanupWorker: Cannot unassign Ready item sheet {SheetId} from expired rental {RentalId}. Sheet must be in Assigned status.",
+                        // Process Ready sheets: return unsold items to Available and mark sheet as Completed
+                        ProcessReadySheet(sheet);
+                        await itemSheetRepository.UpdateAsync(sheet);
+                        sheetsProcessed++;
+
+                        _logger.LogInformation("ExpiredRentalItemCleanupWorker: Completed item sheet {SheetId} from expired rental {RentalId}. Unsold items returned to available.",
                             sheet.Id, rental.Id);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "ExpiredRentalItemCleanupWorker: Error unassigning item sheet {SheetId} from rental {RentalId}",
+                    _logger.LogError(ex, "ExpiredRentalItemCleanupWorker: Error processing item sheet {SheetId} from rental {RentalId}",
                         sheet.Id, rental.Id);
                     // Continue with next sheet even if one fails
                 }
             }
 
-            return sheetsUnassigned;
+            return sheetsProcessed;
+        }
+
+        private void ProcessReadySheet(ItemSheet sheet)
+        {
+            var soldItemsCount = 0;
+            var unsoldItemsCount = 0;
+
+            // Return unsold items to Available and mark sheet as Completed
+            foreach (var sheetItem in sheet.Items)
+            {
+                if (sheetItem.Item != null)
+                {
+                    if (sheetItem.Item.Status == ItemStatus.Sold)
+                    {
+                        soldItemsCount++;
+                    }
+                    else
+                    {
+                        // Return unsold items to available
+                        sheetItem.Item.MarkAsAvailable();
+                        unsoldItemsCount++;
+
+                        _logger.LogDebug("ExpiredRentalItemCleanupWorker: Returned item {ItemId} to available status",
+                            sheetItem.Item.Id);
+                    }
+                }
+            }
+
+            // Mark sheet as completed after processing items
+            sheet.MarkAsCompleted();
+
+            if (unsoldItemsCount > 0 || soldItemsCount > 0)
+            {
+                _logger.LogDebug("ExpiredRentalItemCleanupWorker: Processed sheet items - {SoldCount} sold, {UnsoldCount} returned to available",
+                    soldItemsCount, unsoldItemsCount);
+            }
         }
     }
 }

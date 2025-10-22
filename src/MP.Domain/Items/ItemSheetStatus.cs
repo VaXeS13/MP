@@ -4,6 +4,7 @@ namespace MP.Domain.Items
     {
         Draft = 0,
         Assigned = 1,
-        Ready = 2
+        Ready = 2,
+        Completed = 3
     }
 }

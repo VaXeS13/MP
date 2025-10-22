@@ -202,7 +202,7 @@ public class MPApplicationAutoMapperProfile : Profile
 
         CreateMap<ItemSheet, ItemSheetDto>()
             .ForMember(dest => dest.Status,
-                opt => opt.MapFrom(src => src.Status.ToString()))
+                opt => opt.MapFrom(src => GetItemSheetStatusDisplayName(src.Status)))
             .ForMember(dest => dest.Items,
                 opt => opt.MapFrom(src => src.Items))
             .ForMember(dest => dest.BoothNumber,
@@ -286,9 +286,21 @@ public class MPApplicationAutoMapperProfile : Profile
         {
             RentalStatus.Draft => "Projekt",
             RentalStatus.Active => "Aktywne",
-            RentalStatus.Extended => "Przed�u�one",
-            RentalStatus.Expired => "Wygas�e",
+            RentalStatus.Extended => "Przedłużone",
+            RentalStatus.Expired => "Wygasłe",
             RentalStatus.Cancelled => "Anulowane",
+            _ => status.ToString()
+        };
+    }
+
+    private static string GetItemSheetStatusDisplayName(ItemSheetStatus status)
+    {
+        return status switch
+        {
+            ItemSheetStatus.Draft => "Draft",
+            ItemSheetStatus.Assigned => "Assigned",
+            ItemSheetStatus.Ready => "Ready",
+            ItemSheetStatus.Completed => "Completed",
             _ => status.ToString()
         };
     }

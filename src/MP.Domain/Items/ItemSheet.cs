@@ -109,6 +109,17 @@ namespace MP.Domain.Items
             Status = ItemSheetStatus.Draft;
         }
 
+        public void MarkAsCompleted()
+        {
+            if (Status == ItemSheetStatus.Completed)
+                throw new BusinessException("SHEET_ALREADY_COMPLETED");
+
+            if (Status != ItemSheetStatus.Ready && Status != ItemSheetStatus.Assigned)
+                throw new BusinessException("ONLY_READY_OR_ASSIGNED_SHEETS_CAN_BE_COMPLETED");
+
+            Status = ItemSheetStatus.Completed;
+        }
+
         public void GenerateBarcodes()
         {
             if (Status != ItemSheetStatus.Assigned)
