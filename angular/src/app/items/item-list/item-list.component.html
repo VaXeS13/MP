@@ -104,13 +104,14 @@
   [(visible)]="displayAssignDialog"
   [modal]="true"
   [style]="{width: '500px'}"
+  [contentStyle]="{'overflow': 'visible'}"
   [draggable]="false"
   [resizable]="false">
 
   <div class="assign-dialog-content">
     <p>You are about to add {{ selectedItems.length }} item(s) to a sheet.</p>
 
-    <div class="form-field">
+    <div class="form-field dropdown-wrapper">
       <label for="sheet" class="required">Select Sheet</label>
       <p-dropdown
         inputId="sheet"
@@ -120,10 +121,8 @@
         optionValue="id"
         placeholder="Select a sheet"
         [loading]="loadingSheets"
-        position="top"
-        appendTo="body"
-        [showTransitionOptions]="'150ms'"
-        [hideTransitionOptions]="'150ms'"
+        [showTransitionOptions]="'0ms'"
+        [hideTransitionOptions]="'0ms'"
         [autoDisplayFirst]="false"
         scrollHeight="200px"
         [panelStyleClass]="'dropdown-panel-sheet'"
