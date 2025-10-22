@@ -15,6 +15,7 @@ using MP.Application.Contracts.Rentals;
 using MP.Application.Rentals;
 using MP.Application.Terminals;
 using MP.Carts;
+using MP.Items;
 
 namespace MP;
 
@@ -95,6 +96,7 @@ public class MPApplicationModule : AbpModule
 
         // Rejestruj Background Workers jako Hosted Services
         services.AddHostedService<ExpiredCartCleanupWorker>();
+        services.AddHostedService<ExpiredRentalItemCleanupWorker>();
         services.AddHostedService<MP.Application.Notifications.NotificationReminderWorker>();
     }
 }
