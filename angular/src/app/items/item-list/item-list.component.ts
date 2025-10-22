@@ -105,6 +105,17 @@ export class ItemListComponent implements OnInit {
     this.loadItems();
   }
 
+  onSelectAllChange(event: any): void {
+    if (event.checked) {
+      // Select only selectable items (Draft status)
+      this.selectedItems = [...this.selectableItems];
+    } else {
+      // Deselect all
+      this.selectedItems = [];
+    }
+    this.cdr.markForCheck();
+  }
+
   openCreateDialog(): void {
     this.selectedItem = null;
     this.displayDialog = true;

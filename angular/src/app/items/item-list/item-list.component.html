@@ -34,6 +34,7 @@
     (onLazyLoad)="onPageChange($event)"
     [rowsPerPageOptions]="[10, 25, 50]"
     [(selection)]="selectedItems"
+    (onSelectAllChange)="onSelectAllChange($event)"
     dataKey="id"
     responsiveLayout="scroll">
 
@@ -121,8 +122,8 @@
         optionValue="id"
         placeholder="Select a sheet"
         [loading]="loadingSheets"
-        [showTransitionOptions]="'0ms'"
-        [hideTransitionOptions]="'0ms'"
+        [showTransitionOptions]="'150ms'"
+        [hideTransitionOptions]="'150ms'"
         [autoDisplayFirst]="false"
         scrollHeight="200px"
         [panelStyleClass]="'dropdown-panel-sheet'"
