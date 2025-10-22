@@ -37,14 +37,16 @@
     [selection]="selectedItems"
     (onRowSelect)="onRowSelect($event)"
     (onRowUnselect)="onRowUnselect($event)"
-    (selectAllChange)="onSelectAllChange($event)"
     dataKey="id"
     responsiveLayout="scroll">
 
     <ng-template pTemplate="header">
       <tr>
         <th style="width: 3rem">
-          <p-tableHeaderCheckbox [disabled]="selectableItems.length === 0"></p-tableHeaderCheckbox>
+          <p-tableHeaderCheckbox
+            [disabled]="selectableItems.length === 0"
+            (onChange)="onHeaderCheckboxChange($event)">
+          </p-tableHeaderCheckbox>
         </th>
         <th>Name</th>
         <th>Category</th>

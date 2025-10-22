@@ -105,7 +105,7 @@ export class ItemListComponent implements OnInit {
     this.loadItems();
   }
 
-  onSelectAllChange(event: any): void {
+  onHeaderCheckboxChange(event: any): void {
     if (event.checked) {
       // Select only selectable items (Draft status)
       this.selectedItems = [...this.selectableItems];
