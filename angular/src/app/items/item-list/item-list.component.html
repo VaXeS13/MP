@@ -121,10 +121,12 @@
         placeholder="Select a sheet"
         [loading]="loadingSheets"
         appendTo="body"
-        [showTransitionOptions]="'0ms'"
-        [hideTransitionOptions]="'0ms'"
+        position="bottom"
+        [showTransitionOptions]="'75ms'"
+        [hideTransitionOptions]="'75ms'"
         [autoDisplayFirst]="false"
         scrollHeight="250px"
+        [panelStyleClass]="'dropdown-panel-smooth'"
         [style]="{width: '100%'}">
         <ng-template let-sheet pTemplate="item">
           <div class="sheet-option">
