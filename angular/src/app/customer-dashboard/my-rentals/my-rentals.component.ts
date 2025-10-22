@@ -12,6 +12,10 @@ import type { MyActiveRentalDto } from '@proxy/application/contracts/customer-da
 export class MyRentalsComponent implements OnInit {
   rentals: MyActiveRentalDto[] = [];
   loading = false;
+  pageSize = 10;
+  totalRentals = 0;
+  currentPage = 0;
+  filterStatus: string | null = null;
 
   private statusMap: { [key: string]: string } = {
     'Draft': 'Projekt',
@@ -33,12 +37,13 @@ export class MyRentalsComponent implements OnInit {
   loadRentals(): void {
     this.loading = true;
     this.myRentalService.getMyRentals({
-      skipCount: 0,
-      maxResultCount: 50,
+      skipCount: this.currentPage * this.pageSize,
+      maxResultCount: this.pageSize,
       includeCompleted: true
     }).subscribe({
       next: (result) => {
         this.rentals = result.items || [];
+        this.totalRentals = result.totalCount || this.rentals.length;
         this.loading = false;
       },
       error: (error) => {
@@ -46,6 +51,29 @@ export class MyRentalsComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  onPageChange(event: any): void {
+    this.currentPage = event.first / event.rows;
+    this.pageSize = event.rows;
+    this.loadRentals();
+  }
+
+  formatTimeRemaining(rental: MyActiveRentalDto): string {
+    const now = new Date();
+    const endDate = new Date(rental.endDate);
+    const diff = endDate.getTime() - now.getTime();
+
+    if (diff < 0) return 'Wygasło';
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    if (hours < 24) {
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    return `${rental.daysRemaining} dni`;
   }
 
   getStatusLabel(status: string): string {
