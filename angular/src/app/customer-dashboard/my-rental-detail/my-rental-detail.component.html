@@ -204,7 +204,7 @@
               </div>
               <div class="info-item">
                 <span class="info-label">Typ stanowiska:</span>
-                <span class="info-value">{{ rental.boothTypeName }}</span>
+                <span class="info-value">{{ rental.boothTypeName }} <span class="commission-badge" *ngIf="rental.boothTypeCommissionPercentage !== undefined">(Prowizja: {{ rental.boothTypeCommissionPercentage }}%)</span></span>
               </div>
               <div class="info-item">
                 <span class="info-label">Cena za dzień:</span>
