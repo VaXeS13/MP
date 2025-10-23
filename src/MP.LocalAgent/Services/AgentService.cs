@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MP.LocalAgent.Configuration;
 using MP.LocalAgent.Contracts.Models;
+using MP.LocalAgent.Contracts.Enums;
 using MP.LocalAgent.Exceptions;
 using MP.LocalAgent.Interfaces;
 
@@ -183,7 +184,7 @@ namespace MP.LocalAgent.Services
 
                 // Check devices
                 var devices = await _deviceManager.GetAllDevicesAsync();
-                var hasAvailableDevices = devices.Exists(d => d.IsEnabled && d.Status == Enums.DeviceStatus.Ready);
+                var hasAvailableDevices = devices.Exists(d => d.IsEnabled && d.Status == DeviceStatus.Ready);
 
                 return hasAvailableDevices;
             }
@@ -297,7 +298,7 @@ namespace MP.LocalAgent.Services
             _logger.LogInformation("SignalR connection status changed from {PreviousStatus} to {CurrentStatus}: {Message}",
                 e.PreviousStatus, e.CurrentStatus, e.Message);
 
-            if (e.CurrentStatus == Enums.AgentConnectionStatus.Connected && _status == AgentStatus.Error)
+            if (e.CurrentStatus == AgentConnectionStatus.Connected && _status == AgentStatus.Error)
             {
                 // Recover from error state
                 await SetStatusAsync(AgentStatus.Running, "SignalR connection restored");

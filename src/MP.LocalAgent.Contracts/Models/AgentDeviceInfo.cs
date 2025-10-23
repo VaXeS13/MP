@@ -62,5 +62,20 @@ namespace MP.LocalAgent.Contracts.Models
         public string? ErrorCode { get; set; }
         public int RetryCount { get; set; }
         public int MaxRetries { get; set; } = 3;
+
+        /// <summary>
+        /// Time taken to process the command (CompletedAt - StartedAt)
+        /// </summary>
+        public TimeSpan? ProcessingDuration
+        {
+            get
+            {
+                if (StartedAt.HasValue && CompletedAt.HasValue)
+                {
+                    return CompletedAt.Value - StartedAt.Value;
+                }
+                return null;
+            }
+        }
     }
 }

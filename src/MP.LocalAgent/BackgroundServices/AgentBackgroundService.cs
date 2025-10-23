@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MP.LocalAgent.Interfaces;
+using MP.LocalAgent.Contracts.Enums;
 
 namespace MP.LocalAgent.BackgroundServices
 {
@@ -14,18 +15,15 @@ namespace MP.LocalAgent.BackgroundServices
     {
         private readonly ILogger<AgentBackgroundService> _logger;
         private readonly IAgentService _agentService;
-        private readonly IDeviceManager _deviceManager;
         private readonly ISignalRClientService _signalRClient;
 
         public AgentBackgroundService(
             ILogger<AgentBackgroundService> logger,
             IAgentService agentService,
-            IDeviceManager deviceManager,
             ISignalRClientService signalRClient)
         {
             _logger = logger;
             _agentService = agentService;
-            _deviceManager = deviceManager;
             _signalRClient = signalRClient;
         }
 
@@ -105,12 +103,7 @@ namespace MP.LocalAgent.BackgroundServices
                         _logger.LogWarning("SignalR client is disconnected");
                     }
 
-                    var devices = await _deviceManager.GetAllDevicesAsync();
-                    var availableDevices = devices.FindAll(d => d.IsEnabled && d.Status == Enums.DeviceStatus.Ready);
-                    if (availableDevices.Count == 0)
-                    {
-                        _logger.LogWarning("No devices are available");
-                    }
+                    // Device status will be reported by device services
                 }
                 else
                 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MP.LocalAgent.Contracts.Models;
+using MP.LocalAgent.Contracts.Enums;
 using MP.LocalAgent.Configuration;
 
 namespace MP.LocalAgent.Interfaces
@@ -25,7 +26,7 @@ namespace MP.LocalAgent.Interfaces
         /// <summary>
         /// Get the status of a specific device
         /// </summary>
-        Task<Enums.DeviceStatus> GetDeviceStatusAsync(string deviceId);
+        Task<DeviceStatus> GetDeviceStatusAsync(string deviceId);
 
         /// <summary>
         /// Get all configured devices
@@ -40,7 +41,7 @@ namespace MP.LocalAgent.Interfaces
         /// <summary>
         /// Report device status change
         /// </summary>
-        Task ReportDeviceStatusAsync(string deviceId, Enums.DeviceStatus status, string? details = null);
+        Task ReportDeviceStatusAsync(string deviceId, DeviceStatus status, string? details = null);
 
         /// <summary>
         /// Get primary device for a specific type
@@ -74,8 +75,8 @@ namespace MP.LocalAgent.Interfaces
     public class DeviceStatusChangedEventArgs : EventArgs
     {
         public string DeviceId { get; set; } = null!;
-        public Enums.DeviceStatus PreviousStatus { get; set; }
-        public Enums.DeviceStatus CurrentStatus { get; set; }
+        public DeviceStatus PreviousStatus { get; set; }
+        public DeviceStatus CurrentStatus { get; set; }
         public string? Details { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }

@@ -111,4 +111,15 @@ namespace MP.LocalAgent.Exceptions
         public string ExpectedState { get; set; } = null!;
         public string ActualState { get; set; } = null!;
     }
+
+    /// <summary>
+    /// Exception thrown when agent initialization fails
+    /// </summary>
+    public class AgentInitializationException : AgentException
+    {
+        public AgentInitializationException(string message) : base(message) { }
+        public AgentInitializationException(string message, Exception innerException) : base(message, innerException) { }
+        public Guid? TenantId { get; set; }
+        public string? AgentId { get; set; }
+    }
 }

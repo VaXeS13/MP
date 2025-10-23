@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MP.LocalAgent.Contracts.Commands;
 using MP.LocalAgent.Contracts.Responses;
+using MP.LocalAgent.Contracts.Enums;
 using MP.LocalAgent.Configuration;
 
 namespace MP.LocalAgent.Interfaces
@@ -110,8 +111,8 @@ namespace MP.LocalAgent.Interfaces
     /// </summary>
     public class FiscalPrinterStatusEventArgs : System.EventArgs
     {
-        public Enums.DeviceStatus PreviousStatus { get; set; }
-        public Enums.DeviceStatus CurrentStatus { get; set; }
+        public DeviceStatus PreviousStatus { get; set; }
+        public DeviceStatus CurrentStatus { get; set; }
         public string? Message { get; set; }
         public DateTime Timestamp { get; set; } = System.DateTime.UtcNow;
     }

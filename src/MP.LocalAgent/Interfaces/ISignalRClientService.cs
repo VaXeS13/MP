@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MP.LocalAgent.Contracts.Responses;
+using MP.LocalAgent.Contracts.Enums;
 
 namespace MP.LocalAgent.Interfaces
 {
@@ -28,7 +29,7 @@ namespace MP.LocalAgent.Interfaces
         /// <summary>
         /// Send device status to Azure
         /// </summary>
-        Task SendDeviceStatusAsync(string deviceId, Enums.DeviceStatus status, string? details = null);
+        Task SendDeviceStatusAsync(string deviceId, DeviceStatus status, string? details = null);
 
         /// <summary>
         /// Send heartbeat to Azure
@@ -43,7 +44,7 @@ namespace MP.LocalAgent.Interfaces
         /// <summary>
         /// Get connection status
         /// </summary>
-        Enums.AgentConnectionStatus ConnectionStatus { get; }
+        AgentConnectionStatus ConnectionStatus { get; }
 
         /// <summary>
         /// Get connection information
@@ -96,8 +97,8 @@ namespace MP.LocalAgent.Interfaces
     /// </summary>
     public class ConnectionStatusChangedEventArgs : EventArgs
     {
-        public Enums.AgentConnectionStatus PreviousStatus { get; set; }
-        public Enums.AgentConnectionStatus CurrentStatus { get; set; }
+        public AgentConnectionStatus PreviousStatus { get; set; }
+        public AgentConnectionStatus CurrentStatus { get; set; }
         public string? Message { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public Exception? Exception { get; set; }

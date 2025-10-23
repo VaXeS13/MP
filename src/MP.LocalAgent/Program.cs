@@ -5,7 +5,10 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using MP.LocalAgent.Services;
 using MP.LocalAgent.BackgroundServices;
-using MP.LocalAgent.DeviceServices;
+using MP.LocalAgent.Interfaces;
+using MP.LocalAgent.Configuration;
+using MP.LocalAgent.Exceptions;
+using MP.LocalAgent.Contracts.Enums;
 
 namespace MP.LocalAgent
 {
@@ -62,18 +65,15 @@ namespace MP.LocalAgent
 
                     // Core services
                     services.AddSingleton<IAgentService, AgentService>();
-                    services.AddSingleton<IDeviceManager, DeviceManager>();
                     services.AddSingleton<ICommandQueue, CommandQueue>();
                     services.AddSingleton<ISignalRClientService, SignalRClientService>();
 
-                    // Device services
-                    services.AddSingleton<ITerminalService, TerminalService>();
-                    services.AddSingleton<IFiscalPrinterService, FiscalPrinterService>();
+                    // Device services (Mock implementations)
+                    services.AddSingleton<ITerminalService, MockTerminalService>();
+                    services.AddSingleton<IFiscalPrinterService, MockFiscalPrinterService>();
 
                     // Background services
                     services.AddHostedService<AgentBackgroundService>();
-                    services.AddHostedService<CommandProcessorService>();
-                    services.AddHostedService<HeartbeatService>();
 
                     // Configuration binding
                     services.Configure<LocalAgentConfiguration>(configuration.GetSection("LocalAgent"));
@@ -84,7 +84,6 @@ namespace MP.LocalAgent
         {
             var logger = services.GetRequiredService<ILogger<Program>>();
             var agentService = services.GetRequiredService<IAgentService>();
-            var deviceManager = services.GetRequiredService<IDeviceManager>();
 
             try
             {
@@ -102,10 +101,7 @@ namespace MP.LocalAgent
                 }
 
                 // Initialize agent service
-                await agentService.InitializeAsync(Guid.Parse(tenantId), agentId);
-
-                // Initialize device manager
-                await deviceManager.InitializeAsync();
+                await agentService.InitializeAsync(string.IsNullOrEmpty(tenantId) ? Guid.NewGuid() : Guid.Parse(tenantId), agentId);
 
                 logger.LogInformation("MP Local Agent services initialized successfully");
             }

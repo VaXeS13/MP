@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MP.LocalAgent.Contracts.Models;
+using MP.LocalAgent.Contracts.Enums;
 
 namespace MP.LocalAgent.Interfaces
 {
@@ -29,7 +30,7 @@ namespace MP.LocalAgent.Interfaces
         /// <summary>
         /// Update command status
         /// </summary>
-        Task UpdateCommandStatusAsync(Guid commandId, Enums.CommandStatus status, object? response = null);
+        Task UpdateCommandStatusAsync(Guid commandId, CommandStatus status, object? response = null);
 
         /// <summary>
         /// Get all pending commands
@@ -44,7 +45,7 @@ namespace MP.LocalAgent.Interfaces
         /// <summary>
         /// Get commands by status
         /// </summary>
-        Task<List<CommandInfo>> GetCommandsByStatusAsync(Enums.CommandStatus status);
+        Task<List<CommandInfo>> GetCommandsByStatusAsync(CommandStatus status);
 
         /// <summary>
         /// Get commands for a specific device
@@ -103,7 +104,7 @@ namespace MP.LocalAgent.Interfaces
     public class CommandStatusUpdatedEventArgs : EventArgs
     {
         public CommandInfo Command { get; set; } = null!;
-        public Enums.CommandStatus PreviousStatus { get; set; }
+        public CommandStatus PreviousStatus { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 }

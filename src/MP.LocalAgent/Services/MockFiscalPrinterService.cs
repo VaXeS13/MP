@@ -42,17 +42,24 @@ namespace MP.LocalAgent.Services
 
             if (!_isInitialized)
             {
-                throw new FiscalPrinterException("Fiscal printer is not initialized", true);
+                throw new FiscalPrinterException("Fiscal printer is not initialized")
+                {
+                    IsFiscalMemoryError = true
+                };
             }
 
             if (!_hasPaper)
             {
-                throw new FiscalPrinterException("Printer is out of paper", false);
+                throw new FiscalPrinterException("Printer is out of paper");
             }
 
             if (!_fiscalMemoryOk)
             {
-                throw new FiscalPrinterException("Fiscal memory error", true) { FiscalErrorCode = "MEMORY_ERROR" };
+                throw new FiscalPrinterException("Fiscal memory error")
+                {
+                    FiscalErrorCode = "MEMORY_ERROR",
+                    IsFiscalMemoryError = true
+                };
             }
 
             try
@@ -141,7 +148,7 @@ namespace MP.LocalAgent.Services
 
             if (!_hasPaper)
             {
-                throw new FiscalPrinterException("Printer is out of paper", false);
+                throw new FiscalPrinterException("Printer is out of paper");
             }
 
             try

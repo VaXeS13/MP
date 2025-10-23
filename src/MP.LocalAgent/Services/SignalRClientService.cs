@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MP.LocalAgent.Configuration;
 using MP.LocalAgent.Contracts.Responses;
+using MP.LocalAgent.Contracts.Enums;
 using MP.LocalAgent.Exceptions;
 using MP.LocalAgent.Interfaces;
 using Newtonsoft.Json;
@@ -25,7 +26,7 @@ namespace MP.LocalAgent.Services
         private int _reconnectAttempts = 0;
 
         public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
-        public Enums.AgentConnectionStatus ConnectionStatus { get; private set; } = Enums.AgentConnectionStatus.Disconnected;
+        public AgentConnectionStatus ConnectionStatus { get; private set; } = AgentConnectionStatus.Disconnected;
         public ConnectionInfo? ConnectionInfo => _connectionInfo;
 
         public event EventHandler<string>? OnCommandReceived;
@@ -53,7 +54,7 @@ namespace MP.LocalAgent.Services
                     return;
                 }
 
-                await SetConnectionStatusAsync(Enums.AgentConnectionStatus.Connecting, "Initializing connection");
+                await SetConnectionStatusAsync(AgentConnectionStatus.Connecting, "Initializing connection");
 
                 var hubUrl = $"{serverUrl.TrimEnd('/')}/hubs/localAgent";
                 _logger.LogInformation("Connecting to SignalR hub: {HubUrl}", hubUrl);
@@ -67,7 +68,7 @@ namespace MP.LocalAgent.Services
                         options.Headers["Agent-Id"] = agentId;
                     })
                     .WithAutomaticReconnect(new RetryPolicy())
-                    .WithJsonProtocol(options =>
+                    .AddNewtonsoftJsonProtocol(options =>
                     {
                         options.PayloadSerializerSettings = new JsonSerializerSettings
                         {
@@ -94,7 +95,7 @@ namespace MP.LocalAgent.Services
                     ReconnectCount = _reconnectAttempts
                 };
 
-                await SetConnectionStatusAsync(Enums.AgentConnectionStatus.Connected, "Connection established");
+                await SetConnectionStatusAsync(AgentConnectionStatus.Connected, "Connection established");
                 _reconnectAttempts = 0;
 
                 _logger.LogInformation("Successfully connected to SignalR hub with connection ID: {ConnectionId}",
@@ -103,7 +104,7 @@ namespace MP.LocalAgent.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to connect to SignalR hub");
-                await SetConnectionStatusAsync(Enums.AgentConnectionStatus.ConnectionFailed, ex.Message, ex);
+                await SetConnectionStatusAsync(AgentConnectionStatus.ConnectionFailed, ex.Message, ex);
                 throw new SignalRConnectionException("SignalR connection failed", ex) { ServerUrl = serverUrl, AttemptCount = _reconnectAttempts };
             }
             finally
@@ -125,7 +126,7 @@ namespace MP.LocalAgent.Services
                 }
 
                 _connectionInfo = null;
-                await SetConnectionStatusAsync(Enums.AgentConnectionStatus.Disconnected, "Disconnected by request");
+                await SetConnectionStatusAsync(AgentConnectionStatus.Disconnected, "Disconnected by request");
 
                 _logger.LogInformation("Disconnected from SignalR hub");
             }
@@ -158,7 +159,7 @@ namespace MP.LocalAgent.Services
             }
         }
 
-        public async Task SendDeviceStatusAsync(string deviceId, Enums.DeviceStatus status, string? details = null)
+        public async Task SendDeviceStatusAsync(string deviceId, DeviceStatus status, string? details = null)
         {
             if (!IsConnected)
             {
@@ -229,7 +230,7 @@ namespace MP.LocalAgent.Services
                     _connectionInfo.ReconnectCount++;
                 }
 
-                await SetConnectionStatusAsync(Enums.AgentConnectionStatus.Connected, "Reconnected");
+                await SetConnectionStatusAsync(AgentConnectionStatus.Connected, "Reconnected");
                 OnConnected?.Invoke(this, EventArgs.Empty);
             };
 
@@ -244,13 +245,13 @@ namespace MP.LocalAgent.Services
             {
                 _logger.LogWarning("SignalR connection closed: {Error}", exception?.Message);
 
-                await SetConnectionStatusAsync(Enums.AgentConnectionStatus.Disconnected,
+                await SetConnectionStatusAsync(AgentConnectionStatus.Disconnected,
                     exception?.Message ?? "Connection closed", exception);
                 OnDisconnected?.Invoke(this, EventArgs.Empty);
             };
         }
 
-        private async Task SetConnectionStatusAsync(Enums.AgentConnectionStatus newStatus, string? message = null, Exception? exception = null)
+        private async Task SetConnectionStatusAsync(AgentConnectionStatus newStatus, string? message = null, Exception? exception = null)
         {
             var previousStatus = ConnectionStatus;
             ConnectionStatus = newStatus;
@@ -272,7 +273,7 @@ namespace MP.LocalAgent.Services
                 {
                     Error = exception.Message,
                     Exception = exception,
-                    IsRecoverable = newStatus == Enums.AgentConnectionStatus.Reconnecting
+                    IsRecoverable = newStatus == AgentConnectionStatus.Reconnecting
                 });
             }
         }

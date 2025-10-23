@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MP.LocalAgent.Contracts.Models;
+using MP.LocalAgent.Contracts.Enums;
 using MP.LocalAgent.Exceptions;
 using MP.LocalAgent.Interfaces;
 
@@ -48,7 +49,7 @@ namespace MP.LocalAgent.Services
                 AgentId = ExtractAgentId(command),
                 CommandType = command.GetType().Name,
                 SerializedCommand = System.Text.Json.JsonSerializer.Serialize(command),
-                Status = Enums.CommandStatus.Queued,
+                Status = CommandStatus.Queued,
                 QueuedAt = DateTime.UtcNow,
                 Timeout = ExtractTimeout(command),
                 MaxRetries = ExtractMaxRetries(command)
@@ -79,10 +80,10 @@ namespace MP.LocalAgent.Services
                 {
                     if (_commands.TryGetValue(commandId, out var command))
                     {
-                        if (command.Status == Enums.CommandStatus.Queued)
+                        if (command.Status == CommandStatus.Queued)
                         {
                             // Mark as processing
-                            await UpdateCommandStatusAsync(commandId, Enums.CommandStatus.Processing);
+                            await UpdateCommandStatusAsync(commandId, CommandStatus.Processing);
                             return command;
                         }
                         else
@@ -106,7 +107,7 @@ namespace MP.LocalAgent.Services
             return command;
         }
 
-        public async Task UpdateCommandStatusAsync(Guid commandId, Enums.CommandStatus status, object? response = null)
+        public async Task UpdateCommandStatusAsync(Guid commandId, CommandStatus status, object? response = null)
         {
             if (_commands.TryGetValue(commandId, out var command))
             {
@@ -115,15 +116,14 @@ namespace MP.LocalAgent.Services
 
                 switch (status)
                 {
-                    case Enums.CommandStatus.Processing:
+                    case CommandStatus.Processing:
                         command.StartedAt = DateTime.UtcNow;
                         break;
-                    case Enums.CommandStatus.Completed:
-                    case Enums.CommandStatus.Failed:
-                    case Enums.CommandStatus.TimedOut:
-                    case Enums.CommandStatus.Cancelled:
+                    case CommandStatus.Completed:
+                    case CommandStatus.Failed:
+                    case CommandStatus.TimedOut:
+                    case CommandStatus.Cancelled:
                         command.CompletedAt = DateTime.UtcNow;
-                        command.ProcessingDuration = command.CompletedAt - command.StartedAt;
                         break;
                 }
 
@@ -150,7 +150,7 @@ namespace MP.LocalAgent.Services
         public async Task<List<CommandInfo>> GetPendingCommandsAsync()
         {
             return _commands.Values
-                .Where(c => c.Status == Enums.CommandStatus.Queued)
+                .Where(c => c.Status == CommandStatus.Queued)
                 .OrderBy(c => c.QueuedAt)
                 .ToList();
         }
@@ -159,9 +159,9 @@ namespace MP.LocalAgent.Services
         {
             if (_commands.TryGetValue(commandId, out var command))
             {
-                if (command.Status == Enums.CommandStatus.Queued || command.Status == Enums.CommandStatus.Processing)
+                if (command.Status == CommandStatus.Queued || command.Status == CommandStatus.Processing)
                 {
-                    await UpdateCommandStatusAsync(commandId, Enums.CommandStatus.Cancelled);
+                    await UpdateCommandStatusAsync(commandId, CommandStatus.Cancelled);
                     _logger.LogInformation("Command {CommandId} cancelled", commandId);
                 }
                 else
@@ -172,7 +172,7 @@ namespace MP.LocalAgent.Services
             }
         }
 
-        public async Task<List<CommandInfo>> GetCommandsByStatusAsync(Enums.CommandStatus status)
+        public async Task<List<CommandInfo>> GetCommandsByStatusAsync(CommandStatus status)
         {
             return _commands.Values
                 .Where(c => c.Status == status)
@@ -196,20 +196,19 @@ namespace MP.LocalAgent.Services
             return new QueueStatistics
             {
                 TotalCommands = commands.Count,
-                PendingCommands = commands.Count(c => c.Status == Enums.CommandStatus.Queued),
-                ProcessingCommands = commands.Count(c => c.Status == Enums.CommandStatus.Processing),
-                CompletedCommands = commands.Count(c => c.Status == Enums.CommandStatus.Completed),
-                FailedCommands = commands.Count(c => c.Status == Enums.CommandStatus.Failed),
-                TimedOutCommands = commands.Count(c => c.Status == Enums.CommandStatus.TimedOut),
-                CancelledCommands = commands.Count(c => c.Status == Enums.CommandStatus.Cancelled),
+                PendingCommands = commands.Count(c => c.Status == CommandStatus.Queued),
+                ProcessingCommands = commands.Count(c => c.Status == CommandStatus.Processing),
+                CompletedCommands = commands.Count(c => c.Status == CommandStatus.Completed),
+                FailedCommands = commands.Count(c => c.Status == CommandStatus.Failed),
+                TimedOutCommands = commands.Count(c => c.Status == CommandStatus.TimedOut),
+                CancelledCommands = commands.Count(c => c.Status == CommandStatus.Cancelled),
                 OldestPendingCommand = commands
-                    .Where(c => c.Status == Enums.CommandStatus.Queued)
+                    .Where(c => c.Status == CommandStatus.Queued)
                     .Min(c => c.QueuedAt),
-                AverageProcessingTime = commands
-                    .Where(c => c.ProcessingDuration.HasValue)
-                    .Select(c => c.ProcessingDuration.Value)
-                    .DefaultIfEmpty(TimeSpan.Zero)
-                    .Average()
+                AverageProcessingTime = CalculateAverageTimeSpan(
+                    commands
+                        .Where(c => c.ProcessingDuration.HasValue)
+                        .Select(c => c.ProcessingDuration.Value))
             };
         }
 
@@ -217,7 +216,7 @@ namespace MP.LocalAgent.Services
         {
             var cutoffTime = DateTime.UtcNow - olderThan;
             var commandsToRemove = _commands.Values
-                .Where(c => c.Status == Enums.CommandStatus.Completed && c.CompletedAt.HasValue && c.CompletedAt.Value < cutoffTime)
+                .Where(c => c.Status == CommandStatus.Completed && c.CompletedAt.HasValue && c.CompletedAt.Value < cutoffTime)
                 .Select(c => c.CommandId)
                 .ToList();
 
@@ -274,6 +273,16 @@ namespace MP.LocalAgent.Services
         {
             // Return default max retries
             return 3;
+        }
+
+        private TimeSpan CalculateAverageTimeSpan(IEnumerable<TimeSpan> timespans)
+        {
+            var list = timespans.ToList();
+            if (list.Count == 0)
+                return TimeSpan.Zero;
+
+            var averageTicks = list.Average(ts => ts.Ticks);
+            return TimeSpan.FromTicks((long)averageTicks);
         }
 
         #endregion
