@@ -27,6 +27,8 @@ namespace MP.Domain.Settlements
         public Guid? ProcessedBy { get; private set; }
         public string? TransactionReference { get; private set; }
         public string? RejectionReason { get; private set; }
+        public PaymentMethod? PaymentMethod { get; private set; }
+        public string? PaymentProviderMetadata { get; private set; }
 
         private readonly List<SettlementItem> _items = new();
         public IReadOnlyList<SettlementItem> Items => _items.AsReadOnly();
@@ -163,6 +165,15 @@ namespace MP.Domain.Settlements
         public bool CanProcess() => Status == SettlementStatus.Pending && _items.Count > 0;
 
         public bool CanComplete() => Status == SettlementStatus.Processing;
+
+        public void SetPaymentMethod(PaymentMethod? paymentMethod, string? providerMetadata = null)
+        {
+            if (Status == SettlementStatus.Completed)
+                throw new BusinessException("CANNOT_CHANGE_PAYMENT_METHOD_FOR_COMPLETED_SETTLEMENT");
+
+            PaymentMethod = paymentMethod;
+            PaymentProviderMetadata = providerMetadata?.Trim();
+        }
     }
 
     /// <summary>
@@ -206,5 +217,15 @@ namespace MP.Domain.Settlements
         Processing = 1,
         Completed = 2,
         Cancelled = 3
+    }
+
+    /// <summary>
+    /// Payment method for settlement payout
+    /// </summary>
+    public enum PaymentMethod
+    {
+        Manual = 0,
+        BankTransfer = 1,
+        StripePayouts = 2
     }
 }

@@ -49,6 +49,8 @@ export interface CartItemDto extends EntityDto<string> {
   pricingPeriods: BoothPricingPeriodDto[];
   reservationExpiresAt?: string;
   isExpired: boolean;
+  oldStoredTotalPrice?: number;
+  priceWasUpdated: boolean;
 }
 
 export interface CheckoutCartDto {

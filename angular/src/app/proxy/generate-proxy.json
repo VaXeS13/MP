@@ -1680,6 +1680,23 @@
                   }
                 },
                 {
+                  "name": "GetMyActiveRentalsPagedAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
+                      "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                      "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<MP.Application.Contracts.CustomerDashboard.MyActiveRentalDto>",
+                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<MP.Application.Contracts.CustomerDashboard.MyActiveRentalDto>"
+                  }
+                },
+                {
                   "name": "GetMySettlementsAsync",
                   "parametersOnMethod": [
                     {
@@ -1871,6 +1888,67 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<MP.Application.Contracts.CustomerDashboard.MyActiveRentalDto>",
                 "typeSimple": "[MP.Application.Contracts.CustomerDashboard.MyActiveRentalDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Application.Contracts.CustomerDashboard.ICustomerDashboardAppService"
+            },
+            "GetMyActiveRentalsPagedAsyncByInput": {
+              "uniqueName": "GetMyActiveRentalsPagedAsyncByInput",
+              "name": "GetMyActiveRentalsPagedAsync",
+              "httpMethod": "GET",
+              "url": "api/app/customer-dashboard/my-active-rentals-paged",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
+                  "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                  "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "Sorting",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "SkipCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "MaxResultCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "Volo.Abp.Application.Dtos.PagedResultDto<MP.Application.Contracts.CustomerDashboard.MyActiveRentalDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<MP.Application.Contracts.CustomerDashboard.MyActiveRentalDto>"
               },
               "allowAnonymous": false,
               "implementFrom": "MP.Application.Contracts.CustomerDashboard.ICustomerDashboardAppService"
@@ -7236,6 +7314,395 @@
             }
           }
         },
+        "MP.Application.Settlements.PaymentWithdrawalAppService": {
+          "controllerName": "PaymentWithdrawal",
+          "controllerGroupName": "PaymentWithdrawal",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "MP.Application.Settlements.PaymentWithdrawalAppService",
+          "interfaces": [
+            {
+              "type": "MP.Application.Contracts.Settlements.IPaymentWithdrawalAppService",
+              "name": "IPaymentWithdrawalAppService",
+              "methods": [
+                {
+                  "name": "GetListAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
+                      "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                      "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<MP.Application.Contracts.Settlements.PaymentWithdrawalDto>",
+                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<MP.Application.Contracts.Settlements.PaymentWithdrawalDto>"
+                  }
+                },
+                {
+                  "name": "GetStatsAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "MP.Application.Contracts.Settlements.PaymentWithdrawalStatsDto",
+                    "typeSimple": "MP.Application.Contracts.Settlements.PaymentWithdrawalStatsDto"
+                  }
+                },
+                {
+                  "name": "GetAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto",
+                    "typeSimple": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto"
+                  }
+                },
+                {
+                  "name": "ProcessAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Application.Contracts.Settlements.ProcessWithdrawalDto, MP.Application.Contracts",
+                      "type": "MP.Application.Contracts.Settlements.ProcessWithdrawalDto",
+                      "typeSimple": "MP.Application.Contracts.Settlements.ProcessWithdrawalDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto",
+                    "typeSimple": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto"
+                  }
+                },
+                {
+                  "name": "CompleteAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Application.Contracts.Settlements.CompleteWithdrawalDto, MP.Application.Contracts",
+                      "type": "MP.Application.Contracts.Settlements.CompleteWithdrawalDto",
+                      "typeSimple": "MP.Application.Contracts.Settlements.CompleteWithdrawalDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto",
+                    "typeSimple": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto"
+                  }
+                },
+                {
+                  "name": "RejectAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.Application.Contracts.Settlements.RejectWithdrawalDto, MP.Application.Contracts",
+                      "type": "MP.Application.Contracts.Settlements.RejectWithdrawalDto",
+                      "typeSimple": "MP.Application.Contracts.Settlements.RejectWithdrawalDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto",
+                    "typeSimple": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto"
+                  }
+                },
+                {
+                  "name": "ExecuteStripePayoutAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "settlementId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto",
+                    "typeSimple": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "GetListAsyncByInput": {
+              "uniqueName": "GetListAsyncByInput",
+              "name": "GetListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/payment-withdrawal",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
+                  "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                  "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "Sorting",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "SkipCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "MaxResultCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "Volo.Abp.Application.Dtos.PagedResultDto<MP.Application.Contracts.Settlements.PaymentWithdrawalDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<MP.Application.Contracts.Settlements.PaymentWithdrawalDto>"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MP.Application.Contracts.Settlements.IPaymentWithdrawalAppService"
+            },
+            "GetStatsAsync": {
+              "uniqueName": "GetStatsAsync",
+              "name": "GetStatsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/payment-withdrawal/stats",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "MP.Application.Contracts.Settlements.PaymentWithdrawalStatsDto",
+                "typeSimple": "MP.Application.Contracts.Settlements.PaymentWithdrawalStatsDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MP.Application.Contracts.Settlements.IPaymentWithdrawalAppService"
+            },
+            "GetAsyncById": {
+              "uniqueName": "GetAsyncById",
+              "name": "GetAsync",
+              "httpMethod": "GET",
+              "url": "api/app/payment-withdrawal/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto",
+                "typeSimple": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MP.Application.Contracts.Settlements.IPaymentWithdrawalAppService"
+            },
+            "ProcessAsyncByInput": {
+              "uniqueName": "ProcessAsyncByInput",
+              "name": "ProcessAsync",
+              "httpMethod": "POST",
+              "url": "api/app/payment-withdrawal/process",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Application.Contracts.Settlements.ProcessWithdrawalDto, MP.Application.Contracts",
+                  "type": "MP.Application.Contracts.Settlements.ProcessWithdrawalDto",
+                  "typeSimple": "MP.Application.Contracts.Settlements.ProcessWithdrawalDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Application.Contracts.Settlements.ProcessWithdrawalDto",
+                  "typeSimple": "MP.Application.Contracts.Settlements.ProcessWithdrawalDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto",
+                "typeSimple": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MP.Application.Contracts.Settlements.IPaymentWithdrawalAppService"
+            },
+            "CompleteAsyncByInput": {
+              "uniqueName": "CompleteAsyncByInput",
+              "name": "CompleteAsync",
+              "httpMethod": "POST",
+              "url": "api/app/payment-withdrawal/complete",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Application.Contracts.Settlements.CompleteWithdrawalDto, MP.Application.Contracts",
+                  "type": "MP.Application.Contracts.Settlements.CompleteWithdrawalDto",
+                  "typeSimple": "MP.Application.Contracts.Settlements.CompleteWithdrawalDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Application.Contracts.Settlements.CompleteWithdrawalDto",
+                  "typeSimple": "MP.Application.Contracts.Settlements.CompleteWithdrawalDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto",
+                "typeSimple": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MP.Application.Contracts.Settlements.IPaymentWithdrawalAppService"
+            },
+            "RejectAsyncByInput": {
+              "uniqueName": "RejectAsyncByInput",
+              "name": "RejectAsync",
+              "httpMethod": "POST",
+              "url": "api/app/payment-withdrawal/reject",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.Application.Contracts.Settlements.RejectWithdrawalDto, MP.Application.Contracts",
+                  "type": "MP.Application.Contracts.Settlements.RejectWithdrawalDto",
+                  "typeSimple": "MP.Application.Contracts.Settlements.RejectWithdrawalDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.Application.Contracts.Settlements.RejectWithdrawalDto",
+                  "typeSimple": "MP.Application.Contracts.Settlements.RejectWithdrawalDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto",
+                "typeSimple": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MP.Application.Contracts.Settlements.IPaymentWithdrawalAppService"
+            },
+            "ExecuteStripePayoutAsyncBySettlementId": {
+              "uniqueName": "ExecuteStripePayoutAsyncBySettlementId",
+              "name": "ExecuteStripePayoutAsync",
+              "httpMethod": "POST",
+              "url": "api/app/payment-withdrawal/execute-stripe-payout/{settlementId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "settlementId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "settlementId",
+                  "name": "settlementId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto",
+                "typeSimple": "MP.Application.Contracts.Settlements.PaymentWithdrawalDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MP.Application.Contracts.Settlements.IPaymentWithdrawalAppService"
+            }
+          }
+        },
         "MP.Application.Terminals.TerminalSettingsAppService": {
           "controllerName": "TerminalSettings",
           "controllerGroupName": "TerminalSettings",
@@ -8515,6 +8982,32 @@
               },
               "allowAnonymous": false,
               "implementFrom": "MP.Carts.ICartAppService"
+            }
+          }
+        },
+        "MP.Controllers.BoothTypeController": {
+          "controllerName": "BoothType",
+          "controllerGroupName": null,
+          "isRemoteService": false,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "MP.Controllers.BoothTypeController",
+          "interfaces": [],
+          "actions": {
+            "GetActiveTypes": {
+              "uniqueName": "GetActiveTypes",
+              "name": "GetActiveTypes",
+              "httpMethod": "GET",
+              "url": "api/app/booth-type/active",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<MP.Application.Contracts.BoothTypes.BoothTypeDto>>",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<MP.Application.Contracts.BoothTypes.BoothTypeDto>>"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.BoothTypeController"
             }
           }
         },
@@ -18587,6 +19080,49 @@
     }
   },
   "types": {
+    "Microsoft.AspNetCore.Mvc.ActionResult": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": []
+    },
+    "Microsoft.AspNetCore.Mvc.ActionResult<T0>": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": [
+        "TValue"
+      ],
+      "properties": [
+        {
+          "name": "Result",
+          "jsonName": null,
+          "type": "Microsoft.AspNetCore.Mvc.ActionResult",
+          "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Value",
+          "jsonName": null,
+          "type": "TValue",
+          "typeSimple": "TValue",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "Microsoft.AspNetCore.Mvc.IActionResult": {
       "baseType": null,
       "isEnum": false,
@@ -25958,6 +26494,447 @@
       "genericArguments": null,
       "properties": null
     },
+    "MP.Application.Contracts.Settlements.CompleteWithdrawalDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "SettlementId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TransactionReference",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProviderMetadata",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Application.Contracts.Settlements.PaymentWithdrawalDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "SettlementNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserEmail",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BankAccountNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CommissionAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "NetAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ItemsCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreationTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProcessedAt",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PaidAt",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProcessedByUserName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TransactionReference",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RejectionReason",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Notes",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PaymentMethod",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PaymentProviderMetadata",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Application.Contracts.Settlements.PaymentWithdrawalStatsDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PendingCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PendingAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProcessingCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProcessingAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompletedThisMonthCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompletedThisMonthAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Application.Contracts.Settlements.ProcessWithdrawalDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "SettlementId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PaymentMethod",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Notes",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.Application.Contracts.Settlements.RejectWithdrawalDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "SettlementId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Reason",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "MP.Application.Contracts.SignalR.NotificationMessageDto": {
       "baseType": null,
       "isEnum": false,
@@ -27413,6 +28390,30 @@
         },
         {
           "name": "IsExpired",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OldStoredTotalPrice",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PriceWasUpdated",
           "jsonName": null,
           "type": "System.Boolean",
           "typeSimple": "boolean",

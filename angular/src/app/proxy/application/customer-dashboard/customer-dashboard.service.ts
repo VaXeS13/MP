@@ -32,7 +32,7 @@ export class CustomerDashboardService {
       url: '/api/app/customer-dashboard/my-active-rentals',
     },
     { apiName: this.apiName,...config });
-
+  
 
   getMyActiveRentalsPaged = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<MyActiveRentalDto>>({
@@ -41,7 +41,7 @@ export class CustomerDashboardService {
       params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
-
+  
 
   getMyNotifications = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<CustomerNotificationDto>>({

@@ -7,8 +7,7 @@
   <p-card>
     <p-table [value]="items" [loading]="loading" responsiveLayout="scroll"
              [paginator]="true" [rows]="pageSize" [totalRecords]="totalItems"
-             [lazy]="true" (onLazyLoad)="onPageChange($event)"
-             [trackBy]="trackByItemId">
+             [lazy]="true" (onLazyLoad)="onPageChange($event)">
       <ng-template pTemplate="header">
         <tr>
           <th>Nazwa</th>

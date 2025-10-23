@@ -10,5 +10,6 @@ import * as PaymentProviders from './payment-providers';
 import * as Payments from './payments';
 import * as Rentals from './rentals';
 import * as Sellers from './sellers';
+import * as Settlements from './settlements';
 import * as Terminals from './terminals';
-export { BoothTypes, Chat, Contracts, CustomerDashboard, Dashboard, Files, HomePageContent, Notifications, PaymentProviders, Payments, Rentals, Sellers, Terminals };
+export { BoothTypes, Chat, Contracts, CustomerDashboard, Dashboard, Files, HomePageContent, Notifications, PaymentProviders, Payments, Rentals, Sellers, Settlements, Terminals };
