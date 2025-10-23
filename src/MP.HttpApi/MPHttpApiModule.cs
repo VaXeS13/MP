@@ -8,6 +8,8 @@ using Volo.Abp.Modularity;
 using Volo.Abp.PermissionManagement.HttpApi;
 using Volo.Abp.Localization;
 using Volo.Abp.TenantManagement;
+using Microsoft.AspNetCore.SignalR;
+using MP.HttpApi.Hubs;
 
 namespace MP;
 
@@ -25,8 +27,9 @@ public class MPHttpApiModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         ConfigureLocalization();
-    }
+          }
 
+  
     private void ConfigureLocalization()
     {
         Configure<AbpLocalizationOptions>(options =>

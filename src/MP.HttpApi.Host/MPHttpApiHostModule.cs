@@ -48,6 +48,8 @@ using Volo.Abp.MultiTenancy;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using MP.Middleware;
+using MP.HttpApi.Hubs;
+using MP.Services;
 // DODAJ TE IMPORTY:
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Logging;
@@ -346,6 +348,7 @@ public class MPHttpApiHostModule : AbpModule
             endpoints.MapHub<MP.Hubs.BoothHub>("/signalr-hubs/booths");
             endpoints.MapHub<MP.Hubs.SalesHub>("/signalr-hubs/sales");
             endpoints.MapHub<MP.Hubs.ChatHub>("/signalr-hubs/chat");
+            endpoints.MapHub<LocalAgentHub>("/hubs/localAgent");
         });
 
         // Register recurring job for P24 payment status checks
@@ -627,6 +630,10 @@ public class MPHttpApiHostModule : AbpModule
             // Max message size (1MB)
             options.MaximumReceiveMessageSize = 1024 * 1024;
         });
+
+        // Register agent management services
+        context.Services.AddTransient<MP.HttpApi.Hubs.IAgentConnectionManager, MP.Services.AgentConnectionManager>();
+        context.Services.AddTransient<MP.HttpApi.Hubs.IAgentCommandProcessor, MP.Services.AgentCommandProcessor>();
     }
 }
 

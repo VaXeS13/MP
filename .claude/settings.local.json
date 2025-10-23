@@ -38,7 +38,11 @@
       "mcp__linear-server__list_teams",
       "mcp__linear-server__list_issue_labels",
       "mcp__linear-server__list_projects",
-      "mcp__linear-server__list_issue_statuses"
+      "mcp__linear-server__list_issue_statuses",
+      "mcp__linear-server__create_issue",
+      "mcp__linear-server__update_issue",
+      "Bash(dotnet build:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nComplete MP-60 and MP-61: Local Agent infrastructure with SignalR communication\n\nMP-60: Podstawowa struktura MP.LocalAgent (100% complete)\n- Created MP.LocalAgent.Contracts shared library with:\n  - Command/Response models for terminal and fiscal printer operations\n  - Enums for CommandStatus, DeviceStatus, AgentConnectionStatus\n  - Models for agent device info and configuration\n- Implemented MP.LocalAgent Windows Service with:\n  - AgentService managing agent lifecycle (startup, shutdown, status)\n  - MockTerminalService with 90% success rate for payment processing\n  - MockFiscalPrinterService for receipt generation\n  - SignalR client for Azure API communication\n  - Configuration management and dependency injection\n  - Comprehensive error handling and retry logic\n\nMP-61: SignalR Hub in MP.HttpApi (100% complete)\n- Created LocalAgentHub for real-time agent communication\n  - Agent registration and lifecycle management\n  - Heartbeat monitoring (5-minute timeout)\n  - Device status tracking (terminal, printer, scanner)\n  - Command execution and response handling\n  - Multi-tenant support with proper authorization\n- Implemented IAgentConnectionManager (MP.HttpApi.Hubs)\n  - Thread-safe connection tracking with ConcurrentDictionary\n  - Agent and device status management\n  - Connection statistics and monitoring\n- Implemented IAgentCommandProcessor (MP.Services)\n  - Command queueing and timeout management\n  - Automatic retry logic with exponential backoff\n  - Response tracking and error handling\n  - 5-minute cleanup timer for completed commands\n- Integration with MP.HttpApi.Host module\n  - SignalR configuration and hub routing\n  - Dependency injection registration\n  - Multi-tenant context handling\n\nBuild Status: ✅ SUCCESS (0 errors, 11 warnings)\n\nInfrastructure complete and ready for:\n- MP-62: IRemoteDeviceProxy implementation\n- MP-63: ItemCheckoutAppService integration\n- MP-65: End-to-end testing\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
