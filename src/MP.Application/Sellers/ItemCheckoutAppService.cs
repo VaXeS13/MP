@@ -231,7 +231,7 @@ namespace MP.Application.Sellers
                     }
 
                     // Process card payment through remote device proxy
-                    var paymentRequest = new TerminalPaymentRequest
+                    var paymentRequest = new MP.Application.Contracts.Devices.TerminalPaymentRequest
                     {
                         Amount = input.TotalAmount,
                         CurrencyCode = "PLN",
@@ -388,7 +388,7 @@ namespace MP.Application.Sellers
                     }
 
                     // Process card payment through remote device proxy
-                    var paymentRequest = new TerminalPaymentRequest
+                    var paymentRequest = new MP.Application.Contracts.Devices.TerminalPaymentRequest
                     {
                         Amount = input.Amount,
                         CurrencyCode = "PLN",
