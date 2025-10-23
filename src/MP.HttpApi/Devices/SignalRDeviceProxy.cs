@@ -125,19 +125,23 @@ namespace MP.HttpApi.Devices
 
     public async Task<TerminalPaymentResult> AuthorizePaymentAsync(TerminalPaymentRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await ExecuteCommandAsync<TerminalPaymentResult>("AuthorizePayment", "Terminal", request, request.TimeoutSeconds, cancellationToken);
+        // Optimized timeout: 15s for terminal payment (UX improvement)
+        var timeout = Math.Min(request.TimeoutSeconds, 15);
+        var result = await ExecuteCommandAsync<TerminalPaymentResult>("AuthorizePayment", "Terminal", request, timeout, cancellationToken);
         return result ?? new TerminalPaymentResult { IsSuccess = false, ErrorMessage = "No response from terminal" };
     }
 
     public async Task<TerminalPaymentResult> CapturePaymentAsync(string transactionId, decimal amount, CancellationToken cancellationToken = default)
     {
-        var result = await ExecuteCommandAsync<TerminalPaymentResult>("CapturePayment", "Terminal", new { TransactionId = transactionId, Amount = amount }, 30, cancellationToken);
+        // Optimized timeout: 15s for terminal operations
+        var result = await ExecuteCommandAsync<TerminalPaymentResult>("CapturePayment", "Terminal", new { TransactionId = transactionId, Amount = amount }, 15, cancellationToken);
         return result ?? new TerminalPaymentResult { IsSuccess = false, ErrorMessage = "No response from terminal" };
     }
 
     public async Task<bool> VoidPaymentAsync(string transactionId, CancellationToken cancellationToken = default)
     {
-        var result = await ExecuteCommandAsync<dynamic>("VoidPayment", "Terminal", new { TransactionId = transactionId }, 30, cancellationToken);
+        // Optimized timeout: 15s for terminal operations
+        var result = await ExecuteCommandAsync<dynamic>("VoidPayment", "Terminal", new { TransactionId = transactionId }, 15, cancellationToken);
         return result != null;
     }
 
@@ -160,24 +164,29 @@ namespace MP.HttpApi.Devices
 
     public async Task<TerminalPaymentResult> RefundAsync(string originalTransactionId, decimal? amount = null, CancellationToken cancellationToken = default)
     {
-        var result = await ExecuteCommandAsync<TerminalPaymentResult>("Refund", "Terminal", new { TransactionId = originalTransactionId, Amount = amount }, 30, cancellationToken);
+        // Optimized timeout: 15s for terminal operations
+        var result = await ExecuteCommandAsync<TerminalPaymentResult>("Refund", "Terminal", new { TransactionId = originalTransactionId, Amount = amount }, 15, cancellationToken);
         return result ?? new TerminalPaymentResult { IsSuccess = false, ErrorMessage = "No response from terminal" };
     }
 
     public async Task<FiscalReceiptResult> PrintFiscalReceiptAsync(FiscalReceiptRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await ExecuteCommandAsync<FiscalReceiptResult>("PrintReceipt", "FiscalPrinter", request, request.TimeoutSeconds, cancellationToken);
+        // Optimized timeout: 10s for fiscal printer operations (UX improvement)
+        var timeout = Math.Min(request.TimeoutSeconds, 10);
+        var result = await ExecuteCommandAsync<FiscalReceiptResult>("PrintReceipt", "FiscalPrinter", request, timeout, cancellationToken);
         return result ?? new FiscalReceiptResult { IsSuccess = false, ErrorMessage = "No response from fiscal printer" };
     }
 
     public async Task<FiscalPrinterDailySummary> GetDailySummaryAsync(CancellationToken cancellationToken = default)
     {
-        return await ExecuteCommandAsync<FiscalPrinterDailySummary>("GetDailySummary", "FiscalPrinter", new { }, 15, cancellationToken) ?? new FiscalPrinterDailySummary();
+        // Optimized timeout: 10s for fiscal printer operations
+        return await ExecuteCommandAsync<FiscalPrinterDailySummary>("GetDailySummary", "FiscalPrinter", new { }, 10, cancellationToken) ?? new FiscalPrinterDailySummary();
     }
 
     public async Task<string?> PrintTestReceiptAsync(CancellationToken cancellationToken = default)
     {
-        var result = await ExecuteCommandAsync<FiscalReceiptResult>("PrintTestReceipt", "FiscalPrinter", new { }, 15, cancellationToken);
+        // Optimized timeout: 10s for fiscal printer operations
+        var result = await ExecuteCommandAsync<FiscalReceiptResult>("PrintTestReceipt", "FiscalPrinter", new { }, 10, cancellationToken);
         return result?.ReceiptId;
     }
 
