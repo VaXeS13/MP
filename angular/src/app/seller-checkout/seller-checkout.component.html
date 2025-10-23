@@ -173,4 +173,53 @@
       </p-card>
     </div>
   </div>
+
+  <!-- Payment Method Selection Dialog -->
+  <p-dialog
+    [(visible)]="showPaymentDialog"
+    [modal]="true"
+    [closable]="true"
+    [showHeader]="true"
+    [header]="'Wybierz metodę płatności'"
+    (onHide)="hidePaymentDialog()"
+    [style]="{ width: '350px' }"
+  >
+    <div class="payment-methods-dialog">
+      <div class="text-center mb-4">
+        <h3 class="m-0">Do zapłaty: {{ (checkoutSummary?.totalAmount || 0).toFixed(2) }} PLN</h3>
+        <small class="text-600">{{ checkoutSummary?.itemsCount || 0 }} przedmiot(ów)</small>
+      </div>
+
+      <button
+        pButton
+        type="button"
+        class="w-full p-button-lg mb-3"
+        icon="pi pi-money-bill"
+        label="💵 Gotówka"
+        (click)="checkout(PaymentMethodType.Cash)"
+        [disabled]="isProcessing"
+      ></button>
+
+      <button
+        pButton
+        type="button"
+        class="w-full p-button-lg p-button-success"
+        icon="pi pi-credit-card"
+        [label]="'💳 Karta'"
+        (click)="checkout(PaymentMethodType.Card)"
+        [disabled]="!availablePaymentMethods?.cardEnabled || isProcessing"
+      >
+        <ng-template #tooltipContent *ngIf="!availablePaymentMethods?.cardEnabled">
+          Terminal jest niedostępny
+        </ng-template>
+      </button>
+
+      <small *ngIf="availablePaymentMethods?.cardEnabled" class="block text-center mt-3 text-600">
+        Terminal: {{ availablePaymentMethods?.terminalProviderName }}
+      </small>
+      <small *ngIf="!availablePaymentMethods?.cardEnabled" class="block text-center mt-3 text-red-600">
+        ⚠️ Terminal niedostępny - tylko gotówka
+      </small>
+    </div>
+  </p-dialog>
 </div>

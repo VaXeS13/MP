@@ -7,6 +7,8 @@ import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { Toast } from 'primeng/toast';
 import { ConfirmDialog } from 'primeng/confirmdialog';
+import { Dialog } from 'primeng/dialog';
+import { Button } from 'primeng/button';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -31,6 +33,8 @@ import { PaymentMethodType } from '../proxy/application/contracts/sellers/paymen
     ProgressSpinner,
     Toast,
     ConfirmDialog,
+    Dialog,
+    Button,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './seller-checkout.component.html',
