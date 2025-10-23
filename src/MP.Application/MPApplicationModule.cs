@@ -98,5 +98,16 @@ public class MPApplicationModule : AbpModule
         services.AddHostedService<ExpiredCartCleanupWorker>();
         services.AddHostedService<ExpiredRentalItemCleanupWorker>();
         services.AddHostedService<MP.Application.Notifications.NotificationReminderWorker>();
+
+        // Rejestruj Remote Device Proxy dla komunikacji z lokalnymi agentami
+        services.AddTransient<IRemoteDeviceProxy, SignalRDeviceProxy>();
+        services.Configure<RemoteDeviceProxyOptions>(options =>
+        {
+            options.CommandTimeout = TimeSpan.FromSeconds(30);
+            options.MaxRetries = 3;
+            options.RetryDelay = TimeSpan.FromSeconds(2);
+            options.EnableOfflineQueue = true;
+            options.MaxQueuedCommands = 1000;
+        });
     }
 }

@@ -12,6 +12,7 @@
     <ProjectReference Include="..\MP.Domain\MP.Domain.csproj" />
     <ProjectReference Include="..\MP.Application.Contracts\MP.Application.Contracts.csproj" />
     <ProjectReference Include="..\MP.EntityFrameworkCore\MP.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\MP.LocalAgent.Contracts\MP.LocalAgent.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -58,6 +58,32 @@ namespace MP.HttpApi.Hubs
         /// Get connection statistics
         /// </summary>
         Task<ConnectionStatistics> GetStatisticsAsync();
+
+        /// <summary>
+        /// Get primary agent ID for a tenant and device type
+        /// </summary>
+        string? GetPrimaryAgentId(Guid tenantId, string deviceType);
+
+        /// <summary>
+        /// Get agent status synchronously
+        /// </summary>
+        AgentStatus? GetAgentStatus(string agentId);
+
+        /// <summary>
+        /// Get device status synchronously
+        /// </summary>
+        DeviceStatusInfo? GetDeviceStatus(Guid tenantId, string deviceType);
+    }
+
+    /// <summary>
+    /// Agent status information
+    /// </summary>
+    public class AgentStatus
+    {
+        public string AgentId { get; set; } = null!;
+        public bool IsConnected { get; set; }
+        public DateTime LastHeartbeat { get; set; }
+        public string? Status { get; set; }
     }
 
     /// <summary>
