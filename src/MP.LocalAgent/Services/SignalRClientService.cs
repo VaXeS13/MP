@@ -210,6 +210,32 @@ namespace MP.LocalAgent.Services
             }
         }
 
+        /// <summary>
+        /// Invoke a Hub method and wait for completion
+        /// </summary>
+        public async Task InvokeAsync(string methodName, object? arg = null)
+        {
+            if (!IsConnected)
+            {
+                throw new SignalRConnectionException("Not connected to SignalR hub");
+            }
+
+            try
+            {
+                if (arg != null)
+                    await _hubConnection!.InvokeAsync(methodName, arg);
+                else
+                    await _hubConnection!.InvokeAsync(methodName);
+
+                _logger.LogDebug("Hub method {MethodName} invoked successfully", methodName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to invoke Hub method {MethodName}", methodName);
+                throw new SignalRConnectionException($"Failed to invoke {methodName}", ex);
+            }
+        }
+
         private void SetupHubEventHandlers()
         {
             if (_hubConnection == null) return;

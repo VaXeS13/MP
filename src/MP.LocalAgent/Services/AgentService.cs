@@ -204,8 +204,8 @@ namespace MP.LocalAgent.Services
 
                 _logger.LogInformation("Registering agent with device info: {DeviceInfo}", deviceInfoJson);
 
-                // TODO: Implement actual registration with SignalR Hub
-                // await _signalRClient.InvokeAsync("RegisterAgent", new { tenantId = _tenantId, agentId = _agentId, deviceInfo });
+                // Register agent with SignalR Hub
+                await _signalRClient.InvokeAsync("RegisterAgent", new { DeviceInfo = deviceInfo });
 
                 _logger.LogInformation("Agent registration completed");
             }

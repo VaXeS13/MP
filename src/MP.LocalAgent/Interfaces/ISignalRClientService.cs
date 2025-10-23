@@ -37,6 +37,11 @@ namespace MP.LocalAgent.Interfaces
         Task SendHeartbeatAsync();
 
         /// <summary>
+        /// Invoke a Hub method and wait for completion
+        /// </summary>
+        Task InvokeAsync(string methodName, object? arg = null);
+
+        /// <summary>
         /// Check if connected to SignalR
         /// </summary>
         bool IsConnected { get; }
