@@ -30,6 +30,7 @@ using MP.Domain.Promotions;
 using MP.Domain.Identity;
 using MP.Domain.HomePageContent;
 using MP.Domain.Files;
+using MP.Domain.LocalAgent;
 
 namespace MP.EntityFrameworkCore;
 
@@ -95,6 +96,7 @@ public class MPDbContext :
     public DbSet<HomePageSection> HomePageSections { get; set; }
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<UploadedFile> UploadedFiles { get; set; }
+    public DbSet<AgentApiKey> AgentApiKeys { get; set; }
 
     #endregion
 

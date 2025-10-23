@@ -15,6 +15,7 @@ using MP.Domain.Items;
 using MP.Domain.Identity;
 using MP.Domain.HomePageContent;
 using MP.Domain.Files;
+using MP.Domain.LocalAgent;
 using MP.Carts;
 using System;
 using System.Collections.Generic;
@@ -1920,6 +1921,101 @@ namespace MP.EntityFrameworkCore
 
                 b.HasIndex(x => x.CreationTime)
                     .HasDatabaseName("IX_UploadedFiles_CreationTime");
+            });
+
+            // Konfiguracja tabeli AgentApiKeys
+            builder.Entity<AgentApiKey>(b =>
+            {
+                b.ToTable(MPConsts.DbTablePrefix + "AgentApiKeys", MPConsts.DbSchema);
+                b.ConfigureByConvention();
+
+                b.Property(x => x.AgentId)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasComment("Unique agent identifier");
+
+                b.Property(x => x.Prefix)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasDefaultValue("mp_agent_")
+                    .HasComment("API key prefix for identification");
+
+                b.Property(x => x.Suffix)
+                    .IsRequired()
+                    .HasMaxLength(8)
+                    .HasComment("Last 8 characters of API key (for display)");
+
+                b.Property(x => x.KeyHash)
+                    .IsRequired()
+                    .HasMaxLength(64)
+                    .HasComment("SHA256 hash of the API key (never store raw key)");
+
+                b.Property(x => x.Salt)
+                    .IsRequired()
+                    .HasMaxLength(32)
+                    .HasComment("Salt for SHA256 hashing");
+
+                b.Property(x => x.Name)
+                    .HasMaxLength(255)
+                    .HasComment("Friendly name for the API key");
+
+                b.Property(x => x.Description)
+                    .HasMaxLength(500)
+                    .HasComment("Description of the API key's purpose");
+
+                b.Property(x => x.ExpiresAt)
+                    .IsRequired()
+                    .HasComment("When the API key expires (90 days from creation)");
+
+                b.Property(x => x.LastUsedAt)
+                    .HasComment("When this API key was last used for authentication");
+
+                b.Property(x => x.UsageCount)
+                    .IsRequired()
+                    .HasDefaultValue(0)
+                    .HasComment("Number of times this key has been used");
+
+                b.Property(x => x.IpWhitelist)
+                    .HasMaxLength(1000)
+                    .HasComment("Comma-separated list of allowed IP addresses (empty = all IPs allowed)");
+
+                b.Property(x => x.IsActive)
+                    .IsRequired()
+                    .HasDefaultValue(true)
+                    .HasComment("Whether the API key is currently active");
+
+                b.Property(x => x.ShouldRotate)
+                    .IsRequired()
+                    .HasDefaultValue(false)
+                    .HasComment("Whether the API key should be rotated soon");
+
+                b.Property(x => x.RotatedFromKeyId)
+                    .HasComment("When this key was rotated from a previous key");
+
+                b.Property(x => x.FailedAuthenticationAttempts)
+                    .IsRequired()
+                    .HasDefaultValue(0)
+                    .HasComment("Current number of failed authentication attempts");
+
+                b.Property(x => x.LockedUntil)
+                    .HasComment("When this key's lock will expire (after 5 failed attempts)");
+
+                // Indexes for common queries
+                b.HasIndex(x => new { x.TenantId, x.KeyHash })
+                    .IsUnique()
+                    .HasDatabaseName("IX_AgentApiKeys_TenantId_KeyHash");
+
+                b.HasIndex(x => new { x.TenantId, x.AgentId })
+                    .HasDatabaseName("IX_AgentApiKeys_TenantId_AgentId");
+
+                b.HasIndex(x => x.IsActive)
+                    .HasDatabaseName("IX_AgentApiKeys_IsActive");
+
+                b.HasIndex(x => x.ExpiresAt)
+                    .HasDatabaseName("IX_AgentApiKeys_ExpiresAt");
+
+                b.HasIndex(x => x.LastUsedAt)
+                    .HasDatabaseName("IX_AgentApiKeys_LastUsedAt");
             });
         }
     }
