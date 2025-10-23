@@ -47,115 +47,120 @@
           <p-progressSpinner></p-progressSpinner>
         </div>
 
-        <!-- Item Details -->
-        <div *ngIf="item && !isLoading" class="mt-4">
+        <!-- Scanned Items Table -->
+        <div *ngIf="scannedItems.length > 0 && !isLoading" class="mt-4">
           <p-card>
             <ng-template pTemplate="header">
               <div class="flex justify-content-between align-items-center p-3">
-                <h3 class="m-0">{{ item.name }}</h3>
+                <h3 class="m-0">Zeskanowane przedmioty ({{ scannedItems.length }})</h3>
                 <button
                   pButton
                   type="button"
                   icon="pi pi-times"
                   class="p-button-rounded p-button-text"
-                  (click)="clearItem()"
+                  (click)="clearAll()"
+                  title="Wyczyść wszystko"
                 ></button>
               </div>
             </ng-template>
 
-            <div class="grid">
-              <div class="col-12 md:col-8">
-                <div class="field">
-                  <label class="font-bold">Description</label>
-                  <p>{{ item.description || 'No description' }}</p>
-                </div>
-
-                <div class="field">
-                  <label class="font-bold">Category</label>
-                  <p>{{ item.category || 'Uncategorized' }}</p>
-                </div>
-
-                <div class="field">
-                  <label class="font-bold">Customer</label>
-                  <p>
-                    {{ item.customerName }}
-                    <span *ngIf="item.customerEmail"> ({{ item.customerEmail }})</span>
-                  </p>
-                </div>
-
-                <div class="field">
-                  <label class="font-bold">Status</label>
-                  <p>
-                    <span
-                      class="px-2 py-1 border-round"
-                      [class.bg-green-100]="item.status === 'ForSale'"
-                      [class.text-green-800]="item.status === 'ForSale'"
-                      [class.bg-red-100]="item.status !== 'ForSale'"
-                      [class.text-red-800]="item.status !== 'ForSale'"
-                    >
-                      {{ item.status }}
-                    </span>
-                  </p>
-                </div>
-              </div>
-
-              <div class="col-12 md:col-4">
-                <img
-                  *ngIf="item.photoUrl"
-                  [src]="item.photoUrl"
-                  [alt]="item.name"
-                  class="w-full border-round"
-                />
-              </div>
+            <!-- Items Table -->
+            <div class="table-responsive">
+              <table class="p-datatable-table">
+                <thead>
+                  <tr>
+                    <th>Nazwa</th>
+                    <th>Kategoria</th>
+                    <th>Klient</th>
+                    <th>Cena</th>
+                    <th>Prowizja</th>
+                    <th>Netto</th>
+                    <th>Akcje</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of scannedItems">
+                    <td>
+                      <div class="flex align-items-center">
+                        <i class="pi pi-box mr-2"></i>
+                        <span>{{ item.name }}</span>
+                      </div>
+                    </td>
+                    <td>{{ item.category || 'Brak' }}</td>
+                    <td>
+                      <small>
+                        {{ item.customerName }}
+                        <span *ngIf="item.customerEmail" class="text-600">({{ item.customerEmail }})</span>
+                      </small>
+                    </td>
+                    <td class="text-right">
+                      <strong>{{ (item.actualPrice || 0).toFixed(2) }} PLN</strong>
+                    </td>
+                    <td class="text-right">
+                      <span class="text-orange-600">{{ (item.commissionAmount || 0).toFixed(2) }} PLN</span>
+                      <small class="block text-600">({{ item.commissionPercentage }}%)</small>
+                    </td>
+                    <td class="text-right">
+                      <span class="text-green-600 font-semibold">{{ (item.customerAmount || 0).toFixed(2) }} PLN</span>
+                    </td>
+                    <td>
+                      <button
+                        pButton
+                        type="button"
+                        icon="pi pi-trash"
+                        class="p-button-rounded p-button-text p-button-danger"
+                        (click)="removeItem(item.id)"
+                        title="Usuń przedmiot"
+                      ></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
+            <!-- Summary Section -->
             <ng-template pTemplate="footer">
-              <div class="flex justify-content-between align-items-center">
-                <div>
-                  <h3 class="m-0">Price: {{ item.actualPrice || 'Not set' }} PLN</h3>
-                  <small class="text-600"
-                    >Commission: {{ item.commissionPercentage }}%</small
-                  >
-                </div>
-
-                <div class="flex gap-2">
-                  <!-- Cash Payment Button -->
-                  <button
-                    *ngIf="availablePaymentMethods?.cashEnabled"
-                    pButton
-                    type="button"
-                    class="p-button-success"
-                    (click)="checkout(PaymentMethodType.Cash)"
-                    [disabled]="!item.actualPrice || item.status !== 'ForSale' || isProcessing"
-                  >
-                    <i class="pi pi-money-bill" *ngIf="!isProcessing"></i>
-                    <i *ngIf="isProcessing" class="pi pi-spin pi-spinner"></i>
-                    <span class="ml-2">Cash</span>
-                  </button>
-
-                  <!-- Card Payment Button -->
-                  <button
-                    *ngIf="availablePaymentMethods?.cardEnabled"
-                    pButton
-                    type="button"
-                    class="p-button-info"
-                    (click)="checkout(PaymentMethodType.Card)"
-                    [disabled]="!item.actualPrice || item.status !== 'ForSale' || isProcessing"
-                  >
-                    <i class="pi pi-credit-card" *ngIf="!isProcessing"></i>
-                    <i *ngIf="isProcessing" class="pi pi-spin pi-spinner"></i>
-                    <span class="ml-2">Card</span>
-                  </button>
-
-                  <p-message
-                    *ngIf="!availablePaymentMethods?.cashEnabled && !availablePaymentMethods?.cardEnabled"
-                    severity="warn"
-                    text="No payment methods available"
-                  ></p-message>
+              <div class="border-top-1 surface-border pt-3">
+                <div class="grid">
+                  <div class="col-12 md:col-6">
+                    <div class="flex justify-content-between">
+                      <span class="text-600">Liczba przedmiotów:</span>
+                      <span class="font-bold">{{ checkoutSummary?.itemsCount || 0 }}</span>
+                    </div>
+                    <div class="flex justify-content-between mt-2">
+                      <span class="text-600">Suma prowizji:</span>
+                      <span class="font-bold text-orange-600">{{ (checkoutSummary?.totalCommission || 0).toFixed(2) }} PLN</span>
+                    </div>
+                  </div>
+                  <div class="col-12 md:col-6 text-right">
+                    <div class="mb-2">
+                      <span class="text-600 mr-2">Suma całkowita:</span>
+                      <span class="text-2xl font-bold text-primary">{{ (checkoutSummary?.totalAmount || 0).toFixed(2) }} PLN</span>
+                    </div>
+                    <button
+                      pButton
+                      type="button"
+                      class="p-button-success p-button-lg"
+                      (click)="showPaymentConfirmation()"
+                      [disabled]="isProcessing"
+                    >
+                      <i class="pi pi-credit-card mr-2" *ngIf="!isProcessing"></i>
+                      <i *ngIf="isProcessing" class="pi pi-spin pi-spinner mr-2"></i>
+                      <span>Zapłać</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </ng-template>
           </p-card>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="scannedItems.length === 0 && !isLoading" class="mt-4 text-center">
+          <p-message
+            severity="info"
+            text="Zeskanuj kod kreskowy, aby dodać przedmioty do sprzedaży"
+          ></p-message>
         </div>
 
         <!-- Terminal Status -->

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
 
@@ -23,6 +24,16 @@ namespace MP.Application.Contracts.Sellers
         /// Checkout an item with specified payment method
         /// </summary>
         Task<CheckoutResultDto> CheckoutItemAsync(CheckoutItemDto input);
+
+        /// <summary>
+        /// Checkout multiple items with specified payment method
+        /// </summary>
+        Task<CheckoutResultDto> CheckoutItemsAsync(CheckoutItemsDto input);
+
+        /// <summary>
+        /// Calculate checkout summary for multiple items
+        /// </summary>
+        Task<CheckoutSummaryDto> CalculateCheckoutSummaryAsync(List<Guid> itemIds);
 
         /// <summary>
         /// Check terminal status

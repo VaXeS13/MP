@@ -13,6 +13,12 @@ export interface CheckoutItemDto {
   amount: number;
 }
 
+export interface CheckoutItemsDto {
+  itemSheetItemIds: string[];
+  paymentMethod: PaymentMethodType;
+  totalAmount: number;
+}
+
 export interface CheckoutResultDto {
   success: boolean;
   transactionId?: string;
@@ -20,6 +26,14 @@ export interface CheckoutResultDto {
   paymentMethod?: PaymentMethodType;
   amount: number;
   processedAt?: string;
+}
+
+export interface CheckoutSummaryDto {
+  items: ItemForCheckoutDto[];
+  totalAmount: number;
+  totalCommission: number;
+  totalCustomerAmount: number;
+  itemsCount: number;
 }
 
 export interface FindItemByBarcodeDto {
@@ -36,6 +50,8 @@ export interface ItemForCheckoutDto {
   barcode?: string;
   actualPrice?: number;
   commissionPercentage: number;
+  commissionAmount: number;
+  customerAmount: number;
   status?: string;
   customerName?: string;
   customerEmail?: string;

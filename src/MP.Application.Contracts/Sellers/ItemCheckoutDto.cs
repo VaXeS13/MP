@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace MP.Application.Contracts.Sellers
@@ -27,6 +28,8 @@ namespace MP.Application.Contracts.Sellers
         public string? Barcode { get; set; }
         public decimal? ActualPrice { get; set; }
         public decimal CommissionPercentage { get; set; }
+        public decimal CommissionAmount { get; set; }
+        public decimal CustomerAmount { get; set; }
         public string Status { get; set; } = null!;
 
         // Rental customer info
@@ -49,6 +52,34 @@ namespace MP.Application.Contracts.Sellers
         [Required]
         [Range(0.01, 1000000)]
         public decimal Amount { get; set; }
+    }
+
+    /// <summary>
+    /// Request to checkout multiple items
+    /// </summary>
+    public class CheckoutItemsDto
+    {
+        [Required]
+        public List<Guid> ItemSheetItemIds { get; set; } = new();
+
+        [Required]
+        public PaymentMethodType PaymentMethod { get; set; }
+
+        [Required]
+        [Range(0.01, 1000000)]
+        public decimal TotalAmount { get; set; }
+    }
+
+    /// <summary>
+    /// Summary of items for checkout
+    /// </summary>
+    public class CheckoutSummaryDto
+    {
+        public List<ItemForCheckoutDto> Items { get; set; } = new();
+        public decimal TotalAmount { get; set; }
+        public decimal TotalCommission { get; set; }
+        public decimal TotalCustomerAmount { get; set; }
+        public int ItemsCount { get; set; }
     }
 
     /// <summary>

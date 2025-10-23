@@ -78,6 +78,8 @@ namespace MP.Application.Sellers
                     Barcode = x.Barcode,
                     ActualPrice = x.Item.Price,
                     CommissionPercentage = x.CommissionPercentage,
+                    CommissionAmount = x.Item.Price * (x.CommissionPercentage / 100m),
+                    CustomerAmount = x.Item.Price - (x.Item.Price * (x.CommissionPercentage / 100m)),
                     Status = x.Status.ToString(),
                     CustomerName = x.ItemSheet.Rental != null && x.ItemSheet.Rental.User != null
                         ? (x.ItemSheet.Rental.User.Name ?? x.ItemSheet.Rental.User.UserName ?? "Unknown")
@@ -122,6 +124,238 @@ namespace MP.Application.Sellers
             }
 
             return result;
+        }
+
+        public async Task<CheckoutSummaryDto> CalculateCheckoutSummaryAsync(List<Guid> itemIds)
+        {
+            if (itemIds == null || !itemIds.Any())
+            {
+                throw new UserFriendlyException("Item IDs cannot be empty");
+            }
+
+            var queryable = await _itemSheetItemRepository.GetQueryableAsync();
+            var items = await queryable
+                .AsNoTracking()
+                .Where(x => itemIds.Contains(x.Id) && x.Status == ItemSheetItemStatus.ForSale)
+                .Select(x => new ItemForCheckoutDto
+                {
+                    Id = x.Id,
+                    RentalId = x.ItemSheet.RentalId ?? Guid.Empty,
+                    Name = x.Item.Name,
+                    Description = null,
+                    Category = x.Item.Category,
+                    PhotoUrl = null,
+                    Barcode = x.Barcode,
+                    ActualPrice = x.Item.Price,
+                    CommissionPercentage = x.CommissionPercentage,
+                    CommissionAmount = x.Item.Price * (x.CommissionPercentage / 100m),
+                    CustomerAmount = x.Item.Price - (x.Item.Price * (x.CommissionPercentage / 100m)),
+                    Status = x.Status.ToString(),
+                    CustomerName = x.ItemSheet.Rental != null && x.ItemSheet.Rental.User != null
+                        ? (x.ItemSheet.Rental.User.Name ?? x.ItemSheet.Rental.User.UserName ?? "Unknown")
+                        : "Unknown",
+                    CustomerEmail = x.ItemSheet.Rental != null ? x.ItemSheet.Rental.User.Email : null,
+                    CustomerPhone = x.ItemSheet.Rental != null ? x.ItemSheet.Rental.User.PhoneNumber : null
+                })
+                .ToListAsync();
+
+            var summary = new CheckoutSummaryDto
+            {
+                Items = items,
+                ItemsCount = items.Count,
+                TotalAmount = items.Sum(x => x.ActualPrice ?? 0),
+                TotalCommission = items.Sum(x => x.CommissionAmount),
+                TotalCustomerAmount = items.Sum(x => x.CustomerAmount)
+            };
+
+            return summary;
+        }
+
+        public async Task<CheckoutResultDto> CheckoutItemsAsync(CheckoutItemsDto input)
+        {
+            if (input.ItemSheetItemIds == null || !input.ItemSheetItemIds.Any())
+            {
+                throw new UserFriendlyException("No items provided for checkout");
+            }
+
+            // Get all items
+            var queryable = await _itemSheetItemRepository.GetQueryableAsync();
+            var items = await queryable
+                .Include(x => x.Item)
+                .Include(x => x.ItemSheet)
+                .Where(x => input.ItemSheetItemIds.Contains(x.Id))
+                .ToListAsync();
+
+            if (!items.Any())
+            {
+                throw new UserFriendlyException("No items found");
+            }
+
+            // Validate all items are for sale
+            var invalidItems = items.Where(x => x.Status != ItemSheetItemStatus.ForSale).ToList();
+            if (invalidItems.Any())
+            {
+                throw new UserFriendlyException($"Some items are not available for sale. Status: {string.Join(", ", invalidItems.Select(x => x.Status))}");
+            }
+
+            // Calculate expected total
+            var expectedTotal = items.Sum(x => x.Item.Price);
+            if (Math.Abs(input.TotalAmount - expectedTotal) > 0.01m)
+            {
+                throw new UserFriendlyException($"Total amount mismatch. Expected: {expectedTotal}, Received: {input.TotalAmount}");
+            }
+
+            string? transactionId = null;
+
+            try
+            {
+                // Handle payment based on method
+                if (input.PaymentMethod == PaymentMethodType.Cash)
+                {
+                    transactionId = $"CASH-{Guid.NewGuid():N}";
+                    _logger.LogInformation(
+                        "Processing cash payment for {ItemCount} items - Total Amount: {Amount}",
+                        items.Count, input.TotalAmount);
+                }
+                else if (input.PaymentMethod == PaymentMethodType.Card)
+                {
+                    // Get ACTIVE terminal provider
+                    var provider = await _terminalFactory.GetActiveProviderAsync(CurrentTenant.Id);
+                    if (provider == null)
+                    {
+                        throw new UserFriendlyException("Card payments are not configured for this location. Please configure an active terminal.");
+                    }
+
+                    var settings = await _terminalFactory.GetActiveTerminalSettingsAsync(CurrentTenant.Id);
+
+                    // Process card payment on active terminal
+                    var paymentRequest = new TerminalPaymentRequest
+                    {
+                        Amount = input.TotalAmount,
+                        Currency = settings?.Currency ?? "PLN",
+                        Description = $"Sale of {items.Count} items",
+                        RentalItemId = items.First().Id,
+                        RentalItemName = $"Multiple items ({items.Count})",
+                        Metadata = new()
+                        {
+                            ["itemCount"] = items.Count.ToString(),
+                            ["itemIds"] = string.Join(",", input.ItemSheetItemIds)
+                        }
+                    };
+
+                    _logger.LogInformation(
+                        "Processing card payment on {Provider} terminal for {ItemCount} items",
+                        provider.DisplayName, items.Count);
+
+                    var paymentResult = await provider.AuthorizePaymentAsync(paymentRequest);
+
+                    if (!paymentResult.Success)
+                    {
+                        _logger.LogWarning(
+                            "Card payment declined for {ItemCount} items - Error: {Error}",
+                            items.Count, paymentResult.ErrorMessage);
+
+                        return new CheckoutResultDto
+                        {
+                            Success = false,
+                            ErrorMessage = paymentResult.ErrorMessage ?? "Payment declined",
+                            PaymentMethod = input.PaymentMethod,
+                            Amount = input.TotalAmount,
+                            ProcessedAt = DateTime.UtcNow
+                        };
+                    }
+
+                    transactionId = paymentResult.TransactionId;
+
+                    // Auto-capture the payment
+                    if (paymentResult.Status == "authorized" || paymentResult.Status == "Authorized")
+                    {
+                        var captureResult = await provider.CapturePaymentAsync(transactionId!, input.TotalAmount);
+                        if (!captureResult.Success)
+                        {
+                            _logger.LogError(
+                                "Failed to capture payment {TransactionId} for {ItemCount} items",
+                                transactionId, items.Count);
+
+                            throw new UserFriendlyException("Payment authorized but capture failed. Please contact support.");
+                        }
+                    }
+
+                    _logger.LogInformation(
+                        "Card payment successful for {ItemCount} items - Transaction: {TransactionId}",
+                        items.Count, transactionId);
+                }
+
+                // Mark all items as sold
+                foreach (var item in items)
+                {
+                    item.MarkAsSold(DateTime.UtcNow);
+                }
+                await _itemSheetItemRepository.UpdateManyAsync(items);
+
+                // Send notifications for each unique customer
+                var uniqueRentals = items
+                    .Where(x => x.ItemSheet?.RentalId.HasValue == true)
+                    .Select(x => x.ItemSheet!.RentalId!.Value)
+                    .Distinct()
+                    .ToList();
+
+                foreach (var rentalId in uniqueRentals)
+                {
+                    var rental = await _rentalRepository.GetAsync(rentalId);
+                    var customerItems = items.Where(x => x.ItemSheet?.RentalId == rentalId).ToList();
+
+                    await _signalRNotificationService.SendItemSoldNotificationAsync(
+                        rental.UserId,
+                        customerItems.First().Id,
+                        $"Multiple items ({customerItems.Count})",
+                        input.TotalAmount
+                    );
+
+                    // Publish ItemSoldEvent for each item
+                    foreach (var item in customerItems)
+                    {
+                        await _localEventBus.PublishAsync(new ItemSoldEvent
+                        {
+                            UserId = rental.UserId,
+                            ItemId = item.Id,
+                            ItemName = item.Item.Name ?? "Item",
+                            Price = item.Item.Price,
+                            Currency = "PLN",
+                            SoldAt = DateTime.UtcNow,
+                            RentalId = rental.Id
+                        });
+                    }
+                }
+
+                // Refresh dashboard for admins
+                await _signalRNotificationService.SendDashboardRefreshAsync(CurrentTenant.Id);
+
+                _logger.LogInformation(
+                    "Successfully checked out {ItemCount} items with {PaymentMethod} - Transaction: {TransactionId}",
+                    items.Count, input.PaymentMethod, transactionId);
+
+                // Print fiscal receipt if configured
+                await PrintFiscalReceiptAsync(items, input.TotalAmount, input.PaymentMethod.ToString(), transactionId);
+
+                return new CheckoutResultDto
+                {
+                    Success = true,
+                    TransactionId = transactionId,
+                    PaymentMethod = input.PaymentMethod,
+                    Amount = input.TotalAmount,
+                    ProcessedAt = DateTime.UtcNow
+                };
+            }
+            catch (UserFriendlyException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during batch checkout of {ItemCount} items", items.Count);
+                throw new UserFriendlyException("An error occurred during checkout. Please try again.");
+            }
         }
 
         public async Task<CheckoutResultDto> CheckoutItemAsync(CheckoutItemDto input)
@@ -318,7 +552,7 @@ namespace MP.Application.Sellers
             }
         }
 
-        private async Task PrintFiscalReceiptAsync(ItemSheetItem itemSheetItem, decimal amount, string paymentMethod, string? transactionId)
+        private async Task PrintFiscalReceiptAsync(List<ItemSheetItem> items, decimal amount, string paymentMethod, string? transactionId)
         {
             try
             {
@@ -332,23 +566,26 @@ namespace MP.Application.Sellers
                 }
 
                 _logger.LogInformation(
-                    "Printing fiscal receipt on {Provider} for item {ItemId}",
-                    fiscalPrinter.DisplayName, itemSheetItem.Id);
+                    "Printing fiscal receipt on {Provider} for {ItemCount} items",
+                    fiscalPrinter.DisplayName, items.Count);
 
-                // Build fiscal receipt request
+                // Build fiscal receipt request for multiple items
+                var receiptItems = new List<FiscalReceiptItem>();
+                foreach (var item in items)
+                {
+                    receiptItems.Add(new FiscalReceiptItem
+                    {
+                        Name = item.Item.Name ?? "Item",
+                        Quantity = 1,
+                        UnitPrice = item.Item.Price,
+                        TaxRate = "A", // A = 23% VAT in Poland
+                        TotalPrice = item.Item.Price
+                    });
+                }
+
                 var fiscalRequest = new FiscalReceiptRequest
                 {
-                    Items = new List<FiscalReceiptItem>
-                    {
-                        new FiscalReceiptItem
-                        {
-                            Name = itemSheetItem.Item.Name ?? "Item",
-                            Quantity = 1,
-                            UnitPrice = amount,
-                            TaxRate = "A", // A = 23% VAT in Poland
-                            TotalPrice = amount
-                        }
-                    },
+                    Items = receiptItems,
                     TotalAmount = amount,
                     PaymentMethod = paymentMethod,
                     TransactionId = transactionId
@@ -359,22 +596,27 @@ namespace MP.Application.Sellers
                 if (receiptResult.Success)
                 {
                     _logger.LogInformation(
-                        "Fiscal receipt printed successfully for item {ItemId} - Receipt: {FiscalNumber}",
-                        itemSheetItem.Id, receiptResult.FiscalNumber);
+                        "Fiscal receipt printed successfully for {ItemCount} items - Receipt: {FiscalNumber}",
+                        items.Count, receiptResult.FiscalNumber);
                 }
                 else
                 {
                     _logger.LogWarning(
-                        "Failed to print fiscal receipt for item {ItemId} - Error: {Error}",
-                        itemSheetItem.Id, receiptResult.ErrorMessage);
+                        "Failed to print fiscal receipt for {ItemCount} items - Error: {Error}",
+                        items.Count, receiptResult.ErrorMessage);
                     // Don't throw exception - sale already completed, fiscal receipt is optional
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error printing fiscal receipt for item {ItemId}", itemSheetItem.Id);
+                _logger.LogError(ex, "Error printing fiscal receipt for {ItemCount} items", items.Count);
                 // Don't throw - fiscal receipt printing should not prevent sale completion
             }
+        }
+
+        private async Task PrintFiscalReceiptAsync(ItemSheetItem itemSheetItem, decimal amount, string paymentMethod, string? transactionId)
+        {
+            await PrintFiscalReceiptAsync(new List<ItemSheetItem> { itemSheetItem }, amount, paymentMethod, transactionId);
         }
     }
 }

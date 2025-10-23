@@ -15,6 +15,7 @@ import { ItemCheckoutService } from '../proxy/application/sellers/item-checkout.
 import {
   ItemForCheckoutDto,
   AvailablePaymentMethodsDto,
+  CheckoutSummaryDto,
 } from '../proxy/application/contracts/sellers/models';
 import { PaymentMethodType } from '../proxy/application/contracts/sellers/payment-method-type.enum';
 
@@ -39,10 +40,12 @@ export class SellerCheckoutComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   barcode = '';
-  item: ItemForCheckoutDto | null = null;
+  scannedItems: ItemForCheckoutDto[] = [];
+  checkoutSummary: CheckoutSummaryDto | null = null;
   availablePaymentMethods: AvailablePaymentMethodsDto | null = null;
   isLoading = false;
   isProcessing = false;
+  showPaymentDialog = false;
 
   PaymentMethodType = PaymentMethodType;
 
@@ -96,7 +99,6 @@ export class SellerCheckoutComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
-    this.item = null;
 
     this.itemCheckoutService
       .findItemByBarcode({ barcode: this.barcode.trim() })
@@ -106,13 +108,26 @@ export class SellerCheckoutComponent implements OnInit, OnDestroy {
           this.isLoading = false;
 
           if (result) {
-            this.item = result;
-
-            if (result.status !== 'ForSale') {
+            // Check if item already scanned
+            if (this.scannedItems.find(x => x.id === result.id)) {
+              this.messageService.add({
+                severity: 'warn',
+                summary: 'Already Scanned',
+                detail: 'This item is already in the list',
+              });
+            } else if (result.status !== 'ForSale') {
               this.messageService.add({
                 severity: 'warn',
                 summary: 'Item Not Available',
                 detail: `This item is ${result.status} and cannot be sold`,
+              });
+            } else {
+              this.scannedItems.push(result);
+              this.calculateSummary();
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Item Added',
+                detail: `${result.name} added to list`,
               });
             }
           } else {
@@ -121,8 +136,9 @@ export class SellerCheckoutComponent implements OnInit, OnDestroy {
               summary: 'Not Found',
               detail: 'No item found with this barcode',
             });
-            this.barcode = '';
           }
+
+          this.barcode = '';
         },
         error: error => {
           this.isLoading = false;
@@ -135,16 +151,53 @@ export class SellerCheckoutComponent implements OnInit, OnDestroy {
       });
   }
 
-  checkout(paymentMethod: PaymentMethodType): void {
-    if (!this.item || !this.item.actualPrice) {
+  private calculateSummary(): void {
+    if (this.scannedItems.length === 0) {
+      this.checkoutSummary = null;
       return;
     }
 
-    const paymentMethodName = paymentMethod === PaymentMethodType.Cash ? 'Cash' : 'Card';
+    this.checkoutSummary = {
+      items: [...this.scannedItems],
+      itemsCount: this.scannedItems.length,
+      totalAmount: this.scannedItems.reduce((sum, item) => sum + (item.actualPrice || 0), 0),
+      totalCommission: this.scannedItems.reduce((sum, item) => sum + (item.commissionAmount || 0), 0),
+      totalCustomerAmount: this.scannedItems.reduce((sum, item) => sum + (item.customerAmount || 0), 0)
+    };
+  }
+
+  removeItem(itemId: string): void {
+    this.scannedItems = this.scannedItems.filter(x => x.id !== itemId);
+    this.calculateSummary();
+  }
+
+  clearAll(): void {
+    this.scannedItems = [];
+    this.checkoutSummary = null;
+    this.barcode = '';
+  }
+
+  showPaymentConfirmation(): void {
+    if (!this.checkoutSummary || this.checkoutSummary.itemsCount === 0) {
+      return;
+    }
+    this.showPaymentDialog = true;
+  }
+
+  hidePaymentDialog(): void {
+    this.showPaymentDialog = false;
+  }
+
+  checkout(paymentMethod: PaymentMethodType): void {
+    if (!this.checkoutSummary || this.checkoutSummary.itemsCount === 0) {
+      return;
+    }
+
+    const paymentMethodName = paymentMethod === PaymentMethodType.Cash ? 'Gotówka' : 'Karta';
 
     this.confirmationService.confirm({
-      message: `Checkout ${this.item.name} for ${this.item.actualPrice} using ${paymentMethodName}?`,
-      header: 'Confirm Checkout',
+      message: `Zapłacić ${this.checkoutSummary.totalAmount.toFixed(2)} PLN za ${this.checkoutSummary.itemsCount} przedmioty metodą ${paymentMethodName}?`,
+      header: 'Potwierdź sprzedaż',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.processCheckout(paymentMethod);
@@ -153,17 +206,18 @@ export class SellerCheckoutComponent implements OnInit, OnDestroy {
   }
 
   private processCheckout(paymentMethod: PaymentMethodType): void {
-    if (!this.item || !this.item.actualPrice) {
+    if (!this.checkoutSummary || this.checkoutSummary.itemsCount === 0) {
       return;
     }
 
     this.isProcessing = true;
+    this.hidePaymentDialog();
 
     this.itemCheckoutService
-      .checkoutItem({
-        itemSheetItemId: this.item.id,
+      .checkoutItems({
+        itemSheetItemIds: this.scannedItems.map(x => x.id),
         paymentMethod: paymentMethod,
-        amount: this.item.actualPrice,
+        totalAmount: this.checkoutSummary.totalAmount,
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -173,19 +227,18 @@ export class SellerCheckoutComponent implements OnInit, OnDestroy {
           if (result.success) {
             this.messageService.add({
               severity: 'success',
-              summary: 'Success',
-              detail: `Item sold successfully! Transaction: ${result.transactionId}`,
+              summary: 'Sukces',
+              detail: `Sprzedaż udana! Transakcja: ${result.transactionId}`,
               life: 5000,
             });
 
             // Reset form
-            this.item = null;
-            this.barcode = '';
+            this.clearAll();
           } else {
             this.messageService.add({
               severity: 'error',
-              summary: 'Payment Failed',
-              detail: result.errorMessage || 'Payment was declined',
+              summary: 'Płatność odrzucona',
+              detail: result.errorMessage || 'Transakcja odrzucona',
             });
           }
         },
@@ -193,15 +246,10 @@ export class SellerCheckoutComponent implements OnInit, OnDestroy {
           this.isProcessing = false;
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
-            detail: error.error?.error?.message || 'Checkout failed',
+            summary: 'Błąd',
+            detail: error.error?.error?.message || 'Wystąpił błąd podczas sprzedaży',
           });
         },
       });
-  }
-
-  clearItem(): void {
-    this.item = null;
-    this.barcode = '';
   }
 }
