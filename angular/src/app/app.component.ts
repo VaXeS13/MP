@@ -3,6 +3,8 @@ import { TenantService } from './shared/services/tenant.service';
 import { SignalRService } from './services/signalr.service';
 import { NotificationService } from './services/notification.service';
 import { BoothSignalRService } from './services/booth-signalr.service';
+import { SalesSignalRService } from './services/sales-signalr.service';
+import { DashboardSignalRService } from './services/dashboard-signalr.service';
 import { ChatService } from './services/chat.service';
 import { AuthService, ConfigStateService } from '@abp/ng.core';
 
@@ -18,6 +20,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private signalRService: SignalRService,
     private notificationService: NotificationService,
     private boothSignalRService: BoothSignalRService,
+    private salesSignalRService: SalesSignalRService,
+    private dashboardSignalRService: DashboardSignalRService,
     private chatService: ChatService,
     private authService: AuthService,
     private configState: ConfigStateService
@@ -55,6 +59,8 @@ export class AppComponent implements OnInit, OnDestroy {
       console.log('AppComponent: Initializing SignalR services with userId:', currentUserId);
       this.notificationService.initialize();
       this.boothSignalRService.initialize();
+      this.salesSignalRService.initialize();
+      this.dashboardSignalRService.initialize();
       this.chatService.initialize(currentUserId);
       console.log('AppComponent: SignalR initialized successfully - all hubs ready');
     } catch (error) {

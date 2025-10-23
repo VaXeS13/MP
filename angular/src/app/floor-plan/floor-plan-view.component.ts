@@ -7,7 +7,8 @@ import {
   AfterViewInit,
   ChangeDetectorRef
 } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Canvas, Rect, Text, Group, Shadow, FabricImage } from 'fabric';
 import { ElementPosition } from '../shared/models/floor-plan.model';
@@ -414,10 +415,12 @@ export class FloorPlanViewComponent implements OnInit, AfterViewInit, OnDestroy 
   currentCart: CartDto | null = null;
   private cartSubscription?: Subscription;
   private boothUpdatesSubscription?: Subscription;
+  private currentFloorPlanSubscription?: Subscription;
 
   // State
   loading = false;
   private viewInitialized = false;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private floorPlanService: FloorPlanService,
@@ -454,21 +457,23 @@ export class FloorPlanViewComponent implements OnInit, AfterViewInit, OnDestroy 
       }
     });
 
-    // Subscribe to booth status updates via SignalR
+    // Subscribe to booth status updates via SignalR (all booth changes in tenant)
     console.log('FloorPlanView: Setting up booth updates subscription...');
-    this.boothUpdatesSubscription = this.boothSignalRService.boothUpdates.subscribe(update => {
-      console.log('FloorPlanView: ✅ Received booth status update via SignalR:', update);
-      console.log('FloorPlanView: Current state - selectedFloorPlanId:', this.selectedFloorPlanId, 'currentFloorPlan:', this.currentFloorPlan?.name);
+    this.boothUpdatesSubscription = this.boothSignalRService.boothUpdates
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(update => {
+        console.log('FloorPlanView: ✅ Received booth status update via SignalR:', update);
+        console.log('FloorPlanView: Current state - selectedFloorPlanId:', this.selectedFloorPlanId, 'currentFloorPlan:', this.currentFloorPlan?.name);
 
-      // Refresh floor plan to reflect booth status changes
-      if (this.selectedFloorPlanId && this.currentFloorPlan) {
-        console.log('FloorPlanView: Refreshing floor plan due to booth update...');
-        // Re-fetch floor plan data with updated booth availability
-        this.selectFloorPlan(this.selectedFloorPlanId);
-      } else {
-        console.warn('FloorPlanView: Cannot refresh - no floor plan selected');
-      }
-    });
+        // Refresh floor plan to reflect booth status changes
+        if (this.selectedFloorPlanId && this.currentFloorPlan) {
+          console.log('FloorPlanView: Refreshing floor plan due to booth update...');
+          // Re-fetch floor plan data with updated booth availability
+          this.selectFloorPlan(this.selectedFloorPlanId);
+        } else {
+          console.warn('FloorPlanView: Cannot refresh - no floor plan selected');
+        }
+      });
     console.log('FloorPlanView: ✅ Booth updates subscription active');
 
     // Check if we have a floor plan ID in the route
@@ -494,6 +499,23 @@ export class FloorPlanViewComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   ngOnDestroy() {
+    // Unsubscribe from floor plan updates
+    this.unsubscribeFromFloorPlanUpdates();
+
+    // Clean up all subscriptions
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    // Clean up cart subscription
+    if (this.cartSubscription) {
+      this.cartSubscription.unsubscribe();
+    }
+
+    // Clean up booth updates subscription
+    if (this.boothUpdatesSubscription) {
+      this.boothUpdatesSubscription.unsubscribe();
+    }
+
     if (this.canvas) {
       this.canvas.dispose();
     }
@@ -561,15 +583,52 @@ export class FloorPlanViewComponent implements OnInit, AfterViewInit, OnDestroy 
     if (plan) {
       this.selectedLevel = plan.level;
       this.updateCurrentFloorPlan();
+
+      // Subscribe to updates specific to this floor plan
+      this.subscribeToFloorPlanUpdates(floorPlanId);
     }
   }
 
   changeFloorPlan() {
+    // Unsubscribe from current floor plan updates
+    this.unsubscribeFromFloorPlanUpdates();
+
     this.selectedFloorPlanId = undefined;
     this.currentFloorPlan = undefined;
     this.selectedBooth = undefined;
     if (this.canvas) {
       this.canvas.dispose();
+    }
+  }
+
+  /**
+   * Subscribe to SignalR updates for a specific floor plan
+   */
+  private async subscribeToFloorPlanUpdates(floorPlanId: string): Promise<void> {
+    // Unsubscribe from previous floor plan if any
+    this.unsubscribeFromFloorPlanUpdates();
+
+    try {
+      console.log(`FloorPlanView: Subscribing to floor plan updates for: ${floorPlanId}`);
+      await this.boothSignalRService.subscribeToFloorPlan(floorPlanId);
+      console.log(`FloorPlanView: ✅ Subscribed to floor plan: ${floorPlanId}`);
+    } catch (error) {
+      console.error('FloorPlanView: Failed to subscribe to floor plan updates', error);
+    }
+  }
+
+  /**
+   * Unsubscribe from current floor plan updates
+   */
+  private async unsubscribeFromFloorPlanUpdates(): Promise<void> {
+    if (this.selectedFloorPlanId) {
+      try {
+        console.log(`FloorPlanView: Unsubscribing from floor plan updates for: ${this.selectedFloorPlanId}`);
+        await this.boothSignalRService.unsubscribeFromFloorPlan(this.selectedFloorPlanId);
+        console.log(`FloorPlanView: ✅ Unsubscribed from floor plan: ${this.selectedFloorPlanId}`);
+      } catch (error) {
+        console.error('FloorPlanView: Failed to unsubscribe from floor plan updates', error);
+      }
     }
   }
 

@@ -3,6 +3,7 @@ import { Observable, forkJoin, Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { DashboardService } from '../services/dashboard.service';
 import { SignalRService } from '../services/signalr.service';
+import { DashboardSignalRService } from '../services/dashboard-signalr.service';
 import {
   DashboardOverviewDto,
   SalesOverviewDto,
@@ -42,6 +43,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private dashboardService: DashboardService,
     private signalRService: SignalRService,
+    private dashboardSignalRService: DashboardSignalRService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -56,34 +58,66 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private initializeSignalRListeners(): void {
-    const dashboardHub = this.signalRService.dashboardHub;
+    console.log('Dashboard: Setting up SignalR listeners...');
 
-    if (!dashboardHub) {
-      console.warn('Dashboard: SignalR hub not available');
-      return;
-    }
+    // Listen for dashboard data updates with actual data
+    this.dashboardSignalRService.dashboardDataUpdated
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(update => {
+        console.log('Dashboard: ✅ Received dashboard data update via SignalR:', update);
+        this.updateDashboardData(update);
+        this.cdr.markForCheck();
+      });
 
-    // Listen for dashboard refresh events
-    dashboardHub.on('DashboardRefreshNeeded', () => {
-      console.log('Dashboard: Refresh triggered by SignalR');
-      this.loadDashboardData();
-      this.cdr.markForCheck();
-    });
+    // Listen for dashboard refresh triggers (when full reload is needed)
+    this.dashboardSignalRService.dashboardRefreshNeeded
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        console.log('Dashboard: ✅ Refresh triggered by SignalR');
+        this.loadDashboardData();
+        this.cdr.markForCheck();
+      });
 
-    // Listen for specific dashboard updates
-    dashboardHub.on('DashboardUpdated', (data: any) => {
-      console.log('Dashboard: Live update received', data);
-      this.updateDashboardData(data);
-      this.cdr.markForCheck();
-    });
+    console.log('Dashboard: ✅ SignalR listeners initialized');
   }
 
   private updateDashboardData(data: any): void {
     // Update dashboard metrics without full reload
-    if (this.dashboardData) {
+    // Support both old format and new DashboardDataUpdate format
+    const updateData = data.overview || data;
+
+    if (this.dashboardData && updateData) {
       this.dashboardData = {
         ...this.dashboardData,
-        ...data
+        ...updateData
+      };
+    }
+
+    if (this.salesData && data.sales) {
+      this.salesData = {
+        ...this.salesData,
+        ...data.sales
+      };
+    }
+
+    if (this.boothData && data.booth) {
+      this.boothData = {
+        ...this.boothData,
+        ...data.booth
+      };
+    }
+
+    if (this.financialData && data.financial) {
+      this.financialData = {
+        ...this.financialData,
+        ...data.financial
+      };
+    }
+
+    if (this.paymentData && data.payment) {
+      this.paymentData = {
+        ...this.paymentData,
+        ...data.payment
       };
     }
   }
