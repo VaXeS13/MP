@@ -291,7 +291,8 @@ namespace MP.Application.Sellers
                         rental.UserId,
                         customerItems.First().Id,
                         $"Multiple items ({customerItems.Count})",
-                        input.TotalAmount
+                        input.TotalAmount,
+                        rentalId
                     );
 
                     // Publish ItemSoldEvent for each item
@@ -443,7 +444,8 @@ namespace MP.Application.Sellers
                         rental.UserId,
                         itemSheetItem.Id,
                         itemSheetItem.Item.Name ?? "Item",
-                        input.Amount
+                        input.Amount,
+                        rentalId
                     );
 
                     // Publish ItemSoldEvent for persistent notification

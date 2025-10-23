@@ -36,12 +36,12 @@ namespace MP.Services
             _logger = logger;
         }
 
-        public async Task SendItemSoldNotificationAsync(Guid userId, Guid itemId, string itemName, decimal salePrice)
+        public async Task SendItemSoldNotificationAsync(Guid userId, Guid itemId, string itemName, decimal salePrice, Guid? rentalId = null)
         {
             try
             {
-                _logger.LogInformation("[SignalR] Sending item sold notification to user {UserId}, item {ItemName}",
-                    userId, itemName);
+                _logger.LogInformation("[SignalR] Sending item sold notification to user {UserId}, item {ItemName}, rental {RentalId}",
+                    userId, itemName, rentalId);
 
                 var notification = new NotificationMessageDto
                 {
@@ -68,7 +68,7 @@ namespace MP.Services
                     ItemName = itemName,
                     SalePrice = salePrice,
                     SoldAt = DateTime.UtcNow,
-                    RentalId = Guid.Empty // Will be set by caller if available
+                    RentalId = rentalId ?? Guid.Empty
                 };
 
                 await _salesHub.Clients
@@ -76,6 +76,16 @@ namespace MP.Services
                     .SendAsync("ItemSold", itemSoldDto);
 
                 _logger.LogInformation("[SignalR] Item sold event sent to sales hub for user {UserId}", userId);
+
+                // Also send to rental-specific sales group if rentalId provided
+                if (rentalId.HasValue && rentalId.Value != Guid.Empty)
+                {
+                    await _salesHub.Clients
+                        .Group($"sales:rental:{rentalId}")
+                        .SendAsync("ItemSold", itemSoldDto);
+
+                    _logger.LogInformation("[SignalR] Item sold event sent to rental sales group for rental {RentalId}", rentalId);
+                }
             }
             catch (Exception ex)
             {
@@ -142,6 +152,31 @@ namespace MP.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[SignalR] Error sending dashboard refresh to tenant {TenantId}", tenantId);
+                throw;
+            }
+        }
+
+        public async Task SendDashboardUpdatedAsync(Guid? tenantId, DashboardUpdateDto dashboardUpdate)
+        {
+            try
+            {
+                if (!tenantId.HasValue)
+                {
+                    _logger.LogWarning("[SignalR] SendDashboardUpdatedAsync called with null tenantId");
+                    return;
+                }
+
+                _logger.LogInformation("[SignalR] Sending dashboard update with data to tenant {TenantId}", tenantId);
+
+                await _dashboardHub.Clients
+                    .Group($"dashboard:tenant:{tenantId}")
+                    .SendAsync("DashboardUpdated", dashboardUpdate);
+
+                _logger.LogInformation("[SignalR] Dashboard update sent with data to tenant {TenantId}", tenantId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SignalR] Error sending dashboard update to tenant {TenantId}", tenantId);
                 throw;
             }
         }
