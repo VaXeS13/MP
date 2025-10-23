@@ -8,7 +8,6 @@ using Volo.Abp.AutoMapper;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Modularity;
 using Volo.Abp.TenantManagement;
-using MP.Application.Devices;
 using MP.Booths;
 using MP.Domain;
 using MP.Application.Contracts.Payments;
@@ -100,16 +99,5 @@ public class MPApplicationModule : AbpModule
         services.AddHostedService<ExpiredCartCleanupWorker>();
         services.AddHostedService<ExpiredRentalItemCleanupWorker>();
         services.AddHostedService<MP.Application.Notifications.NotificationReminderWorker>();
-
-        // Rejestruj Remote Device Proxy dla komunikacji z lokalnymi agentami
-        services.AddTransient<IRemoteDeviceProxy, SignalRDeviceProxy>();
-        services.Configure<RemoteDeviceProxyOptions>(options =>
-        {
-            options.CommandTimeout = TimeSpan.FromSeconds(30);
-            options.MaxRetries = 3;
-            options.RetryDelay = TimeSpan.FromSeconds(2);
-            options.EnableOfflineQueue = true;
-            options.MaxQueuedCommands = 1000;
-        });
     }
 }

@@ -50,7 +50,9 @@ using System.Threading.Tasks;
 using MP.Middleware;
 using MP.HttpApi.Hubs;
 using MP.HttpApi.Middleware;
+using MP.HttpApi.Devices;
 using MP.Services;
+using MP.Application.Contracts.Devices;
 // DODAJ TE IMPORTY:
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Logging;
@@ -148,6 +150,7 @@ public class MPHttpApiHostModule : AbpModule
         ConfigurePaymentServices(context, configuration);
         ConfigureHangfire(context, configuration);
         ConfigureSignalR(context);
+        ConfigureRemoteDeviceProxy(context);
 
         // POPRAWIONA konfiguracja cookies z subdomain-aware authentication
         // ConfigureSubdomainAwareAuthentication(context);
@@ -638,6 +641,33 @@ public class MPHttpApiHostModule : AbpModule
         // Register agent management services
         context.Services.AddTransient<MP.HttpApi.Hubs.IAgentConnectionManager, MP.Services.AgentConnectionManager>();
         context.Services.AddTransient<MP.HttpApi.Hubs.IAgentCommandProcessor, MP.Services.AgentCommandProcessor>();
+    }
+
+    private void ConfigureRemoteDeviceProxy(ServiceConfigurationContext context)
+    {
+        var services = context.Services;
+
+        // Register Remote Device Proxy for communication with local agents via SignalR
+        services.AddTransient<IRemoteDeviceProxy, SignalRDeviceProxy>();
+
+        // Configure Remote Device Proxy options
+        services.Configure<RemoteDeviceProxyOptions>(options =>
+        {
+            // Command timeout for remote device operations
+            options.CommandTimeout = TimeSpan.FromSeconds(30);
+
+            // Retry configuration
+            options.MaxRetries = 3;
+            options.RetryDelay = TimeSpan.FromSeconds(2);
+
+            // Offline queue configuration for critical operations
+            options.EnableOfflineQueue = true;
+            options.MaxQueuedCommands = 1000;
+
+            // Circuit breaker configuration
+            options.CircuitBreakerFailureThreshold = 5;
+            options.CircuitBreakerResetTimeSeconds = 60;
+        });
     }
 }
 
