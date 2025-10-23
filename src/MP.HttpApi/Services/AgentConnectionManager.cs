@@ -301,5 +301,82 @@ namespace MP.Services
                 return new ConnectionStatistics();
             }
         }
+
+        public string? GetPrimaryAgentId(Guid tenantId, string deviceType)
+        {
+            try
+            {
+                // Get the primary (most recently active) agent for tenant with specified device type
+                var agentWithDevice = _connections.Values
+                    .Where(c => c.TenantId == tenantId && c.IsActive)
+                    .Where(c => c.DeviceInfo.Devices.Any(d => d.DeviceType == deviceType && d.IsEnabled))
+                    .OrderByDescending(c => c.LastHeartbeat)
+                    .FirstOrDefault();
+
+                return agentWithDevice?.AgentId;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get primary agent ID for tenant {TenantId} and device type {DeviceType}",
+                    tenantId, deviceType);
+                return null;
+            }
+        }
+
+        public MP.HttpApi.Hubs.AgentStatus? GetAgentStatus(string agentId)
+        {
+            try
+            {
+                var connection = _connections.Values.FirstOrDefault(c => c.AgentId == agentId);
+                if (connection == null)
+                    return null;
+
+                return new MP.HttpApi.Hubs.AgentStatus
+                {
+                    AgentId = agentId,
+                    IsConnected = connection.IsActive,
+                    LastHeartbeat = connection.LastHeartbeat,
+                    Status = connection.IsActive ? "Connected" : "Disconnected"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get agent status for agent {AgentId}", agentId);
+                return null;
+            }
+        }
+
+        public MP.HttpApi.Hubs.DeviceStatusInfo? GetDeviceStatus(Guid tenantId, string deviceType)
+        {
+            try
+            {
+                // Get device status from primary agent for tenant
+                var agentWithDevice = _connections.Values
+                    .Where(c => c.TenantId == tenantId && c.IsActive)
+                    .OrderByDescending(c => c.LastHeartbeat)
+                    .FirstOrDefault();
+
+                if (agentWithDevice == null)
+                    return null;
+
+                var device = agentWithDevice.DeviceInfo.Devices.FirstOrDefault(d => d.DeviceType == deviceType);
+                if (device == null)
+                    return null;
+
+                return new MP.HttpApi.Hubs.DeviceStatusInfo
+                {
+                    DeviceId = device.DeviceId,
+                    Status = device.Status,
+                    Details = null,
+                    LastUpdated = device.LastStatusUpdate
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get device status for tenant {TenantId} and device type {DeviceType}",
+                    tenantId, deviceType);
+                return null;
+            }
+        }
     }
 }

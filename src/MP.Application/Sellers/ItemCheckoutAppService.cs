@@ -554,6 +554,21 @@ namespace MP.Application.Sellers
             }
         }
 
+        public async Task<bool> IsPaymentMethodAvailableAsync(string deviceType)
+        {
+            try
+            {
+                // Check if a specific payment method device is available
+                return await _remoteDeviceProxy.IsDeviceAvailableAsync(deviceType);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking availability for device type {DeviceType} on tenant {TenantId}",
+                    deviceType, CurrentTenant.Id);
+                return false;
+            }
+        }
+
         private async Task PrintFiscalReceiptAsync(List<ItemSheetItem> items, decimal amount, string paymentMethod, string? transactionId)
         {
             try
