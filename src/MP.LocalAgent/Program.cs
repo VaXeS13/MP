@@ -76,6 +76,7 @@ namespace MP.LocalAgent
                     services.AddSingleton<ICommandQueue, CommandQueue>();
                     services.AddSingleton<ISignalRClientService, SignalRClientService>();
                     services.AddSingleton<IDeviceManager, DeviceManager>();
+                    services.AddSingleton<ICRKService, CRKService>();
 
                     // Device services (Mock implementations)
                     services.AddSingleton<ITerminalService, MockTerminalService>();
