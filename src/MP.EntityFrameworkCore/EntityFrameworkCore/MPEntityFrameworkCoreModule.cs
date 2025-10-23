@@ -25,6 +25,8 @@ using MP.Domain.Carts;
 using MP.EntityFrameworkCore.Carts;
 using MP.Domain.Items;
 using MP.EntityFrameworkCore.Items;
+using MP.Domain.LocalAgent;
+using MP.EntityFrameworkCore.LocalAgent;
 
 namespace MP.EntityFrameworkCore;
 
@@ -79,5 +81,6 @@ public class MPEntityFrameworkCoreModule : AbpModule
         context.Services.AddTransient<IPayPalTransactionRepository, EfCorePayPalTransactionRepository>();
         context.Services.AddTransient<IItemRepository, EfCoreItemRepository>();
         context.Services.AddTransient<IItemSheetRepository, EfCoreItemSheetRepository>();
+        context.Services.AddTransient<IAgentApiKeyRepository, EfCoreAgentApiKeyRepository>();
     }
 }
