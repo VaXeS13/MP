@@ -1,4 +1,5 @@
 using System;
+using MP.LocalAgent.Contracts.Exceptions;
 
 namespace MP.LocalAgent.Contracts.Responses
 {
@@ -30,7 +31,50 @@ namespace MP.LocalAgent.Contracts.Responses
         public DateTime? Timestamp { get; set; }
         public string? CardType { get; set; }
         public string? LastFourDigits { get; set; }
-        public string? RawResponse { get; set; }
+
+        // ✅ PCI DSS Compliance fields
+        /// <summary>
+        /// Masked PAN (Primary Account Number) - only last 4 digits
+        /// Format: ****1234 (NEVER store full card number!)
+        /// </summary>
+        public string? MaskedPan { get; set; }
+
+        /// <summary>
+        /// Indicates if terminal is Point-to-Point Encryption (P2PE) certified
+        /// </summary>
+        public bool IsP2PECompliant { get; set; } = true;
+
+        /// <summary>
+        /// Safe metadata that does NOT contain sensitive card data
+        /// Example: { "TerminalId": "TERM-001", "ProcessingTime": "2500ms" }
+        /// </summary>
+        public Dictionary<string, string> SafeMetadata { get; set; } = new();
+
+        /// <summary>
+        /// Validate response for PCI DSS compliance
+        /// Throws PciComplianceException if PAN data is exposed
+        /// </summary>
+        public void ValidatePciCompliance()
+        {
+            // Check if MaskedPan contains more than 4 digits (which would be unsafe)
+            if (!string.IsNullOrEmpty(MaskedPan))
+            {
+                var digitCount = MaskedPan.Count(char.IsDigit);
+                if (digitCount > 4)
+                {
+                    throw new PciComplianceException(
+                        $"PCI DSS Violation: MaskedPan contains {digitCount} digits. " +
+                        "Only last 4 digits (****1234) are allowed.");
+                }
+            }
+
+            // Ensure P2PE compliance
+            if (!IsP2PECompliant)
+            {
+                throw new PciComplianceException(
+                    "Terminal is not P2PE certified. Cannot process payments.");
+            }
+        }
     }
 
     /// <summary>

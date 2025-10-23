@@ -54,6 +54,7 @@ namespace MP.LocalAgent.Services
                 {
                     _logger.LogInformation("Mock: Payment authorized successfully - Transaction: {TransactionId}", transactionId);
 
+                    var lastFourDigits = _random.Next(1000, 9999).ToString();
                     var response = new TerminalPaymentResponse
                     {
                         CommandId = command.CommandId,
@@ -66,13 +67,25 @@ namespace MP.LocalAgent.Services
                         ProcessedAt = DateTime.UtcNow,
                         Timestamp = DateTime.UtcNow,
                         CardType = GetRandomCardType(),
-                        LastFourDigits = _random.Next(1000, 9999).ToString(),
+                        LastFourDigits = lastFourDigits,
+                        // PCI DSS Compliance fields
+                        MaskedPan = $"****{lastFourDigits}",
+                        IsP2PECompliant = true,
+                        SafeMetadata = new()
+                        {
+                            ["TerminalId"] = "MOCK-TERMINAL-001",
+                            ["ProcessingTime"] = $"{processingTime.TotalMilliseconds}ms",
+                            ["CardType"] = GetRandomCardType()
+                        },
                         ProviderData = new()
                         {
                             ["MockProcessingTime"] = processingTime.TotalMilliseconds,
                             ["MockTerminalId"] = "MOCK-TERMINAL-001"
                         }
                     };
+
+                    // Validate PCI DSS compliance
+                    response.ValidatePciCompliance();
 
                     _lastActivity = DateTime.UtcNow;
 
@@ -131,7 +144,8 @@ namespace MP.LocalAgent.Services
             // Simulate capture processing
             await Task.Delay(_random.Next(500, 2000), cancellationToken);
 
-            return new TerminalPaymentResponse
+            var lastFourDigits = _random.Next(1000, 9999).ToString();
+            var response = new TerminalPaymentResponse
             {
                 CommandId = command.CommandId,
                 Success = true,
@@ -140,11 +154,22 @@ namespace MP.LocalAgent.Services
                 Amount = command.Amount,
                 Currency = "PLN",
                 ProcessedAt = DateTime.UtcNow,
+                // PCI DSS Compliance fields
+                MaskedPan = $"****{lastFourDigits}",
+                IsP2PECompliant = true,
+                SafeMetadata = new()
+                {
+                    ["TerminalId"] = "MOCK-TERMINAL-001",
+                    ["TransactionType"] = "Capture"
+                },
                 ProviderData = new()
                 {
                     ["MockCaptureTime"] = DateTime.UtcNow
                 }
             };
+
+            response.ValidatePciCompliance();
+            return response;
         }
 
         public async Task<TerminalPaymentResponse> RefundPaymentAsync(RefundTerminalPaymentCommand command, CancellationToken cancellationToken = default)
@@ -155,7 +180,8 @@ namespace MP.LocalAgent.Services
             // Simulate refund processing
             await Task.Delay(_random.Next(1000, 3000), cancellationToken);
 
-            return new TerminalPaymentResponse
+            var lastFourDigits = _random.Next(1000, 9999).ToString();
+            var response = new TerminalPaymentResponse
             {
                 CommandId = command.CommandId,
                 Success = true,
@@ -164,11 +190,23 @@ namespace MP.LocalAgent.Services
                 Amount = command.Amount,
                 Currency = "PLN",
                 ProcessedAt = DateTime.UtcNow,
+                // PCI DSS Compliance fields
+                MaskedPan = $"****{lastFourDigits}",
+                IsP2PECompliant = true,
+                SafeMetadata = new()
+                {
+                    ["TerminalId"] = "MOCK-TERMINAL-001",
+                    ["TransactionType"] = "Refund",
+                    ["RefundReason"] = command.Reason ?? "Customer request"
+                },
                 ProviderData = new()
                 {
                     ["MockRefundReason"] = command.Reason ?? "Customer request"
                 }
             };
+
+            response.ValidatePciCompliance();
+            return response;
         }
 
         public async Task<TerminalPaymentResponse> CancelPaymentAsync(CancelTerminalPaymentCommand command, CancellationToken cancellationToken = default)
@@ -178,18 +216,31 @@ namespace MP.LocalAgent.Services
             // Simulate cancellation processing
             await Task.Delay(_random.Next(500, 1500), cancellationToken);
 
-            return new TerminalPaymentResponse
+            var lastFourDigits = _random.Next(1000, 9999).ToString();
+            var response = new TerminalPaymentResponse
             {
                 CommandId = command.CommandId,
                 Success = true,
                 TransactionId = command.TransactionId,
                 Status = "cancelled",
                 ProcessedAt = DateTime.UtcNow,
+                // PCI DSS Compliance fields
+                MaskedPan = $"****{lastFourDigits}",
+                IsP2PECompliant = true,
+                SafeMetadata = new()
+                {
+                    ["TerminalId"] = "MOCK-TERMINAL-001",
+                    ["TransactionType"] = "Cancellation",
+                    ["CancelledAt"] = DateTime.UtcNow.ToString("O")
+                },
                 ProviderData = new()
                 {
                     ["MockCancelledAt"] = DateTime.UtcNow
                 }
             };
+
+            response.ValidatePciCompliance();
+            return response;
         }
 
         public async Task<TerminalStatusResponse> CheckStatusAsync(CheckTerminalStatusCommand command, CancellationToken cancellationToken = default)
