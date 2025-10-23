@@ -13,11 +13,12 @@ using MP.LocalAgent.Interfaces;
 namespace MP.LocalAgent.Services
 {
     /// <summary>
-    /// Thread-safe command queue for processing device operations
+    /// Thread-safe command queue for processing device operations with offline persistence
     /// </summary>
     public class CommandQueue : ICommandQueue
     {
         private readonly ILogger<CommandQueue> _logger;
+        private readonly IOfflineCommandStore _offlineStore;
         private readonly ConcurrentDictionary<Guid, CommandInfo> _commands;
         private readonly ConcurrentQueue<Guid> _pendingQueue;
         private readonly Timer _cleanupTimer;
@@ -26,9 +27,10 @@ namespace MP.LocalAgent.Services
         public event EventHandler<CommandEnqueuedEventArgs>? CommandEnqueued;
         public event EventHandler<CommandStatusUpdatedEventArgs>? CommandStatusUpdated;
 
-        public CommandQueue(ILogger<CommandQueue> logger)
+        public CommandQueue(ILogger<CommandQueue> logger, IOfflineCommandStore offlineStore)
         {
             _logger = logger;
+            _offlineStore = offlineStore;
             _commands = new ConcurrentDictionary<Guid, CommandInfo>();
             _pendingQueue = new ConcurrentQueue<Guid>();
 
@@ -60,6 +62,9 @@ namespace MP.LocalAgent.Services
                 await _queueLock.WaitAsync();
                 _commands.TryAdd(commandId, commandInfo);
                 _pendingQueue.Enqueue(commandId);
+
+                // Save to offline store for persistence
+                _ = _offlineStore.SaveCommandAsync(commandInfo);
 
                 _logger.LogInformation("Command {CommandId} of type {CommandType} enqueued for tenant {TenantId}",
                     commandId, commandInfo.CommandType, commandInfo.TenantId);
@@ -131,6 +136,9 @@ namespace MP.LocalAgent.Services
                 {
                     command.SerializedResponse = System.Text.Json.JsonSerializer.Serialize(response);
                 }
+
+                // Update status in offline store
+                _ = _offlineStore.UpdateCommandStatusAsync(commandId, status.ToString());
 
                 _logger.LogInformation("Command {CommandId} status updated from {PreviousStatus} to {CurrentStatus}",
                     commandId, previousStatus, status);
@@ -223,6 +231,8 @@ namespace MP.LocalAgent.Services
             foreach (var commandId in commandsToRemove)
             {
                 _commands.TryRemove(commandId, out _);
+                // Also delete from offline store
+                _ = _offlineStore.DeleteCommandAsync(commandId);
             }
 
             _logger.LogInformation("Cleared {Count} completed commands older than {OlderThan}",
@@ -238,6 +248,8 @@ namespace MP.LocalAgent.Services
                 _ = Task.Run(async () =>
                 {
                     await ClearCompletedCommandsAsync(TimeSpan.FromHours(24));
+                    // Also cleanup old commands from offline store (older than 7 days)
+                    _ = await _offlineStore.CleanupOldCommandsAsync(7);
                 });
             }
             catch (Exception ex)

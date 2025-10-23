@@ -9,6 +9,7 @@ using MP.LocalAgent.Interfaces;
 using MP.LocalAgent.Configuration;
 using MP.LocalAgent.Exceptions;
 using MP.LocalAgent.Contracts.Enums;
+using MP.LocalAgent.Persistence;
 
 namespace MP.LocalAgent
 {
@@ -63,6 +64,13 @@ namespace MP.LocalAgent
                     // Configuration
                     services.AddSingleton(configuration);
 
+                    // Offline persistence
+                    var dbPath = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "MP", "LocalAgent", "commands.db");
+                    services.AddSingleton<IOfflineCommandStore>(sp =>
+                        new SQLiteOfflineCommandStore(dbPath, sp.GetRequiredService<ILogger<SQLiteOfflineCommandStore>>()));
+
                     // Core services
                     services.AddSingleton<IAgentService, AgentService>();
                     services.AddSingleton<ICommandQueue, CommandQueue>();
@@ -85,10 +93,15 @@ namespace MP.LocalAgent
         {
             var logger = services.GetRequiredService<ILogger<Program>>();
             var agentService = services.GetRequiredService<IAgentService>();
+            var offlineStore = services.GetRequiredService<IOfflineCommandStore>();
 
             try
             {
                 logger.LogInformation("Initializing MP Local Agent services...");
+
+                // Initialize offline command store database
+                await offlineStore.InitializeAsync();
+                logger.LogInformation("Offline command store initialized");
 
                 // Read tenant and agent configuration
                 var tenantId = configuration["LocalAgent:TenantId"];
