@@ -49,6 +49,7 @@ using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using MP.Middleware;
 using MP.HttpApi.Hubs;
+using MP.HttpApi.Middleware;
 using MP.Services;
 // DODAJ TE IMPORTY:
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -302,6 +303,9 @@ public class MPHttpApiHostModule : AbpModule
 
         // KRYTYCZNA KOLEJNO�� MIDDLEWARE - subdomen detection PRZED authentication
         app.UseMiddleware<SubdomainDetectionMiddleware>(); // Wykrywanie subdomeny
+
+        // Agent API Key authentication for SignalR connections
+        app.UseMiddleware<AgentAuthenticationMiddleware>();
 
         app.UseAuthentication();
         app.UseAbpOpenIddictValidation();
