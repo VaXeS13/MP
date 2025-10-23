@@ -26,7 +26,7 @@ namespace MP.LocalAgent.Contracts.Responses
         public string Status { get; set; } = null!; // "authorized", "captured", "declined", "error", "cancelled"
         public decimal? Amount { get; set; }
         public string? Currency { get; set; }
-        public DateTime? ProcessedAt { get; set; }
+        public new DateTime? ProcessedAt { get; set; }
         public DateTime? Timestamp { get; set; }
         public string? CardType { get; set; }
         public string? LastFourDigits { get; set; }
