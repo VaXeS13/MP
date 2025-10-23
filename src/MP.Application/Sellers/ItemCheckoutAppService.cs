@@ -10,6 +10,7 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.EventBus.Local;
 using MP.Application.Contracts.Sellers;
 using MP.Application.Contracts.Services;
+using MP.Application.Contracts.Devices;
 using MP.Application.Terminals;
 using MP.Application.FiscalPrinters;
 using MP.Domain.Rentals;
@@ -29,6 +30,7 @@ namespace MP.Application.Sellers
         private readonly IRepository<Rental, Guid> _rentalRepository;
         private readonly ITerminalPaymentProviderFactory _terminalFactory;
         private readonly IFiscalPrinterProviderFactory _fiscalPrinterFactory;
+        private readonly IRemoteDeviceProxy _remoteDeviceProxy;
         private readonly ISignalRNotificationService _signalRNotificationService;
         private readonly ILogger<ItemCheckoutAppService> _logger;
         private readonly ILocalEventBus _localEventBus;
@@ -40,6 +42,7 @@ namespace MP.Application.Sellers
             IRepository<Rental, Guid> rentalRepository,
             ITerminalPaymentProviderFactory terminalFactory,
             IFiscalPrinterProviderFactory fiscalPrinterFactory,
+            IRemoteDeviceProxy remoteDeviceProxy,
             ISignalRNotificationService signalRNotificationService,
             ILogger<ItemCheckoutAppService> logger,
             ILocalEventBus localEventBus)
@@ -50,6 +53,7 @@ namespace MP.Application.Sellers
             _rentalRepository = rentalRepository;
             _terminalFactory = terminalFactory;
             _fiscalPrinterFactory = fiscalPrinterFactory;
+            _remoteDeviceProxy = remoteDeviceProxy;
             _signalRNotificationService = signalRNotificationService;
             _logger = logger;
             _localEventBus = localEventBus;
@@ -108,14 +112,14 @@ namespace MP.Application.Sellers
 
             try
             {
-                // Get active terminal
-                var provider = await _terminalFactory.GetActiveProviderAsync(CurrentTenant.Id);
+                // Check if terminal device is available via remote proxy
+                var terminalAvailable = await _remoteDeviceProxy.CheckDeviceAvailabilityAsync("terminal");
 
-                if (provider != null)
+                if (terminalAvailable)
                 {
                     result.CardEnabled = true;
-                    result.TerminalProviderId = provider.ProviderId;
-                    result.TerminalProviderName = provider.DisplayName;
+                    result.TerminalProviderId = "remote_device_proxy";
+                    result.TerminalProviderName = "Local Agent Terminal";
                 }
             }
             catch (Exception ex)
@@ -219,37 +223,29 @@ namespace MP.Application.Sellers
                 }
                 else if (input.PaymentMethod == PaymentMethodType.Card)
                 {
-                    // Get ACTIVE terminal provider
-                    var provider = await _terminalFactory.GetActiveProviderAsync(CurrentTenant.Id);
-                    if (provider == null)
+                    // Check if terminal device is available via remote proxy
+                    var terminalAvailable = await _remoteDeviceProxy.CheckDeviceAvailabilityAsync("terminal");
+                    if (!terminalAvailable)
                     {
-                        throw new UserFriendlyException("Card payments are not configured for this location. Please configure an active terminal.");
+                        throw new UserFriendlyException("Card payments are not available. Terminal is offline.");
                     }
 
-                    var settings = await _terminalFactory.GetActiveTerminalSettingsAsync(CurrentTenant.Id);
-
-                    // Process card payment on active terminal
+                    // Process card payment through remote device proxy
                     var paymentRequest = new TerminalPaymentRequest
                     {
                         Amount = input.TotalAmount,
-                        Currency = settings?.Currency ?? "PLN",
+                        CurrencyCode = "PLN",
                         Description = $"Sale of {items.Count} items",
-                        RentalItemId = items.First().Id,
-                        RentalItemName = $"Multiple items ({items.Count})",
-                        Metadata = new()
-                        {
-                            ["itemCount"] = items.Count.ToString(),
-                            ["itemIds"] = string.Join(",", input.ItemSheetItemIds)
-                        }
+                        TransactionReference = $"items_{string.Join("_", input.ItemSheetItemIds.Take(3))}"
                     };
 
                     _logger.LogInformation(
-                        "Processing card payment on {Provider} terminal for {ItemCount} items",
-                        provider.DisplayName, items.Count);
+                        "Processing card payment through local agent for {ItemCount} items",
+                        items.Count);
 
-                    var paymentResult = await provider.AuthorizePaymentAsync(paymentRequest);
+                    var paymentResult = await _remoteDeviceProxy.AuthorizePaymentAsync(paymentRequest);
 
-                    if (!paymentResult.Success)
+                    if (!paymentResult.IsSuccess)
                     {
                         _logger.LogWarning(
                             "Card payment declined for {ItemCount} items - Error: {Error}",
@@ -266,20 +262,6 @@ namespace MP.Application.Sellers
                     }
 
                     transactionId = paymentResult.TransactionId;
-
-                    // Auto-capture the payment
-                    if (paymentResult.Status == "authorized" || paymentResult.Status == "Authorized")
-                    {
-                        var captureResult = await provider.CapturePaymentAsync(transactionId!, input.TotalAmount);
-                        if (!captureResult.Success)
-                        {
-                            _logger.LogError(
-                                "Failed to capture payment {TransactionId} for {ItemCount} items",
-                                transactionId, items.Count);
-
-                            throw new UserFriendlyException("Payment authorized but capture failed. Please contact support.");
-                        }
-                    }
 
                     _logger.LogInformation(
                         "Card payment successful for {ItemCount} items - Transaction: {TransactionId}",
@@ -398,37 +380,29 @@ namespace MP.Application.Sellers
                 }
                 else if (input.PaymentMethod == PaymentMethodType.Card)
                 {
-                    // Get ACTIVE terminal provider
-                    var provider = await _terminalFactory.GetActiveProviderAsync(CurrentTenant.Id);
-                    if (provider == null)
+                    // Check if terminal device is available via remote proxy
+                    var terminalAvailable = await _remoteDeviceProxy.CheckDeviceAvailabilityAsync("terminal");
+                    if (!terminalAvailable)
                     {
-                        throw new UserFriendlyException("Card payments are not configured for this location. Please configure an active terminal.");
+                        throw new UserFriendlyException("Card payments are not available. Terminal is offline.");
                     }
 
-                    var settings = await _terminalFactory.GetActiveTerminalSettingsAsync(CurrentTenant.Id);
-
-                    // Process card payment on active terminal
+                    // Process card payment through remote device proxy
                     var paymentRequest = new TerminalPaymentRequest
                     {
                         Amount = input.Amount,
-                        Currency = settings?.Currency ?? "PLN",
+                        CurrencyCode = "PLN",
                         Description = $"Sale of {itemSheetItem.Item.Name}",
-                        RentalItemId = itemSheetItem.Id,
-                        RentalItemName = itemSheetItem.Item.Name,
-                        Metadata = new()
-                        {
-                            ["itemSheetItemId"] = itemSheetItem.Id.ToString(),
-                            ["rentalId"] = itemSheetItem.ItemSheet.RentalId?.ToString() ?? ""
-                        }
+                        TransactionReference = itemSheetItem.Id.ToString()
                     };
 
                     _logger.LogInformation(
-                        "Processing card payment on {Provider} terminal for item {ItemId}",
-                        provider.DisplayName, itemSheetItem.Id);
+                        "Processing card payment through local agent for item {ItemId}",
+                        itemSheetItem.Id);
 
-                    var paymentResult = await provider.AuthorizePaymentAsync(paymentRequest);
+                    var paymentResult = await _remoteDeviceProxy.AuthorizePaymentAsync(paymentRequest);
 
-                    if (!paymentResult.Success)
+                    if (!paymentResult.IsSuccess)
                     {
                         _logger.LogWarning(
                             "Card payment declined for item {ItemId} - Error: {Error}",
@@ -445,20 +419,6 @@ namespace MP.Application.Sellers
                     }
 
                     transactionId = paymentResult.TransactionId;
-
-                    // Auto-capture the payment
-                    if (paymentResult.Status == "authorized" || paymentResult.Status == "Authorized")
-                    {
-                        var captureResult = await provider.CapturePaymentAsync(transactionId!, input.Amount);
-                        if (!captureResult.Success)
-                        {
-                            _logger.LogError(
-                                "Failed to capture payment {TransactionId} for item {ItemId}",
-                                transactionId, itemSheetItem.Id);
-
-                            throw new UserFriendlyException("Payment authorized but capture failed. Please contact support.");
-                        }
-                    }
 
                     _logger.LogInformation(
                         "Card payment successful for item {ItemId} - Transaction: {TransactionId}",
@@ -556,34 +516,34 @@ namespace MP.Application.Sellers
         {
             try
             {
-                // Get ACTIVE fiscal printer
-                var fiscalPrinter = await _fiscalPrinterFactory.GetActiveProviderAsync(CurrentTenant.Id);
+                // Check if fiscal printer is available via remote proxy
+                var printerAvailable = await _remoteDeviceProxy.CheckDeviceAvailabilityAsync("fiscal_printer");
 
-                if (fiscalPrinter == null)
+                if (!printerAvailable)
                 {
-                    _logger.LogInformation("No active fiscal printer configured. Skipping fiscal receipt printing.");
+                    _logger.LogInformation("Fiscal printer is not available. Skipping fiscal receipt printing.");
                     return;
                 }
 
                 _logger.LogInformation(
-                    "Printing fiscal receipt on {Provider} for {ItemCount} items",
-                    fiscalPrinter.DisplayName, items.Count);
+                    "Printing fiscal receipt through local agent for {ItemCount} items",
+                    items.Count);
 
                 // Build fiscal receipt request for multiple items
-                var receiptItems = new List<FiscalReceiptItem>();
+                var receiptItems = new List<MP.Application.Contracts.Devices.FiscalReceiptItem>();
                 foreach (var item in items)
                 {
-                    receiptItems.Add(new FiscalReceiptItem
+                    receiptItems.Add(new MP.Application.Contracts.Devices.FiscalReceiptItem
                     {
                         Name = item.Item.Name ?? "Item",
                         Quantity = 1,
                         UnitPrice = item.Item.Price,
-                        TaxRate = "A", // A = 23% VAT in Poland
-                        TotalPrice = item.Item.Price
+                        TaxRate = 23m, // 23% VAT in Poland
+                        Total = item.Item.Price // quantity (1) * unitprice
                     });
                 }
 
-                var fiscalRequest = new FiscalReceiptRequest
+                var fiscalRequest = new MP.Application.Contracts.Devices.FiscalReceiptRequest
                 {
                     Items = receiptItems,
                     TotalAmount = amount,
@@ -591,13 +551,13 @@ namespace MP.Application.Sellers
                     TransactionId = transactionId
                 };
 
-                var receiptResult = await fiscalPrinter.PrintReceiptAsync(fiscalRequest);
+                var receiptResult = await _remoteDeviceProxy.PrintFiscalReceiptAsync(fiscalRequest);
 
-                if (receiptResult.Success)
+                if (receiptResult.IsSuccess)
                 {
                     _logger.LogInformation(
-                        "Fiscal receipt printed successfully for {ItemCount} items - Receipt: {FiscalNumber}",
-                        items.Count, receiptResult.FiscalNumber);
+                        "Fiscal receipt printed successfully for {ItemCount} items - Receipt: {ReceiptNumber}",
+                        items.Count, receiptResult.ReceiptNumber);
                 }
                 else
                 {
