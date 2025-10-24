@@ -94,6 +94,28 @@ namespace MP.Domain.OrganizationalUnits
             return UsageCount >= MaxUsageCount.Value;
         }
 
+        public void SetRoleId(Guid roleId)
+        {
+            RoleId = roleId;
+        }
+
+        public void SetMaxUsageCount(int maxUsageCount)
+        {
+            ValidateMaxUsageCount(maxUsageCount);
+            MaxUsageCount = maxUsageCount;
+        }
+
+        public void SetExpiresAt(DateTime expiresAt)
+        {
+            ValidateExpiryDate(expiresAt);
+            ExpiresAt = expiresAt;
+        }
+
+        public void SetLastUsedAt(DateTime lastUsedAt)
+        {
+            LastUsedAt = lastUsedAt;
+        }
+
         private void SetCode(string code)
         {
             if (string.IsNullOrWhiteSpace(code))
