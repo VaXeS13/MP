@@ -73,7 +73,13 @@ public class MPPermissionDefinitionProvider : PermissionDefinitionProvider
 
         // Organizational Units permissions
         var organizationalUnitsPermission = myGroup.AddPermission(MPPermissions.OrganizationalUnits.Default, L("Permission:OrganizationalUnits"));
+        organizationalUnitsPermission.AddChild(MPPermissions.OrganizationalUnits.Create, L("Permission:OrganizationalUnits.Create"));
+        organizationalUnitsPermission.AddChild(MPPermissions.OrganizationalUnits.Edit, L("Permission:OrganizationalUnits.Edit"));
+        organizationalUnitsPermission.AddChild(MPPermissions.OrganizationalUnits.Delete, L("Permission:OrganizationalUnits.Delete"));
+        organizationalUnitsPermission.AddChild(MPPermissions.OrganizationalUnits.ManageSettings, L("Permission:OrganizationalUnits.ManageSettings"));
+        organizationalUnitsPermission.AddChild(MPPermissions.OrganizationalUnits.GenerateRegistrationCode, L("Permission:OrganizationalUnits.GenerateCode"));
         organizationalUnitsPermission.AddChild(MPPermissions.OrganizationalUnits.ManageUsers, L("Permission:OrganizationalUnits.ManageUsers"));
+        organizationalUnitsPermission.AddChild(MPPermissions.OrganizationalUnits.ManageRoles, L("Permission:OrganizationalUnits.ManageRoles"));
 
         // Tenant settings permissions
         var tenantPermission = myGroup.AddPermission(MPPermissions.Tenant.Default, L("Permission:Tenant"));

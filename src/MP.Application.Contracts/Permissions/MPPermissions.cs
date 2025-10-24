@@ -82,7 +82,17 @@ public static class MPPermissions
     public static class OrganizationalUnits
     {
         public const string Default = GroupName + ".OrganizationalUnits";
-        public const string ManageUsers = Default + ".ManageUsers"; // Manage users in organizational units
+
+        // Admin (Tenant Admin) permissions
+        public const string Create = Default + ".Create";        // Create new unit
+        public const string Edit = Default + ".Edit";            // Edit unit details
+        public const string Delete = Default + ".Delete";        // Delete unit
+        public const string ManageSettings = Default + ".ManageSettings"; // Currency, payment providers
+        public const string GenerateRegistrationCode = Default + ".GenerateCode";
+
+        // User Management
+        public const string ManageUsers = Default + ".ManageUsers";     // Assign/remove users
+        public const string ManageRoles = Default + ".ManageRoles";     // Change user roles
     }
 
     // Tenant settings permissions
