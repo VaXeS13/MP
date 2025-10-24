@@ -42,7 +42,8 @@ namespace MP.Domain.Tests.Rentals
         {
             // Arrange
             var userId = TestUserId1;
-            var booth = new Booth(Guid.NewGuid(), "TEST-01", 100m, DefaultOrganizationalUnitId);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth = new Booth(Guid.NewGuid(), boothNumber, 100m, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
 
             var boothType = new BoothType(Guid.NewGuid(), "Standard", "Standard booth", 10m, DefaultOrganizationalUnitId);
@@ -77,7 +78,8 @@ namespace MP.Domain.Tests.Rentals
             // Arrange
             var userId = TestUserId1;
             var dailyPrice = 100m;
-            var booth = new Booth(Guid.NewGuid(), "TEST-02", dailyPrice, DefaultOrganizationalUnitId);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth = new Booth(Guid.NewGuid(), boothNumber, dailyPrice, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
 
             var boothType = new BoothType(Guid.NewGuid(), "Standard", "Standard booth", 10m, DefaultOrganizationalUnitId);
@@ -108,7 +110,8 @@ namespace MP.Domain.Tests.Rentals
             var boothDailyPrice = 100m;
             var customDailyRate = 150m;
 
-            var booth = new Booth(Guid.NewGuid(), "TEST-03", boothDailyPrice, DefaultOrganizationalUnitId);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth = new Booth(Guid.NewGuid(), boothNumber, boothDailyPrice, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
 
             var boothType = new BoothType(Guid.NewGuid(), "Premium", "Premium booth", 10m, DefaultOrganizationalUnitId);
@@ -137,7 +140,8 @@ namespace MP.Domain.Tests.Rentals
         {
             // Arrange
             var userId = TestUserId1;
-            var booth = new Booth(Guid.NewGuid(), "TEST-04", 100m, DefaultOrganizationalUnitId);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth = new Booth(Guid.NewGuid(), boothNumber, 100m, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
 
             var inactiveBoothType = new BoothType(Guid.NewGuid(), "Inactive", "Inactive booth", 10m, DefaultOrganizationalUnitId);
@@ -166,7 +170,8 @@ namespace MP.Domain.Tests.Rentals
         {
             // Arrange
             var userId = TestUserId1;
-            var booth = new Booth(Guid.NewGuid(), "TEST-05", 100m, DefaultOrganizationalUnitId);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth = new Booth(Guid.NewGuid(), boothNumber, 100m, DefaultOrganizationalUnitId);
             booth.MarkAsMaintenance();
             await _boothRepository.InsertAsync(booth);
 
@@ -197,7 +202,8 @@ namespace MP.Domain.Tests.Rentals
             var userId1 = TestUserId1;
             var userId2 = TestUserId2;
 
-            var booth = new Booth(Guid.NewGuid(), "TEST-06", 100m, DefaultOrganizationalUnitId);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth = new Booth(Guid.NewGuid(), boothNumber, 100m, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
 
             var boothType = new BoothType(Guid.NewGuid(), "Standard", "Standard booth", 10m, DefaultOrganizationalUnitId);
@@ -238,7 +244,8 @@ namespace MP.Domain.Tests.Rentals
         {
             // Arrange
             var userId = TestUserId1;
-            var booth = new Booth(Guid.NewGuid(), "TEST-07", 100m, DefaultOrganizationalUnitId);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth = new Booth(Guid.NewGuid(), boothNumber, 100m, DefaultOrganizationalUnitId);
             booth.MarkAsAvailable(); // Ensure it's available
             await _boothRepository.InsertAsync(booth);
 
@@ -267,7 +274,8 @@ namespace MP.Domain.Tests.Rentals
         {
             // Arrange
             var dailyPrice = 150m;
-            var booth = new Booth(Guid.NewGuid(), "TEST-08", dailyPrice, DefaultOrganizationalUnitId);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth = new Booth(Guid.NewGuid(), boothNumber, dailyPrice, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
 
             var boothType = new BoothType(Guid.NewGuid(), "Standard", "Standard booth", 10m, DefaultOrganizationalUnitId);
@@ -289,7 +297,8 @@ namespace MP.Domain.Tests.Rentals
         public async Task CalculateRentalCostAsync_Should_Throw_When_Booth_Type_Not_Active()
         {
             // Arrange
-            var booth = new Booth(Guid.NewGuid(), "TEST-09", 100m, DefaultOrganizationalUnitId);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth = new Booth(Guid.NewGuid(), boothNumber, 100m, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
 
             var inactiveBoothType = new BoothType(Guid.NewGuid(), "Inactive", "Inactive booth", 10m, DefaultOrganizationalUnitId);
@@ -315,7 +324,8 @@ namespace MP.Domain.Tests.Rentals
             var userId1 = TestUserId1;
             var userId2 = TestUserId2;
 
-            var booth = new Booth(Guid.NewGuid(), "TEST-10", 100m, DefaultOrganizationalUnitId);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth = new Booth(Guid.NewGuid(), boothNumber, 100m, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
 
             var boothType = new BoothType(Guid.NewGuid(), "Standard", "Standard booth", 10m, DefaultOrganizationalUnitId);
@@ -363,7 +373,8 @@ namespace MP.Domain.Tests.Rentals
             var userId1 = TestUserId1;
             var userId2 = TestUserId2;
 
-            var booth = new Booth(Guid.NewGuid(), "TEST-11", 100m, DefaultOrganizationalUnitId);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth = new Booth(Guid.NewGuid(), boothNumber, 100m, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
 
             var boothType = new BoothType(Guid.NewGuid(), "Standard", "Standard booth", 10m, DefaultOrganizationalUnitId);
@@ -402,7 +413,8 @@ namespace MP.Domain.Tests.Rentals
             // Arrange
             var userId = TestUserId1;
 
-            var booth = new Booth(Guid.NewGuid(), "TEST-12", 100m, DefaultOrganizationalUnitId);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth = new Booth(Guid.NewGuid(), boothNumber, 100m, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
 
             var boothType = new BoothType(Guid.NewGuid(), "Standard", "Standard booth", 10m, DefaultOrganizationalUnitId);
