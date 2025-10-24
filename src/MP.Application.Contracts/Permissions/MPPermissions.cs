@@ -78,6 +78,13 @@ public static class MPPermissions
         public const string ManageCustomerChats = Default + ".ManageCustomerChats"; // Admin/Seller can manage all customer chats
     }
 
+    // Organizational Units permissions
+    public static class OrganizationalUnits
+    {
+        public const string Default = GroupName + ".OrganizationalUnits";
+        public const string ManageUsers = Default + ".ManageUsers"; // Manage users in organizational units
+    }
+
     // Tenant settings permissions
     public static class Tenant
     {

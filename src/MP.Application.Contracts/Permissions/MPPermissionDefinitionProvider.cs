@@ -71,6 +71,10 @@ public class MPPermissionDefinitionProvider : PermissionDefinitionProvider
             multiTenancySide: MultiTenancySides.Both);
         chatPermission.AddChild(MPPermissions.Chat.ManageCustomerChats, L("Permission:Chat.ManageCustomerChats"));
 
+        // Organizational Units permissions
+        var organizationalUnitsPermission = myGroup.AddPermission(MPPermissions.OrganizationalUnits.Default, L("Permission:OrganizationalUnits"));
+        organizationalUnitsPermission.AddChild(MPPermissions.OrganizationalUnits.ManageUsers, L("Permission:OrganizationalUnits.ManageUsers"));
+
         // Tenant settings permissions
         var tenantPermission = myGroup.AddPermission(MPPermissions.Tenant.Default, L("Permission:Tenant"));
         tenantPermission.AddChild(MPPermissions.Tenant.ManageCurrency, L("Permission:Tenant.ManageCurrency"));
