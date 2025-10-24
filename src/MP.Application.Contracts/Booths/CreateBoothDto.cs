@@ -29,9 +29,8 @@ namespace MP.Booths
 
         /// <summary>
         /// Multi-period pricing configuration
-        /// At least one pricing period is required
+        /// Optional when using legacy PricePerDay property
         /// </summary>
-        [MinLength(1, ErrorMessage = "At least one pricing period is required")]
         public List<BoothPricingPeriodDto> PricingPeriods { get; set; } = new();
     }
 }
