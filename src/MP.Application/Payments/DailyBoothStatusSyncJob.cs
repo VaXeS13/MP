@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Volo.Abp.DependencyInjection;
 using MP.Domain.Rentals;
 using MP.Domain.Booths;
+using MP.Domain.OrganizationalUnits;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Uow;
 using Volo.Abp.MultiTenancy;
@@ -18,29 +19,36 @@ namespace MP.Application.Payments
     /// <summary>
     /// Hangfire recurring job that synchronizes booth statuses based on rental periods
     /// Runs daily at 00:05 to ensure booth statuses are accurate
+    /// Per-organizational-unit execution for proper isolation
     /// </summary>
     public class DailyBoothStatusSyncJob : ITransientDependency
     {
         private readonly IBoothRepository _boothRepository;
         private readonly IRepository<Rental, Guid> _rentalRepository;
+        private readonly IOrganizationalUnitRepository _organizationalUnitRepository;
         private readonly ILogger<DailyBoothStatusSyncJob> _logger;
         private readonly IUnitOfWorkManager _unitOfWorkManager;
         private readonly ICurrentTenant _currentTenant;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
         private readonly IDataFilter<IMultiTenant> _dataFilter;
 
         public DailyBoothStatusSyncJob(
             IBoothRepository boothRepository,
             IRepository<Rental, Guid> rentalRepository,
+            IOrganizationalUnitRepository organizationalUnitRepository,
             ILogger<DailyBoothStatusSyncJob> logger,
             IUnitOfWorkManager unitOfWorkManager,
             ICurrentTenant currentTenant,
+            ICurrentOrganizationalUnit currentOrganizationalUnit,
             IDataFilter<IMultiTenant> dataFilter)
         {
             _boothRepository = boothRepository;
             _rentalRepository = rentalRepository;
+            _organizationalUnitRepository = organizationalUnitRepository;
             _logger = logger;
             _unitOfWorkManager = unitOfWorkManager;
             _currentTenant = currentTenant;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
             _dataFilter = dataFilter;
         }
 
@@ -60,6 +68,7 @@ namespace MP.Application.Payments
 
                     List<Booth> allBooths;
                     List<Guid?> tenantIds;
+                    List<OrganizationalUnit> organizationalUnits;
 
                     // Disable multi-tenant filter to process all tenants
                     using (_dataFilter.Disable())
@@ -71,10 +80,13 @@ namespace MP.Application.Payments
 
                         // Get unique tenant IDs
                         tenantIds = allBooths.Select(b => b.TenantId).Distinct().ToList();
+
+                        // Get all organizational units
+                        organizationalUnits = await _organizationalUnitRepository.GetListAsync();
                     }
 
-                    _logger.LogInformation("[Hangfire] Found {BoothCount} booths across {TenantCount} tenant(s) to check",
-                        allBooths.Count, tenantIds.Count);
+                    _logger.LogInformation("[Hangfire] Found {BoothCount} booths across {TenantCount} tenant(s) and {UnitCount} organizational unit(s)",
+                        allBooths.Count, tenantIds.Count, organizationalUnits.Count);
 
                     var today = DateTime.Today;
 
@@ -84,6 +96,47 @@ namespace MP.Application.Payments
                         using (_currentTenant.Change(tenantId))
                         {
                             var tenantBooths = allBooths.Where(b => b.TenantId == tenantId).ToList();
+                            var tenantUnits = organizationalUnits.Where(u => u.TenantId == tenantId).ToList();
+
+                            // Process each organizational unit within tenant
+                            foreach (var unit in tenantUnits)
+                            {
+                                using (_currentOrganizationalUnit.Change(unit.Id))
+                                {
+                                    await ProcessOrganizationalUnitBooths(tenantBooths, unit.Id, today);
+                                }
+                            }
+
+                            // Process unassigned booths (if any)
+                            var unassignedBooths = tenantBooths.Where(b => !tenantUnits.Any(u => u.Id == b.OrganizationalUnitId)).ToList();
+                            if (unassignedBooths.Any())
+                            {
+                                _logger.LogWarning("[Hangfire] Found {Count} booths without organizational unit assignment in tenant {TenantId}",
+                                    unassignedBooths.Count, tenantId);
+                            }
+                        }
+                    }
+
+                    await uow.CompleteAsync();
+                    _logger.LogInformation("[Hangfire] Daily booth status synchronization completed");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "[Hangfire] Error during daily booth status synchronization");
+                    throw;
+                }
+            }
+        }
+
+        private async Task ProcessOrganizationalUnitBooths(List<Booth> allBooths, Guid organizationalUnitId, DateTime today)
+        {
+            var unitBooths = allBooths.Where(b => b.OrganizationalUnitId == organizationalUnitId).ToList();
+
+            if (!unitBooths.Any())
+                return;
+
+            _logger.LogInformation("[Hangfire] Processing {BoothCount} booths for organizational unit {UnitId}",
+                unitBooths.Count, organizationalUnitId);
 
                             _logger.LogInformation("[Hangfire] Processing {BoothCount} booths for tenant {TenantId}",
                                 tenantBooths.Count, tenantId);

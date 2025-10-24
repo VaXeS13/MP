@@ -8,6 +8,7 @@ using MP.LocalAgent.Contracts.Commands;
 using MP.LocalAgent.Contracts.Responses;
 using MP.LocalAgent.Contracts.Models;
 using MP.Services;
+using MP.Domain.OrganizationalUnits;
 
 namespace MP.HttpApi.Hubs
 {
@@ -21,17 +22,20 @@ namespace MP.HttpApi.Hubs
         private readonly IAgentConnectionManager _connectionManager;
         private readonly IAgentCommandProcessor _commandProcessor;
         private readonly ICurrentTenant _currentTenant;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public LocalAgentHub(
             ILogger<LocalAgentHub> logger,
             IAgentConnectionManager connectionManager,
             IAgentCommandProcessor commandProcessor,
-            ICurrentTenant currentTenant)
+            ICurrentTenant currentTenant,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _logger = logger;
             _connectionManager = connectionManager;
             _commandProcessor = commandProcessor;
             _currentTenant = currentTenant;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public override async Task OnConnectedAsync()
@@ -104,12 +108,20 @@ namespace MP.HttpApi.Hubs
         {
             var tenantId = GetTenantId();
             var agentId = GetAgentId();
+            var organizationalUnitId = GetOrganizationalUnitId();
             var connectionId = Context.ConnectionId;
 
-            _logger.LogInformation("Registering agent {AgentId} for tenant {TenantId}", agentId, tenantId);
+            _logger.LogInformation("Registering agent {AgentId} for tenant {TenantId} and organizational unit {UnitId}",
+                agentId, tenantId, organizationalUnitId);
 
             try
             {
+                // Validate organizational unit context
+                if (organizationalUnitId == Guid.Empty)
+                {
+                    throw new InvalidOperationException("Organizational unit context is required for agent registration");
+                }
+
                 await _connectionManager.UpdateAgentInfoAsync(tenantId, agentId, connectionId, request.DeviceInfo);
 
                 await Clients.Caller.SendAsync("AgentRegistered", new
@@ -117,11 +129,12 @@ namespace MP.HttpApi.Hubs
                     Message = "Agent registered successfully",
                     AgentId = agentId,
                     TenantId = tenantId,
+                    OrganizationalUnitId = organizationalUnitId,
                     Timestamp = DateTime.UtcNow
                 });
 
-                _logger.LogInformation("Agent {AgentId} registered successfully for tenant {TenantId}",
-                    agentId, tenantId);
+                _logger.LogInformation("Agent {AgentId} registered successfully for tenant {TenantId} and unit {UnitId}",
+                    agentId, tenantId, organizationalUnitId);
             }
             catch (Exception ex)
             {
@@ -407,6 +420,19 @@ namespace MP.HttpApi.Hubs
 
             // Fallback to connection-based ID
             return $"agent_{Context.ConnectionId}";
+        }
+
+        private Guid GetOrganizationalUnitId()
+        {
+            // Try to get organizational unit ID from headers first, then from context
+            if (Context.GetHttpContext().Request.Headers.TryGetValue("OrganizationalUnit-Id", out var unitIdValue) &&
+                Guid.TryParse(unitIdValue, out var unitId))
+            {
+                return unitId;
+            }
+
+            // Fallback to current organizational unit context
+            return _currentOrganizationalUnit.Id ?? Guid.Empty;
         }
 
         #endregion

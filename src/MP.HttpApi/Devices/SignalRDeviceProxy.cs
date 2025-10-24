@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.MultiTenancy;
+using MP.Domain.OrganizationalUnits;
 using MP.HttpApi.Hubs;
 using MP.Application.Contracts.Devices;
 
@@ -17,6 +18,7 @@ namespace MP.HttpApi.Devices
     {
         private readonly IHubContext<LocalAgentHub> _hubContext;
         private readonly ICurrentTenant _currentTenant;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
         private readonly ILogger<SignalRDeviceProxy> _logger;
 
         private static readonly ConcurrentDictionary<Guid, RemoteCommand> _commandQueue = new();
@@ -28,10 +30,15 @@ namespace MP.HttpApi.Devices
         private Timer? _cleanupTimer;
         private bool _disposed;
 
-        public SignalRDeviceProxy(IHubContext<LocalAgentHub> hubContext, ICurrentTenant currentTenant, ILogger<SignalRDeviceProxy> logger)
+        public SignalRDeviceProxy(
+            IHubContext<LocalAgentHub> hubContext,
+            ICurrentTenant currentTenant,
+            ICurrentOrganizationalUnit currentOrganizationalUnit,
+            ILogger<SignalRDeviceProxy> logger)
         {
             _hubContext = hubContext;
             _currentTenant = currentTenant;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
             _logger = logger;
 
             // Initialize cleanup timer for pending responses to prevent memory leaks
