@@ -18,6 +18,7 @@ using MP.Domain.Terminals;
 using MP.Domain.FiscalPrinters;
 using MP.Domain.Items;
 using MP.Domain.Items.Events;
+using MP.Domain.OrganizationalUnits;
 using MP.Rentals;
 
 namespace MP.Application.Sellers
@@ -34,6 +35,7 @@ namespace MP.Application.Sellers
         private readonly ISignalRNotificationService _signalRNotificationService;
         private readonly ILogger<ItemCheckoutAppService> _logger;
         private readonly ILocalEventBus _localEventBus;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public ItemCheckoutAppService(
             IRepository<ItemSheetItem, Guid> itemSheetItemRepository,
@@ -45,7 +47,8 @@ namespace MP.Application.Sellers
             IRemoteDeviceProxy remoteDeviceProxy,
             ISignalRNotificationService signalRNotificationService,
             ILogger<ItemCheckoutAppService> logger,
-            ILocalEventBus localEventBus)
+            ILocalEventBus localEventBus,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _itemSheetItemRepository = itemSheetItemRepository;
             _itemRepository = itemRepository;
@@ -57,6 +60,7 @@ namespace MP.Application.Sellers
             _signalRNotificationService = signalRNotificationService;
             _logger = logger;
             _localEventBus = localEventBus;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<ItemForCheckoutDto?> FindItemByBarcodeAsync(FindItemByBarcodeDto input)
@@ -66,11 +70,14 @@ namespace MP.Application.Sellers
                 throw new UserFriendlyException("Barcode cannot be empty");
             }
 
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             // Use projection to load only required fields instead of full User entity
             var queryable = await _itemSheetItemRepository.GetQueryableAsync();
             var itemDto = await queryable
                 .AsNoTracking()
-                .Where(x => x.Barcode == input.Barcode.Trim())
+                .Where(x => x.Barcode == input.Barcode.Trim() && x.Item.OrganizationalUnitId == organizationalUnitId)
                 .Select(x => new ItemForCheckoutDto
                 {
                     Id = x.Id,
@@ -137,10 +144,13 @@ namespace MP.Application.Sellers
                 throw new UserFriendlyException("Item IDs cannot be empty");
             }
 
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             var queryable = await _itemSheetItemRepository.GetQueryableAsync();
             var items = await queryable
                 .AsNoTracking()
-                .Where(x => itemIds.Contains(x.Id) && x.Status == ItemSheetItemStatus.ForSale)
+                .Where(x => itemIds.Contains(x.Id) && x.Status == ItemSheetItemStatus.ForSale && x.Item.OrganizationalUnitId == organizationalUnitId)
                 .Select(x => new ItemForCheckoutDto
                 {
                     Id = x.Id,
@@ -182,12 +192,15 @@ namespace MP.Application.Sellers
                 throw new UserFriendlyException("No items provided for checkout");
             }
 
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             // Get all items
             var queryable = await _itemSheetItemRepository.GetQueryableAsync();
             var items = await queryable
                 .Include(x => x.Item)
                 .Include(x => x.ItemSheet)
-                .Where(x => input.ItemSheetItemIds.Contains(x.Id))
+                .Where(x => input.ItemSheetItemIds.Contains(x.Id) && x.Item.OrganizationalUnitId == organizationalUnitId)
                 .ToListAsync();
 
             if (!items.Any())
@@ -343,11 +356,14 @@ namespace MP.Application.Sellers
 
         public async Task<CheckoutResultDto> CheckoutItemAsync(CheckoutItemDto input)
         {
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             var queryable = await _itemSheetItemRepository.GetQueryableAsync();
             var itemSheetItem = await queryable
                 .Include(x => x.Item)
                 .Include(x => x.ItemSheet)
-                .Where(x => x.Id == input.ItemSheetItemId)
+                .Where(x => x.Id == input.ItemSheetItemId && x.Item.OrganizationalUnitId == organizationalUnitId)
                 .FirstOrDefaultAsync();
 
             if (itemSheetItem == null)
