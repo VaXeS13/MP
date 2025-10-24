@@ -13,6 +13,7 @@ namespace MP.Domain.Carts
     public class Cart : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
         public Guid UserId { get; private set; }
         public CartStatus Status { get; private set; }
         public DateTime? ExtensionTimeoutAt { get; private set; }
@@ -33,9 +34,11 @@ namespace MP.Domain.Carts
         public Cart(
             Guid id,
             Guid userId,
+            Guid organizationalUnitId,
             Guid? tenantId = null) : base(id)
         {
             UserId = userId;
+            OrganizationalUnitId = organizationalUnitId;
             TenantId = tenantId;
             Status = CartStatus.Active;
         }
@@ -70,6 +73,7 @@ namespace MP.Domain.Carts
             var item = new CartItem(
                 itemId,
                 Id,
+                OrganizationalUnitId,
                 boothId,
                 boothTypeId,
                 startDate,

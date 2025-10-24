@@ -11,6 +11,7 @@ namespace MP.Domain.Notifications
     public class UserNotification : CreationAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid? OrganizationalUnitId { get; private set; }
         public Guid UserId { get; private set; }
         public string Type { get; private set; } = null!;
         public string Title { get; private set; } = null!;
@@ -36,9 +37,11 @@ namespace MP.Domain.Notifications
             string? relatedEntityType = null,
             Guid? relatedEntityId = null,
             DateTime? expiresAt = null,
+            Guid? organizationalUnitId = null,
             Guid? tenantId = null) : base(id)
         {
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             UserId = userId;
             SetType(type);
             SetTitle(title);

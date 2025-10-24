@@ -11,6 +11,7 @@ namespace MP.Domain.FiscalPrinters
     public class TenantFiscalPrinterSettings : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
 
         /// <summary>
         /// Fiscal printer provider identifier (e.g., "posnet_thermal", "elzab", "novitus")
@@ -57,6 +58,7 @@ namespace MP.Domain.FiscalPrinters
 
         public TenantFiscalPrinterSettings(
             Guid id,
+            Guid organizationalUnitId,
             Guid? tenantId,
             string providerId,
             string displayName,
@@ -66,6 +68,7 @@ namespace MP.Domain.FiscalPrinters
             bool isActive = false) : base(id)
         {
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             SetProviderId(providerId);
             SetDisplayName(displayName);
             ConfigurationJson = configurationJson ?? "{}";

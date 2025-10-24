@@ -4,6 +4,7 @@ using NSubstitute;
 using Volo.Abp.Modularity;
 using Volo.Abp.Users;
 using MP.Application.Contracts.Services;
+using MP.Domain.OrganizationalUnits;
 
 namespace MP;
 
@@ -29,5 +30,12 @@ public class MPApplicationTestModule : AbpModule
         // Mock SignalRNotificationService for tests
         var signalRNotificationService = Substitute.For<ISignalRNotificationService>();
         context.Services.AddSingleton(signalRNotificationService);
+
+        // Mock ICurrentOrganizationalUnit for tests - default organizational unit
+        var currentOrganizationalUnit = Substitute.For<ICurrentOrganizationalUnit>();
+        currentOrganizationalUnit.Id.Returns(new Guid("00000000-0000-0000-0000-000000000001"));
+        currentOrganizationalUnit.Name.Returns("Default Organization");
+        currentOrganizationalUnit.IsAvailable.Returns(true);
+        context.Services.AddSingleton(currentOrganizationalUnit);
     }
 }

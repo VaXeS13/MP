@@ -12,6 +12,7 @@ namespace MP.Domain.HomePageContent
     public class HomePageSection : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
 
         /// <summary>
         /// Type of the section (HeroBanner, PromotionCards, etc.)
@@ -86,9 +87,11 @@ namespace MP.Domain.HomePageContent
             HomePageSectionType sectionType,
             string title,
             int order,
+            Guid organizationalUnitId,
             Guid? tenantId = null) : base(id)
         {
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             SectionType = sectionType;
             SetTitle(title);
             Order = order;

@@ -23,6 +23,7 @@ namespace MP.Domain.HomePageContent
         public async Task<HomePageSection> CreateAsync(
             HomePageSectionType sectionType,
             string title,
+            Guid organizationalUnitId,
             string? subtitle = null,
             string? content = null,
             Guid? imageFileId = null,
@@ -42,6 +43,7 @@ namespace MP.Domain.HomePageContent
                 sectionType,
                 title,
                 order,
+                organizationalUnitId,
                 _currentTenant.Id
             );
 

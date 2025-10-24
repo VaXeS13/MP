@@ -20,6 +20,7 @@ using MP.Rentals;
 using MP.Domain.Promotions;
 using MP.Domain.Payments.Events;
 using MP.Application.Contracts.Booths;
+using MP.Domain.OrganizationalUnits;
 
 namespace MP.Carts
 {
@@ -35,6 +36,7 @@ namespace MP.Carts
         private readonly MP.Domain.Promotions.IPromotionRepository _promotionRepository;
         private readonly PromotionManager _promotionManager;
         private readonly ILocalEventBus _localEventBus;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public CartAppService(
             ICartRepository cartRepository,
@@ -45,7 +47,8 @@ namespace MP.Carts
             IRentalRepository rentalRepository,
             MP.Domain.Promotions.IPromotionRepository promotionRepository,
             PromotionManager promotionManager,
-            ILocalEventBus localEventBus)
+            ILocalEventBus localEventBus,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _cartRepository = cartRepository;
             _boothRepository = boothRepository;
@@ -56,12 +59,15 @@ namespace MP.Carts
             _promotionRepository = promotionRepository;
             _promotionManager = promotionManager;
             _localEventBus = localEventBus;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<CartDto> GetMyCartAsync()
         {
             var userId = CurrentUser.GetId();
-            var cart = await _cartManager.GetOrCreateActiveCartAsync(userId, CurrentTenant.Id);
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+            var cart = await _cartManager.GetOrCreateActiveCartAsync(userId, organizationalUnitId, CurrentTenant.Id);
 
             // Recalculate prices based on current booth pricing
             // This catches pricing changes made by admin
@@ -87,7 +93,9 @@ namespace MP.Carts
         public async Task<CartDto> AddItemAsync(AddToCartDto input)
         {
             var userId = CurrentUser.GetId();
-            var cart = await _cartManager.GetOrCreateActiveCartAsync(userId, CurrentTenant.Id);
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+            var cart = await _cartManager.GetOrCreateActiveCartAsync(userId, organizationalUnitId, CurrentTenant.Id);
 
             // Add item with validation
             await _cartManager.AddItemToCartAsync(
@@ -374,10 +382,13 @@ namespace MP.Carts
                     else
                     {
                         // Create new rental (normal user flow)
+                        var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                            .WithData("message", "Current organizational unit context is not set");
                         rental = await _rentalManager.CreateRentalAsync(
                             userId,
                             item.BoothId,
                             item.BoothTypeId,
+                            organizationalUnitId,
                             item.StartDate,
                             item.EndDate,
                             booth.PricePerDay

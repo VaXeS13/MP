@@ -10,6 +10,8 @@ namespace MP.Domain.Tests.Booths
 {
     public class BoothPricingTests : MPDomainTestBase<MPDomainTestModule>
     {
+        private static readonly Guid DefaultOrganizationalUnitId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
         [Fact]
         public void Should_Create_Booth_With_Single_Pricing_Period()
         {
@@ -21,7 +23,7 @@ namespace MP.Domain.Tests.Booths
             };
 
             // Act
-            var booth = new Booth(boothId, "A-01", periods);
+            var booth = new Booth(boothId, "A-01", periods, DefaultOrganizationalUnitId);
 
             // Assert
             booth.PricingPeriods.ShouldNotBeEmpty();
@@ -43,7 +45,7 @@ namespace MP.Domain.Tests.Booths
             };
 
             // Act
-            var booth = new Booth(boothId, "A-02", periods);
+            var booth = new Booth(boothId, "A-02", periods, DefaultOrganizationalUnitId);
 
             // Assert
             booth.PricingPeriods.Count.ShouldBe(3);
@@ -59,7 +61,7 @@ namespace MP.Domain.Tests.Booths
             // Act & Assert
             var exception = Should.Throw<BusinessException>(() =>
             {
-                new Booth(boothId, "A-03", emptyPeriods);
+                new Booth(boothId, "A-03", emptyPeriods, DefaultOrganizationalUnitId);
             });
 
             exception.Code.ShouldBe("BOOTH_PRICING_PERIODS_REQUIRED");
@@ -79,7 +81,7 @@ namespace MP.Domain.Tests.Booths
             // Act & Assert
             var exception = Should.Throw<BusinessException>(() =>
             {
-                new Booth(boothId, "A-04", periods);
+                new Booth(boothId, "A-04", periods, DefaultOrganizationalUnitId);
             });
 
             exception.Code.ShouldBe("BOOTH_PRICING_PERIODS_MUST_BE_UNIQUE");
@@ -97,7 +99,7 @@ namespace MP.Domain.Tests.Booths
             {
                 new PricingPeriod(1, price, boothId)
             };
-            var booth = new Booth(boothId, "A-05", periods);
+            var booth = new Booth(boothId, "A-05", periods, DefaultOrganizationalUnitId);
 
             // Act
             var result = booth.CalculatePrice(days);
@@ -117,7 +119,7 @@ namespace MP.Domain.Tests.Booths
                 new PricingPeriod(1, 1m, boothId),
                 new PricingPeriod(7, 6m, boothId)
             };
-            var booth = new Booth(boothId, "A-06", periods);
+            var booth = new Booth(boothId, "A-06", periods, DefaultOrganizationalUnitId);
 
             // Act
             var result = booth.CalculatePrice(16);
@@ -151,7 +153,7 @@ namespace MP.Domain.Tests.Booths
                 new PricingPeriod(7, 30m, boothId),
                 new PricingPeriod(30, 100m, boothId)
             };
-            var booth = new Booth(boothId, "A-07", periods);
+            var booth = new Booth(boothId, "A-07", periods, DefaultOrganizationalUnitId);
 
             // Act
             var result = booth.CalculatePrice(45);
@@ -171,7 +173,7 @@ namespace MP.Domain.Tests.Booths
             {
                 new PricingPeriod(7, 30m, boothId)
             };
-            var booth = new Booth(boothId, "A-08", periods);
+            var booth = new Booth(boothId, "A-08", periods, DefaultOrganizationalUnitId);
 
             // Act
             var result = booth.CalculatePrice(10);
@@ -194,7 +196,7 @@ namespace MP.Domain.Tests.Booths
             {
                 new PricingPeriod(1, 5m, boothId)
             };
-            var booth = new Booth(boothId, "A-09", periods);
+            var booth = new Booth(boothId, "A-09", periods, DefaultOrganizationalUnitId);
 
             // Act & Assert
             var exception = Should.Throw<BusinessException>(() =>
@@ -214,7 +216,7 @@ namespace MP.Domain.Tests.Booths
             {
                 new PricingPeriod(1, 5m, boothId)
             };
-            var booth = new Booth(boothId, "A-10", periods);
+            var booth = new Booth(boothId, "A-10", periods, DefaultOrganizationalUnitId);
 
             // Act & Assert
             var exception = Should.Throw<BusinessException>(() =>
@@ -240,7 +242,7 @@ namespace MP.Domain.Tests.Booths
         {
             // Arrange
             var boothId = Guid.NewGuid();
-            var booth = new Booth(boothId, "A-11", 10m); // Old constructor
+            var booth = new Booth(boothId, "A-11", 10m, DefaultOrganizationalUnitId); // Old constructor
 
             var newPeriods = new List<PricingPeriod>
             {
@@ -262,7 +264,7 @@ namespace MP.Domain.Tests.Booths
         {
             // Arrange
             var boothId = Guid.NewGuid();
-            var booth = new Booth(boothId, "A-12", 10m); // Old constructor
+            var booth = new Booth(boothId, "A-12", 10m, DefaultOrganizationalUnitId); // Old constructor
 
             var newPeriods = new List<PricingPeriod>
             {

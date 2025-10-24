@@ -38,9 +38,10 @@ namespace MP.Domain.Tests.Carts
         {
             // Arrange
             var userId = TestUserId1;
+            var organizationalUnitId = Guid.NewGuid();
 
             // Act
-            var cart = await _cartManager.GetOrCreateActiveCartAsync(userId);
+            var cart = await _cartManager.GetOrCreateActiveCartAsync(userId, organizationalUnitId);
 
             // Assert
             cart.ShouldNotBeNull();
@@ -54,10 +55,11 @@ namespace MP.Domain.Tests.Carts
         {
             // Arrange
             var userId = TestUserId2;
-            var cart1 = await _cartManager.GetOrCreateActiveCartAsync(userId);
+            var organizationalUnitId = Guid.NewGuid();
+            var cart1 = await _cartManager.GetOrCreateActiveCartAsync(userId, organizationalUnitId);
 
             // Act
-            var cart2 = await _cartManager.GetOrCreateActiveCartAsync(userId);
+            var cart2 = await _cartManager.GetOrCreateActiveCartAsync(userId, organizationalUnitId);
 
             // Assert
             cart2.Id.ShouldBe(cart1.Id);

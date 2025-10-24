@@ -383,6 +383,7 @@ namespace MP.Application.Payments
                 await _promotionManager.RecordUsageAsync(
                     relevantCart.AppliedPromotionId.Value,
                     firstRental.UserId,
+                    firstRental.OrganizationalUnitId,
                     relevantCart.Id,
                     relevantCart.DiscountAmount,
                     relevantCart.GetTotalAmount(),

@@ -15,6 +15,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Caching;
 using Volo.Abp.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
+using MP.Domain.OrganizationalUnits;
 
 namespace MP.FloorPlans
 {
@@ -28,6 +29,7 @@ namespace MP.FloorPlans
         private readonly IRepository<Rental, Guid> _rentalRepository;
         private readonly IDistributedCache<FloorPlanDto> _floorPlanCache;
         private readonly IDistributedCache<List<FloorPlanDto>> _floorPlanListCache;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public FloorPlanAppService(
             IFloorPlanRepository floorPlanRepository,
@@ -36,7 +38,8 @@ namespace MP.FloorPlans
             IRepository<Domain.Booths.Booth, Guid> boothRepository,
             IRepository<Rental, Guid> rentalRepository,
             IDistributedCache<FloorPlanDto> floorPlanCache,
-            IDistributedCache<List<FloorPlanDto>> floorPlanListCache)
+            IDistributedCache<List<FloorPlanDto>> floorPlanListCache,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _floorPlanRepository = floorPlanRepository;
             _floorPlanBoothRepository = floorPlanBoothRepository;
@@ -45,6 +48,7 @@ namespace MP.FloorPlans
             _rentalRepository = rentalRepository;
             _floorPlanCache = floorPlanCache;
             _floorPlanListCache = floorPlanListCache;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<FloorPlanDto> GetAsync(Guid id)
@@ -171,6 +175,8 @@ namespace MP.FloorPlans
         public async Task<FloorPlanDto> CreateAsync(CreateFloorPlanDto input)
         {
             var tenantId = CurrentTenant.Id;
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
 
             // Allow same name for different levels - the combination of name + level should be unique
             // Database will enforce uniqueness if needed
@@ -181,6 +187,7 @@ namespace MP.FloorPlans
                 input.Level,
                 input.Width,
                 input.Height,
+                organizationalUnitId,
                 tenantId);
 
             await _floorPlanRepository.InsertAsync(floorPlan);

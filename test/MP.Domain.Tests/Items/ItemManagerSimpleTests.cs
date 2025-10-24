@@ -32,10 +32,12 @@ namespace MP.Domain.Tests.Items
             // Arrange
             var itemName = $"Item_{Guid.NewGuid().ToString().Substring(0, 8)}";
             var userId = TestUserId1;
+            var organizationalUnitId = Guid.NewGuid();
 
             // Act
             var item = await _itemManager.CreateAsync(
                 userId,
+                organizationalUnitId,
                 itemName,
                 100m,
                 Currency.PLN,
@@ -57,9 +59,10 @@ namespace MP.Domain.Tests.Items
         {
             // Arrange
             var userId = TestUserId1;
+            var organizationalUnitId = Guid.NewGuid();
 
             // Act
-            var sheet = await _itemManager.CreateSheetAsync(userId);
+            var sheet = await _itemManager.CreateSheetAsync(userId, organizationalUnitId);
 
             // Assert
             sheet.ShouldNotBeNull();
@@ -73,10 +76,11 @@ namespace MP.Domain.Tests.Items
         {
             // Arrange
             var userId = TestUserId1;
+            var organizationalUnitId = Guid.NewGuid();
             var itemName = $"Item_{Guid.NewGuid().ToString().Substring(0, 8)}";
 
-            var item = await _itemManager.CreateAsync(userId, itemName, 100m, Currency.PLN);
-            var sheet = await _itemManager.CreateSheetAsync(userId);
+            var item = await _itemManager.CreateAsync(userId, organizationalUnitId, itemName, 100m, Currency.PLN);
+            var sheet = await _itemManager.CreateSheetAsync(userId, organizationalUnitId);
 
             // Act
             await _itemManager.AddItemToSheetAsync(sheet, item, 10m);
@@ -92,15 +96,16 @@ namespace MP.Domain.Tests.Items
         {
             // Arrange
             var userId = TestUserId1;
+            var organizationalUnitId = Guid.NewGuid();
             var itemName = $"Item_{Guid.NewGuid().ToString().Substring(0, 8)}";
 
-            var item = await _itemManager.CreateAsync(userId, itemName, 100m, Currency.PLN);
-            var sheet = await _itemManager.CreateSheetAsync(userId);
+            var item = await _itemManager.CreateAsync(userId, organizationalUnitId, itemName, 100m, Currency.PLN);
+            var sheet = await _itemManager.CreateSheetAsync(userId, organizationalUnitId);
 
             // Add item first
             await _itemManager.AddItemToSheetAsync(sheet, item);
 
-            var sheet2 = await _itemManager.CreateSheetAsync(userId);
+            var sheet2 = await _itemManager.CreateSheetAsync(userId, organizationalUnitId);
 
             // Act & Assert - should throw because item is no longer Draft
             var exception = await Should.ThrowAsync<BusinessException>(
@@ -117,10 +122,11 @@ namespace MP.Domain.Tests.Items
             // Arrange
             var user1 = TestUserId1;
             var user2 = TestUserId2;
+            var organizationalUnitId = Guid.NewGuid();
             var itemName = $"Item_{Guid.NewGuid().ToString().Substring(0, 8)}";
 
-            var item = await _itemManager.CreateAsync(user1, itemName, 100m, Currency.PLN);
-            var sheet = await _itemManager.CreateSheetAsync(user2);
+            var item = await _itemManager.CreateAsync(user1, organizationalUnitId, itemName, 100m, Currency.PLN);
+            var sheet = await _itemManager.CreateSheetAsync(user2, organizationalUnitId);
 
             // Act & Assert
             var exception = await Should.ThrowAsync<BusinessException>(
@@ -138,8 +144,9 @@ namespace MP.Domain.Tests.Items
             var userId = TestUserId1;
             var itemName = $"Item_{Guid.NewGuid().ToString().Substring(0, 8)}";
 
-            var item = await _itemManager.CreateAsync(userId, itemName, 100m, Currency.PLN);
-            var sheet = await _itemManager.CreateSheetAsync(userId);
+            var organizationalUnitId = Guid.NewGuid();
+            var item = await _itemManager.CreateAsync(userId, organizationalUnitId, itemName, 100m, Currency.PLN);
+            var sheet = await _itemManager.CreateSheetAsync(userId, organizationalUnitId);
 
             await _itemManager.AddItemToSheetAsync(sheet, item);
             sheet.Items.Count.ShouldBe(1);

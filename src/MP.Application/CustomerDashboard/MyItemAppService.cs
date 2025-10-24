@@ -14,6 +14,7 @@ using MP.Domain.Items;
 using MP.Domain.Booths;
 using MP.Permissions;
 using MP.Rentals;
+using MP.Domain.OrganizationalUnits;
 
 namespace MP.Application.CustomerDashboard
 {
@@ -24,17 +25,20 @@ namespace MP.Application.CustomerDashboard
         private readonly IRepository<Item, Guid> _itemRepository;
         private readonly IRepository<ItemSheet, Guid> _itemSheetRepository;
         private readonly IRepository<Rental, Guid> _rentalRepository;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public MyItemAppService(
             IRepository<ItemSheetItem, Guid> itemSheetItemRepository,
             IRepository<Item, Guid> itemRepository,
             IRepository<ItemSheet, Guid> itemSheetRepository,
-            IRepository<Rental, Guid> rentalRepository)
+            IRepository<Rental, Guid> rentalRepository,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _itemSheetItemRepository = itemSheetItemRepository;
             _itemRepository = itemRepository;
             _itemSheetRepository = itemSheetRepository;
             _rentalRepository = rentalRepository;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<PagedResultDto<MyItemDto>> GetMyItemsAsync(GetMyItemsDto input)
@@ -170,11 +174,15 @@ namespace MP.Application.CustomerDashboard
                 throw new BusinessException("RENTAL_NOT_ACTIVE");
             }
 
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             // Create Item
             var price = input.EstimatedPrice ?? 0m; // Use EstimatedPrice as initial Price
             var item = new Item(
                 GuidGenerator.Create(),
                 userId,
+                organizationalUnitId,
                 input.Name,
                 price,
                 Currency.PLN,
@@ -194,7 +202,7 @@ namespace MP.Application.CustomerDashboard
 
             if (itemSheet == null)
             {
-                itemSheet = new ItemSheet(GuidGenerator.Create(), userId, CurrentTenant.Id);
+                itemSheet = new ItemSheet(GuidGenerator.Create(), userId, organizationalUnitId, CurrentTenant.Id);
                 await _itemSheetRepository.InsertAsync(itemSheet);
                 itemSheet.AssignToRental(rental);
                 await _itemSheetRepository.UpdateAsync(itemSheet);

@@ -19,6 +19,7 @@ namespace MP.Domain.Rentals
     public class Rental : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
         public Guid UserId { get; private set; }
         public Guid BoothId { get; private set; }
         public Guid BoothTypeId { get; private set; }
@@ -59,12 +60,14 @@ namespace MP.Domain.Rentals
             Guid userId,
             Guid boothId,
             Guid boothTypeId,
+            Guid organizationalUnitId,
             RentalPeriod period,
             decimal totalCost,
             Currency currency,
             Guid? tenantId = null) : base(id)
         {
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             UserId = userId;
             BoothId = boothId;
             BoothTypeId = boothTypeId;

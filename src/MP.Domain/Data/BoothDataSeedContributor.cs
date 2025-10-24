@@ -35,11 +35,15 @@ namespace MP.Domain.Data
                 new { Number = "A01", Price = 25.00m },
             };
 
+            // Use default organizational unit ID for seed data
+            var defaultOrgUnitId = Guid.Empty;
+
             foreach (var testBooth in testBooths)
             {
                 var booth = await _boothManager.CreateAsync(
                     testBooth.Number,
-                    testBooth.Price
+                    testBooth.Price,
+                    defaultOrgUnitId
                 );
 
                 await _boothRepository.InsertAsync(booth, autoSave: true);

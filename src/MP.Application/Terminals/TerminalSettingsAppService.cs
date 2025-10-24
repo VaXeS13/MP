@@ -9,6 +9,8 @@ using Volo.Abp.Caching;
 using Volo.Abp.Domain.Repositories;
 using MP.Application.Contracts.Terminals;
 using MP.Domain.Terminals;
+using MP.Domain.OrganizationalUnits;
+using Volo.Abp;
 
 namespace MP.Application.Terminals
 {
@@ -18,17 +20,20 @@ namespace MP.Application.Terminals
         private readonly ITerminalPaymentProviderFactory _providerFactory;
         private readonly ILogger<TerminalSettingsAppService> _logger;
         private readonly IDistributedCache<TerminalSettingsDto> _cache;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public TerminalSettingsAppService(
             IRepository<TenantTerminalSettings, Guid> repository,
             ITerminalPaymentProviderFactory providerFactory,
             ILogger<TerminalSettingsAppService> logger,
-            IDistributedCache<TerminalSettingsDto> cache)
+            IDistributedCache<TerminalSettingsDto> cache,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _repository = repository;
             _providerFactory = providerFactory;
             _logger = logger;
             _cache = cache;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<TerminalSettingsDto?> GetCurrentTenantSettingsAsync()
@@ -66,11 +71,15 @@ namespace MP.Application.Terminals
                 throw new Volo.Abp.BusinessException("Terminal settings already exist for this tenant. Use update instead.");
             }
 
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             var settings = new TenantTerminalSettings(
                 GuidGenerator.Create(),
+                organizationalUnitId,
                 CurrentTenant.Id,
                 input.ProviderId,
-                input.ProviderId, // displayName - will use provider ID as display name
+                input.ProviderId, // displayName - use provider ID as display name
                 input.ConfigurationJson,
                 input.Currency,
                 input.IsEnabled,

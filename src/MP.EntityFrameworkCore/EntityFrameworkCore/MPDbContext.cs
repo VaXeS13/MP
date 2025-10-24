@@ -31,6 +31,7 @@ using MP.Domain.Identity;
 using MP.Domain.HomePageContent;
 using MP.Domain.Files;
 using MP.Domain.LocalAgent;
+using MP.Domain.OrganizationalUnits;
 
 namespace MP.EntityFrameworkCore;
 
@@ -97,6 +98,12 @@ public class MPDbContext :
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<UploadedFile> UploadedFiles { get; set; }
     public DbSet<AgentApiKey> AgentApiKeys { get; set; }
+
+    // Organizational Units
+    public DbSet<OrganizationalUnit> OrganizationalUnits { get; set; }
+    public DbSet<UserOrganizationalUnit> UserOrganizationalUnits { get; set; }
+    public DbSet<OrganizationalUnitRegistrationCode> OrganizationalUnitRegistrationCodes { get; set; }
+    public DbSet<OrganizationalUnitSettings> OrganizationalUnitSettings { get; set; }
 
     #endregion
 

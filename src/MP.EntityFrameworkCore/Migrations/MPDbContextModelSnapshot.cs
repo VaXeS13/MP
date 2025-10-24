@@ -93,6 +93,9 @@ namespace MP.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasComment("Nazwa typu stanowiska");
 
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("TenantId");
@@ -102,9 +105,9 @@ namespace MP.Migrations
                     b.HasIndex("IsActive")
                         .HasDatabaseName("IX_BoothTypes_IsActive");
 
-                    b.HasIndex("TenantId", "Name")
+                    b.HasIndex("TenantId", "OrganizationalUnitId", "Name")
                         .IsUnique()
-                        .HasDatabaseName("IX_BoothTypes_TenantId_Name")
+                        .HasDatabaseName("IX_BoothTypes_TenantId_OrgUnit_Name")
                         .HasFilter("[TenantId] IS NOT NULL");
 
                     b.ToTable("AppBoothTypes", (string)null);
@@ -163,6 +166,9 @@ namespace MP.Migrations
                         .HasColumnType("nvarchar(10)")
                         .HasComment("Numer stanowiska");
 
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("PricePerDay")
                         .HasColumnType("decimal(18,2)")
                         .HasComment("Cena za dzień (legacy - use PricingPeriods)");
@@ -183,9 +189,9 @@ namespace MP.Migrations
                     b.HasIndex("Status")
                         .HasDatabaseName("IX_Booths_Status");
 
-                    b.HasIndex("TenantId", "Number")
+                    b.HasIndex("TenantId", "OrganizationalUnitId", "Number")
                         .IsUnique()
-                        .HasDatabaseName("IX_Booths_TenantId_Number")
+                        .HasDatabaseName("IX_Booths_TenantId_OrgUnit_Number")
                         .HasFilter("[TenantId] IS NOT NULL");
 
                     b.ToTable("AppBooths", (string)null);
@@ -247,6 +253,9 @@ namespace MP.Migrations
                     b.Property<Guid?>("LastModifierId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PromoCodeUsed")
                         .HasColumnType("nvarchar(max)");
@@ -365,6 +374,9 @@ namespace MP.Migrations
                     b.Property<decimal?>("OldStoredTotalPrice")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("PricePerDay")
                         .HasColumnType("decimal(18,2)")
                         .HasComment("Cena za dzień");
@@ -463,6 +475,9 @@ namespace MP.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)")
                         .HasComment("Treść wiadomości");
+
+                    b.Property<Guid?>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("ReadAt")
                         .HasColumnType("datetime2")
@@ -573,6 +588,9 @@ namespace MP.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
+                    b.Property<Guid?>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("TenantId");
@@ -668,6 +686,9 @@ namespace MP.Migrations
                     b.Property<Guid?>("LastModifierId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ProviderId")
                         .IsRequired()
@@ -776,6 +797,9 @@ namespace MP.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasComment("Nazwa planu piętra");
 
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("TenantId");
@@ -789,12 +813,12 @@ namespace MP.Migrations
                     b.HasIndex("IsActive")
                         .HasDatabaseName("IX_FloorPlans_IsActive");
 
-                    b.HasIndex("TenantId", "Level")
-                        .HasDatabaseName("IX_FloorPlans_TenantId_Level");
+                    b.HasIndex("TenantId", "OrganizationalUnitId", "Level")
+                        .HasDatabaseName("IX_FloorPlans_TenantId_OrgUnit_Level");
 
-                    b.HasIndex("TenantId", "Name")
+                    b.HasIndex("TenantId", "OrganizationalUnitId", "Name")
                         .IsUnique()
-                        .HasDatabaseName("IX_FloorPlans_TenantId_Name")
+                        .HasDatabaseName("IX_FloorPlans_TenantId_OrgUnit_Name")
                         .HasFilter("[TenantId] IS NOT NULL");
 
                     b.ToTable("AppFloorPlans", (string)null);
@@ -1068,6 +1092,9 @@ namespace MP.Migrations
                         .HasColumnType("int")
                         .HasComment("Display order (lower = displayed first)");
 
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("SectionType")
                         .HasColumnType("int")
                         .HasComment("Type of homepage section");
@@ -1120,8 +1147,8 @@ namespace MP.Migrations
                     b.HasIndex("IsActive", "ValidFrom", "ValidTo")
                         .HasDatabaseName("IX_HomePageSections_Active_Validity");
 
-                    b.HasIndex("TenantId", "IsActive", "Order")
-                        .HasDatabaseName("IX_HomePageSections_TenantId_IsActive_Order");
+                    b.HasIndex("TenantId", "OrganizationalUnitId", "IsActive", "Order")
+                        .HasDatabaseName("IX_HomePageSections_TenantId_OrgUnit_IsActive_Order");
 
                     b.ToTable("AppHomePageSections", (string)null);
                 });
@@ -1205,6 +1232,9 @@ namespace MP.Migrations
                         .HasColumnType("nvarchar(200)")
                         .HasComment("Nazwa przedmiotu");
 
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)")
                         .HasComment("Cena przedmiotu");
@@ -1284,6 +1314,9 @@ namespace MP.Migrations
                     b.Property<Guid?>("LastModifierId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("RentalId")
                         .HasColumnType("uniqueidentifier")
@@ -1491,6 +1524,9 @@ namespace MP.Migrations
                         .HasColumnType("nvarchar(255)")
                         .HasComment("Friendly name for the API key");
 
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Prefix")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -1599,6 +1635,9 @@ namespace MP.Migrations
                         .HasColumnType("nvarchar(2000)")
                         .HasComment("Treść powiadomienia");
 
+                    b.Property<Guid?>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("ReadAt")
                         .HasColumnType("datetime2")
                         .HasComment("Data przeczytania powiadomienia");
@@ -1657,6 +1696,363 @@ namespace MP.Migrations
                         .HasDatabaseName("IX_UserNotifications_UserId_IsRead");
 
                     b.ToTable("AppUserNotifications", (string)null);
+                });
+
+            modelBuilder.Entity("MP.Domain.OrganizationalUnits.OrganizationalUnit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)")
+                        .HasComment("Physical address");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("City");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Organization unit code (unique per tenant)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasComment("Contact email");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true)
+                        .HasComment("Whether the organizational unit is active");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasComment("Organization unit name");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Contact phone number");
+
+                    b.Property<string>("PostalCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Postal code");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_OrganizationalUnits_IsActive");
+
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_OrganizationalUnits_TenantId_Code")
+                        .HasFilter("[TenantId] IS NOT NULL");
+
+                    b.ToTable("AppOrganizationalUnits", (string)null);
+                });
+
+            modelBuilder.Entity("MP.Domain.OrganizationalUnits.OrganizationalUnitRegistrationCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Registration code");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2")
+                        .HasComment("When this registration code expires");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true)
+                        .HasComment("Whether this code is active");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<DateTime?>("LastUsedAt")
+                        .HasColumnType("datetime2")
+                        .HasComment("When this code was last used");
+
+                    b.Property<int?>("MaxUsageCount")
+                        .HasColumnType("int")
+                        .HasComment("Maximum number of uses (null = unlimited)");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Organizational unit ID");
+
+                    b.Property<Guid?>("OrganizationalUnitId1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("RoleId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Role ID to assign upon registration (optional)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("UsageCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasComment("Current usage count");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("IX_OrganizationalUnitRegistrationCodes_ExpiresAt");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_OrganizationalUnitRegistrationCodes_IsActive");
+
+                    b.HasIndex("OrganizationalUnitId")
+                        .HasDatabaseName("IX_OrganizationalUnitRegistrationCodes_OrganizationalUnitId");
+
+                    b.HasIndex("OrganizationalUnitId1");
+
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_OrganizationalUnitRegistrationCodes_TenantId_Code")
+                        .HasFilter("[TenantId] IS NOT NULL");
+
+                    b.ToTable("AppOrganizationalUnitRegistrationCodes", (string)null);
+                });
+
+            modelBuilder.Entity("MP.Domain.OrganizationalUnits.OrganizationalUnitSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BannerText")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasComment("Custom banner text for the organization");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasDefaultValue("PLN")
+                        .HasComment("Default currency for this unit (PLN, EUR, USD, GBP, CZK)");
+
+                    b.Property<string>("DefaultPaymentProvider")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Default payment provider ID");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("EnabledPaymentProviders")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("JSON array of enabled payment provider IDs (Przelewy24, Stripe, PayPal)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsMainUnit")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasComment("Whether this is the main organizational unit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)")
+                        .HasComment("URL to the organization logo");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Organizational unit ID");
+
+                    b.Property<Guid?>("OrganizationalUnitId1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationalUnitId")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationalUnitId1");
+
+                    b.HasIndex("TenantId", "OrganizationalUnitId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_OrganizationalUnitSettings_TenantId_OrgUnit")
+                        .HasFilter("[TenantId] IS NOT NULL");
+
+                    b.ToTable("AppOrganizationalUnitSettings", (string)null);
+                });
+
+            modelBuilder.Entity("MP.Domain.OrganizationalUnits.UserOrganizationalUnit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("AppUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2")
+                        .HasComment("When the user was assigned to this unit");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true)
+                        .HasComment("Whether this assignment is active");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Organizational unit ID");
+
+                    b.Property<Guid?>("OrganizationalUnitId1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("RoleId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Role ID (optional)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("User ID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_UserOrganizationalUnits_IsActive");
+
+                    b.HasIndex("OrganizationalUnitId")
+                        .HasDatabaseName("IX_UserOrganizationalUnits_OrganizationalUnitId");
+
+                    b.HasIndex("OrganizationalUnitId1");
+
+                    b.HasIndex("TenantId", "UserId", "OrganizationalUnitId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_UserOrganizationalUnits_TenantId_UserId_OrgUnit")
+                        .HasFilter("[TenantId] IS NOT NULL");
+
+                    b.ToTable("AppUserOrganizationalUnits", (string)null);
                 });
 
             modelBuilder.Entity("MP.Domain.Payments.P24Transaction", b =>
@@ -1746,6 +2142,9 @@ namespace MP.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasComment("ID zamówienia");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("PosId")
                         .HasColumnType("int")
@@ -1954,6 +2353,9 @@ namespace MP.Migrations
                         .HasColumnType("nvarchar(255)")
                         .HasComment("PayPal Order ID");
 
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal?>("PayPalFee")
                         .HasColumnType("decimal(18,2)")
                         .HasComment("Fee charged by PayPal");
@@ -2147,6 +2549,9 @@ namespace MP.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasComment("Network transaction ID");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PaymentIntentId")
                         .IsRequired()
@@ -2347,6 +2752,9 @@ namespace MP.Migrations
                         .HasColumnType("nvarchar(200)")
                         .HasComment("Promotion name");
 
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Priority")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -2409,14 +2817,16 @@ namespace MP.Migrations
                     b.HasIndex("Type")
                         .HasDatabaseName("IX_Promotions_Type");
 
-                    b.HasIndex("TenantId", "IsActive")
-                        .HasDatabaseName("IX_Promotions_TenantId_IsActive");
-
-                    b.HasIndex("TenantId", "PromoCode")
-                        .HasDatabaseName("IX_Promotions_TenantId_PromoCode");
-
                     b.HasIndex("IsActive", "ValidFrom", "ValidTo")
                         .HasDatabaseName("IX_Promotions_Active_Validity");
+
+                    b.HasIndex("TenantId", "OrganizationalUnitId", "IsActive")
+                        .HasDatabaseName("IX_Promotions_TenantId_OrgUnit_IsActive");
+
+                    b.HasIndex("TenantId", "OrganizationalUnitId", "PromoCode")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Promotions_TenantId_OrgUnit_PromoCode")
+                        .HasFilter("[TenantId] IS NOT NULL AND [PromoCode] IS NOT NULL");
 
                     b.ToTable("AppPromotions", (string)null);
                 });
@@ -2445,6 +2855,9 @@ namespace MP.Migrations
                     b.Property<decimal>("FinalAmount")
                         .HasColumnType("decimal(18,2)")
                         .HasComment("Final cart amount after discount");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("OriginalAmount")
                         .HasColumnType("decimal(18,2)")
@@ -2488,8 +2901,10 @@ namespace MP.Migrations
                     b.HasIndex("UserId")
                         .HasDatabaseName("IX_PromotionUsages_UserId");
 
-                    b.HasIndex("PromotionId", "UserId")
-                        .HasDatabaseName("IX_PromotionUsages_PromotionId_UserId");
+                    b.HasIndex("TenantId", "OrganizationalUnitId", "PromotionId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PromotionUsages_TenantId_OrgUnit_PromotionId_UserId")
+                        .HasFilter("[TenantId] IS NOT NULL");
 
                     b.ToTable("AppPromotionUsages", (string)null);
                 });
@@ -2564,6 +2979,9 @@ namespace MP.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("PriceBreakdown")
                         .HasColumnType("nvarchar(max)")
                         .HasComment("Price breakdown JSON showing how total price was calculated");
@@ -2627,6 +3045,9 @@ namespace MP.Migrations
                     b.Property<DateTime>("OldEndDate")
                         .HasColumnType("date")
                         .HasComment("Poprzednia data zakończenia");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("PaymentType")
                         .HasColumnType("int")
@@ -2731,6 +3152,9 @@ namespace MP.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)")
                         .HasComment("Notatki do rozliczenia");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("datetime2")
@@ -2936,6 +3360,9 @@ namespace MP.Migrations
                     b.Property<Guid?>("LastModifierId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ProviderId")
                         .IsRequired()
@@ -4984,6 +5411,57 @@ namespace MP.Migrations
                     b.Navigation("Item");
 
                     b.Navigation("ItemSheet");
+                });
+
+            modelBuilder.Entity("MP.Domain.OrganizationalUnits.OrganizationalUnitRegistrationCode", b =>
+                {
+                    b.HasOne("MP.Domain.OrganizationalUnits.OrganizationalUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationalUnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MP.Domain.OrganizationalUnits.OrganizationalUnit", "OrganizationalUnit")
+                        .WithMany()
+                        .HasForeignKey("OrganizationalUnitId1");
+
+                    b.Navigation("OrganizationalUnit");
+                });
+
+            modelBuilder.Entity("MP.Domain.OrganizationalUnits.OrganizationalUnitSettings", b =>
+                {
+                    b.HasOne("MP.Domain.OrganizationalUnits.OrganizationalUnit", null)
+                        .WithOne()
+                        .HasForeignKey("MP.Domain.OrganizationalUnits.OrganizationalUnitSettings", "OrganizationalUnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MP.Domain.OrganizationalUnits.OrganizationalUnit", "OrganizationalUnit")
+                        .WithMany()
+                        .HasForeignKey("OrganizationalUnitId1");
+
+                    b.Navigation("OrganizationalUnit");
+                });
+
+            modelBuilder.Entity("MP.Domain.OrganizationalUnits.UserOrganizationalUnit", b =>
+                {
+                    b.HasOne("Volo.Abp.Identity.IdentityUser", "AppUser")
+                        .WithMany()
+                        .HasForeignKey("AppUserId");
+
+                    b.HasOne("MP.Domain.OrganizationalUnits.OrganizationalUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationalUnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MP.Domain.OrganizationalUnits.OrganizationalUnit", "OrganizationalUnit")
+                        .WithMany()
+                        .HasForeignKey("OrganizationalUnitId1");
+
+                    b.Navigation("AppUser");
+
+                    b.Navigation("OrganizationalUnit");
                 });
 
             modelBuilder.Entity("MP.Domain.Payments.P24Transaction", b =>

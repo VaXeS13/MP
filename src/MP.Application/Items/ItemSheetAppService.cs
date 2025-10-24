@@ -77,6 +77,7 @@ namespace MP.Items
 
             var sheet = await _itemManager.CreateSheetAsync(
                 userId,
+                Guid.Empty, // TODO: Get organizationalUnitId from user context or input
                 CurrentTenant.Id
             );
 

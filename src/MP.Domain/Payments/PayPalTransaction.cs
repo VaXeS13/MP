@@ -11,6 +11,7 @@ namespace MP.Domain.Payments
     public class PayPalTransaction : FullAuditedEntity<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; set; }
+        public Guid OrganizationalUnitId { get; set; }
 
         /// <summary>
         /// PayPal Order ID (e.g., "5O190127TN364715T")

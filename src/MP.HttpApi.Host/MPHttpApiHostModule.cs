@@ -44,6 +44,7 @@ using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Security.Claims;
 using MP.EntityFrameworkCore;
 using MP.Domain;
+using MP.Domain.OrganizationalUnits;
 using Volo.Abp.MultiTenancy;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
@@ -51,6 +52,7 @@ using MP.Middleware;
 using MP.HttpApi.Hubs;
 using MP.HttpApi.Middleware;
 using MP.HttpApi.Devices;
+using MP.HttpApi.Host.Middleware;
 using MP.Services;
 using MP.Application.Contracts.Devices;
 // DODAJ TE IMPORTY:
@@ -154,6 +156,9 @@ public class MPHttpApiHostModule : AbpModule
 
         // POPRAWIONA konfiguracja cookies z subdomain-aware authentication
         // ConfigureSubdomainAwareAuthentication(context);
+
+        // Register organizational unit context
+        context.Services.AddScoped<ICurrentOrganizationalUnit, CurrentOrganizationalUnit>();
 
         // Session
         context.Services.AddSession(options =>
@@ -318,6 +323,7 @@ public class MPHttpApiHostModule : AbpModule
             app.UseMultiTenancy();
         }
         app.UseMiddleware<TenantMiddleware>(); // Izolacja cookies
+        app.UseMiddleware<OrganizationalUnitMiddleware>(); // Organizational unit context resolution
 
         // Twoje zakomentowane middleware - pozostaw jak s�
         //app.UseMiddleware<ClientIdToTenantMiddleware>();

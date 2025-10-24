@@ -22,6 +22,7 @@ namespace MP.Domain.Items
 
         public async Task<Item> CreateAsync(
             Guid userId,
+            Guid organizationalUnitId,
             string name,
             decimal price,
             Booths.Currency currency,
@@ -31,6 +32,7 @@ namespace MP.Domain.Items
             var item = new Item(
                 GuidGenerator.Create(),
                 userId,
+                organizationalUnitId,
                 name,
                 price,
                 currency,
@@ -47,11 +49,13 @@ namespace MP.Domain.Items
 
         public async Task<ItemSheet> CreateSheetAsync(
             Guid userId,
+            Guid organizationalUnitId,
             Guid? tenantId = null)
         {
             var sheet = new ItemSheet(
                 GuidGenerator.Create(),
                 userId,
+                organizationalUnitId,
                 tenantId
             );
 

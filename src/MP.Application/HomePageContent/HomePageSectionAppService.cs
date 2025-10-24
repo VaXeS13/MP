@@ -8,6 +8,8 @@ using MP.Domain.HomePageContent;
 using MP.Permissions;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using MP.Domain.OrganizationalUnits;
+using Volo.Abp;
 
 namespace MP.Application.HomePageContent
 {
@@ -24,14 +26,17 @@ namespace MP.Application.HomePageContent
     {
         private readonly IHomePageSectionRepository _repository;
         private readonly HomePageSectionManager _manager;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public HomePageSectionAppService(
             IHomePageSectionRepository repository,
-            HomePageSectionManager manager)
+            HomePageSectionManager manager,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
             : base(repository)
         {
             _repository = repository;
             _manager = manager;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
 
             GetPolicyName = MPPermissions.HomePageContent.Default;
             GetListPolicyName = MPPermissions.HomePageContent.Default;
@@ -43,9 +48,13 @@ namespace MP.Application.HomePageContent
         [Authorize(MPPermissions.HomePageContent.Create)]
         public override async Task<HomePageSectionDto> CreateAsync(CreateHomePageSectionDto input)
         {
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             var section = await _manager.CreateAsync(
                 input.SectionType,
                 input.Title,
+                organizationalUnitId,
                 input.Subtitle,
                 input.Content,
                 input.ImageFileId,

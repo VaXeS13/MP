@@ -10,6 +10,7 @@ namespace MP.Domain.Items
     public class Item : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
         public Guid UserId { get; private set; }
         public string Name { get; private set; } = null!;
         public string? Category { get; private set; }
@@ -25,12 +26,14 @@ namespace MP.Domain.Items
         public Item(
             Guid id,
             Guid userId,
+            Guid organizationalUnitId,
             string name,
             decimal price,
             Currency currency = Currency.PLN,
             Guid? tenantId = null) : base(id)
         {
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             UserId = userId;
             SetName(name);
             SetPrice(price);

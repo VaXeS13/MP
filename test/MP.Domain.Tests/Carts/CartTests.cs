@@ -14,6 +14,7 @@ namespace MP.Domain.Tests.Carts
     {
         private readonly Guid _cartId = Guid.NewGuid();
         private readonly Guid _userId = Guid.NewGuid();
+        private readonly Guid _organizationalUnitId = Guid.NewGuid();
         private readonly Guid _boothId = Guid.NewGuid();
         private readonly Guid _boothTypeId = Guid.NewGuid();
 
@@ -21,7 +22,7 @@ namespace MP.Domain.Tests.Carts
         public void Constructor_Should_Create_Active_Cart()
         {
             // Act
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
 
             // Assert
             cart.Id.ShouldBe(_cartId);
@@ -34,7 +35,7 @@ namespace MP.Domain.Tests.Carts
         public void IsEmpty_Should_Return_True_For_New_Cart()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
 
             // Act
             var isEmpty = cart.IsEmpty();
@@ -47,10 +48,11 @@ namespace MP.Domain.Tests.Carts
         public void IsEmpty_Should_Return_False_After_Adding_Item()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
             var item = new CartItem(
                 Guid.NewGuid(),
                 _cartId,
+                _organizationalUnitId,
                 _boothId,
                 _boothTypeId,
                 DateTime.Today.AddDays(7),
@@ -70,7 +72,7 @@ namespace MP.Domain.Tests.Carts
         public void GetItemCount_Should_Return_Zero_For_New_Cart()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
 
             // Act
             var count = cart.GetItemCount();
@@ -83,10 +85,10 @@ namespace MP.Domain.Tests.Carts
         public void GetItemCount_Should_Return_Correct_Count()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
-            var item1 = new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
+            var item1 = new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN);
-            var item2 = new CartItem(Guid.NewGuid(), _cartId, Guid.NewGuid(), _boothTypeId,
+            var item2 = new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, Guid.NewGuid(), _boothTypeId,
                 DateTime.Today.AddDays(20), DateTime.Today.AddDays(26), 150m, Currency.PLN);
 
             // Act
@@ -101,8 +103,8 @@ namespace MP.Domain.Tests.Carts
         public void AddItem_Should_Add_Item_To_Cart()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
-            var item = new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
+            var item = new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN);
 
             // Act
@@ -117,9 +119,9 @@ namespace MP.Domain.Tests.Carts
         public void AddItem_Should_Throw_When_Cart_Not_Active()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
             cart.MarkAsAbandoned();
-            var item = new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
+            var item = new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today, DateTime.Today.AddDays(6), 100m, Currency.PLN);
 
             // Act & Assert
@@ -131,9 +133,9 @@ namespace MP.Domain.Tests.Carts
         public void RemoveItem_Should_Remove_Item_From_Cart()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
             var itemId = Guid.NewGuid();
-            var item = new CartItem(itemId, _cartId, _boothId, _boothTypeId,
+            var item = new CartItem(itemId, _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN);
             cart.AddItem(item);
 
@@ -149,7 +151,7 @@ namespace MP.Domain.Tests.Carts
         public void RemoveItem_Should_Throw_When_Item_Not_Found()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
 
             // Act & Assert
             var exception = Should.Throw<BusinessException>(
@@ -162,10 +164,10 @@ namespace MP.Domain.Tests.Carts
         public void Clear_Should_Remove_All_Items()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
-            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
+            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
-            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, Guid.NewGuid(), _boothTypeId,
+            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, Guid.NewGuid(), _boothTypeId,
                 DateTime.Today.AddDays(20), DateTime.Today.AddDays(26), 150m, Currency.PLN));
 
             // Act
@@ -180,7 +182,7 @@ namespace MP.Domain.Tests.Carts
         public void Clear_Should_Throw_When_Cart_Not_Active()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
             cart.MarkAsAbandoned();
 
             // Act & Assert
@@ -192,8 +194,8 @@ namespace MP.Domain.Tests.Carts
         public void MarkAsCheckedOut_Should_Change_Status()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
-            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
+            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
 
             // Act
@@ -208,7 +210,7 @@ namespace MP.Domain.Tests.Carts
         public void MarkAsCheckedOut_Should_Throw_When_Cart_Empty()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
 
             // Act & Assert
             var exception = Should.Throw<BusinessException>(() => cart.MarkAsCheckedOut());
@@ -219,7 +221,7 @@ namespace MP.Domain.Tests.Carts
         public void MarkAsAbandoned_Should_Change_Status()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
 
             // Act
             cart.MarkAsAbandoned();
@@ -232,8 +234,8 @@ namespace MP.Domain.Tests.Carts
         public void MarkAsAbandoned_Should_Throw_When_Already_CheckedOut()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
-            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
+            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
             cart.MarkAsCheckedOut();
 
@@ -246,12 +248,12 @@ namespace MP.Domain.Tests.Carts
         public void GetTotalAmount_Should_Sum_All_Items()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
             // Item 1: 100 per day * 7 days = 700
-            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
+            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
             // Item 2: 150 per day * 7 days = 1050
-            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, Guid.NewGuid(), _boothTypeId,
+            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, Guid.NewGuid(), _boothTypeId,
                 DateTime.Today.AddDays(20), DateTime.Today.AddDays(26), 150m, Currency.PLN));
 
             // Act
@@ -265,7 +267,7 @@ namespace MP.Domain.Tests.Carts
         public void GetTotalAmount_Should_Return_Zero_For_Empty_Cart()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
 
             // Act
             var total = cart.GetTotalAmount();
@@ -278,12 +280,12 @@ namespace MP.Domain.Tests.Carts
         public void GetTotalDays_Should_Sum_All_Days()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
             // Item 1: 7 days
-            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
+            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
             // Item 2: 7 days
-            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, Guid.NewGuid(), _boothTypeId,
+            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, Guid.NewGuid(), _boothTypeId,
                 DateTime.Today.AddDays(20), DateTime.Today.AddDays(26), 150m, Currency.PLN));
 
             // Act
@@ -297,8 +299,8 @@ namespace MP.Domain.Tests.Carts
         public void HasBoothInCart_Should_Return_True_When_Booth_Present()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
-            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
+            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
 
             // Act
@@ -312,7 +314,7 @@ namespace MP.Domain.Tests.Carts
         public void HasBoothInCart_Should_Return_False_When_Booth_Not_Present()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
 
             // Act
             var hasItem = cart.HasBoothInCart(_boothId);
@@ -325,10 +327,10 @@ namespace MP.Domain.Tests.Carts
         public void HasOverlappingBooking_Should_Return_True_For_Overlapping_Dates()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
             var startDate = DateTime.Today.AddDays(10);
             var endDate = DateTime.Today.AddDays(16);
-            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
+            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
 
             // Act
@@ -342,8 +344,8 @@ namespace MP.Domain.Tests.Carts
         public void HasOverlappingBooking_Should_Return_False_For_Non_Overlapping_Dates()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
-            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
+            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
 
             // Act
@@ -357,7 +359,7 @@ namespace MP.Domain.Tests.Carts
         public void IsActive_Should_Return_True_For_Active_Cart()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
 
             // Act & Assert
             cart.IsActive().ShouldBeTrue();
@@ -367,7 +369,7 @@ namespace MP.Domain.Tests.Carts
         public void IsActive_Should_Return_False_For_Abandoned_Cart()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
             cart.MarkAsAbandoned();
 
             // Act & Assert
@@ -378,8 +380,8 @@ namespace MP.Domain.Tests.Carts
         public void IsActive_Should_Return_False_For_CheckedOut_Cart()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
-            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _boothId, _boothTypeId,
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
+            cart.AddItem(new CartItem(Guid.NewGuid(), _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
             cart.MarkAsCheckedOut();
 
@@ -391,7 +393,7 @@ namespace MP.Domain.Tests.Carts
         public void SetExtensionTimeout_Should_Set_Timeout()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
             var timeout = DateTime.Now.AddHours(1);
 
             // Act
@@ -405,7 +407,7 @@ namespace MP.Domain.Tests.Carts
         public void SetExtensionTimeout_Should_Allow_Null_Timeout()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
             cart.SetExtensionTimeout(DateTime.Now.AddHours(1));
 
             // Act
@@ -419,7 +421,7 @@ namespace MP.Domain.Tests.Carts
         public void Cart_Should_Have_Default_Currency_For_TenantId()
         {
             // Arrange & Act
-            var cart = new Cart(_cartId, _userId, null);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId, null);
 
             // Assert
             cart.TenantId.ShouldBeNull();
@@ -442,9 +444,9 @@ namespace MP.Domain.Tests.Carts
         public void RemoveItem_Should_Throw_When_Cart_Not_Active()
         {
             // Arrange
-            var cart = new Cart(_cartId, _userId);
+            var cart = new Cart(_cartId, _userId, _organizationalUnitId);
             var itemId = Guid.NewGuid();
-            cart.AddItem(new CartItem(itemId, _cartId, _boothId, _boothTypeId,
+            cart.AddItem(new CartItem(itemId, _cartId, _organizationalUnitId, _boothId, _boothTypeId,
                 DateTime.Today.AddDays(7), DateTime.Today.AddDays(13), 100m, Currency.PLN));
             cart.MarkAsAbandoned();
 

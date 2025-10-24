@@ -34,6 +34,7 @@ namespace MP.Domain.Promotions
         /// </summary>
         public async Task<Promotion> CreateAsync(
             string name,
+            Guid organizationalUnitId,
             PromotionType type,
             PromotionDisplayMode displayMode,
             DiscountType discountType,
@@ -51,6 +52,7 @@ namespace MP.Domain.Promotions
 
             var promotion = new Promotion(
                 GuidGenerator.Create(),
+                organizationalUnitId,
                 name,
                 type,
                 displayMode,
@@ -243,6 +245,7 @@ namespace MP.Domain.Promotions
         public async Task<PromotionUsage> RecordUsageAsync(
             Guid promotionId,
             Guid userId,
+            Guid organizationalUnitId,
             Guid cartId,
             decimal discountAmount,
             decimal originalAmount,
@@ -259,6 +262,7 @@ namespace MP.Domain.Promotions
             // Create usage record
             var usage = new PromotionUsage(
                 GuidGenerator.Create(),
+                organizationalUnitId,
                 promotionId,
                 userId,
                 cartId,

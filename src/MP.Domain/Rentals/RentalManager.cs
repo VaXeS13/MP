@@ -40,6 +40,7 @@ namespace MP.Domain.Rentals
             Guid userId,
             Guid boothId,
             Guid boothTypeId,
+            Guid organizationalUnitId,
             DateTime startDate,
             DateTime endDate,
             decimal? customDailyRate = null)
@@ -77,6 +78,7 @@ namespace MP.Domain.Rentals
                 userId,
                 boothId,
                 boothTypeId,
+                organizationalUnitId,
                 period,
                 totalCost,
                 currency,

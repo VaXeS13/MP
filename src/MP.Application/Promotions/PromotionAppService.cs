@@ -66,6 +66,7 @@ namespace MP.Promotions
         {
             var promotion = await _promotionManager.CreateAsync(
                 input.Name,
+                Guid.Empty, // TODO: Get organizationalUnitId from user context or input
                 input.Type,
                 input.DisplayMode,
                 input.DiscountType,

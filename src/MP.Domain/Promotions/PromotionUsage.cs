@@ -11,6 +11,7 @@ namespace MP.Domain.Promotions
     public class PromotionUsage : CreationAuditedEntity<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
 
         /// <summary>
         /// The promotion that was used
@@ -60,6 +61,7 @@ namespace MP.Domain.Promotions
 
         public PromotionUsage(
             Guid id,
+            Guid organizationalUnitId,
             Guid promotionId,
             Guid userId,
             Guid cartId,
@@ -71,6 +73,7 @@ namespace MP.Domain.Promotions
             Guid? tenantId = null) : base(id)
         {
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             PromotionId = promotionId;
             UserId = userId;
             CartId = cartId;

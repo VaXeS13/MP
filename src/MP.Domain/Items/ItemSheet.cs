@@ -12,6 +12,7 @@ namespace MP.Domain.Items
     public class ItemSheet : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
         public Guid UserId { get; private set; }
         public Guid? RentalId { get; private set; }
         public ItemSheetStatus Status { get; private set; }
@@ -28,9 +29,11 @@ namespace MP.Domain.Items
         public ItemSheet(
             Guid id,
             Guid userId,
+            Guid organizationalUnitId,
             Guid? tenantId = null) : base(id)
         {
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             UserId = userId;
             Status = ItemSheetStatus.Draft;
         }

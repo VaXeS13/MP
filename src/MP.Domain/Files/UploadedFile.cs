@@ -11,6 +11,7 @@ namespace MP.Domain.Files
     public class UploadedFile : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid? OrganizationalUnitId { get; private set; }
 
         /// <summary>
         /// Original filename uploaded by user
@@ -46,9 +47,11 @@ namespace MP.Domain.Files
             string contentType,
             long fileSize,
             byte[] content,
+            Guid? organizationalUnitId = null,
             Guid? tenantId = null) : base(id)
         {
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             SetFileName(fileName);
             SetContentType(contentType);
             SetFileSize(fileSize);

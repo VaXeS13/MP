@@ -14,6 +14,7 @@ namespace MP.Domain.Promotions
     public class Promotion : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
 
         /// <summary>
         /// Promotion name (internal use)
@@ -141,6 +142,7 @@ namespace MP.Domain.Promotions
 
         public Promotion(
             Guid id,
+            Guid organizationalUnitId,
             string name,
             PromotionType type,
             PromotionDisplayMode displayMode,
@@ -149,6 +151,7 @@ namespace MP.Domain.Promotions
             Guid? tenantId = null) : base(id)
         {
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             SetName(name);
             Type = type;
             DisplayMode = displayMode;

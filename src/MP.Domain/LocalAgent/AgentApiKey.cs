@@ -13,6 +13,7 @@ namespace MP.Domain.LocalAgent
     public class AgentApiKey : FullAuditedEntity<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; set; }
+        public Guid OrganizationalUnitId { get; set; }
 
         /// <summary>
         /// Agent identifier (e.g., "shop-warsaw-001")

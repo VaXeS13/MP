@@ -27,13 +27,15 @@ namespace MP.Domain.Tests.HomePageContent
             // Arrange
             var section1 = await _sectionManager.CreateAsync(
                 HomePageSectionType.HeroBanner,
-                $"Sec1_{Guid.NewGuid().ToString().Substring(0, 8)}"
+                $"Sec1_{Guid.NewGuid().ToString().Substring(0, 8)}",
+                Guid.NewGuid()
             );
 
             // Act
             var section2 = await _sectionManager.CreateAsync(
                 HomePageSectionType.PromotionCards,
-                $"Sec2_{Guid.NewGuid().ToString().Substring(0, 8)}"
+                $"Sec2_{Guid.NewGuid().ToString().Substring(0, 8)}",
+                Guid.NewGuid()
             );
 
             // Assert
@@ -47,7 +49,8 @@ namespace MP.Domain.Tests.HomePageContent
             // Arrange
             var section = await _sectionManager.CreateAsync(
                 HomePageSectionType.HeroBanner,
-                $"Original_{Guid.NewGuid().ToString().Substring(0, 8)}"
+                $"Original_{Guid.NewGuid().ToString().Substring(0, 8)}",
+                Guid.NewGuid()
             );
             var newTitle = $"Updated_{Guid.NewGuid().ToString().Substring(0, 8)}";
 
@@ -71,7 +74,8 @@ namespace MP.Domain.Tests.HomePageContent
             // Arrange
             var section = await _sectionManager.CreateAsync(
                 HomePageSectionType.HeroBanner,
-                $"Sec_{Guid.NewGuid().ToString().Substring(0, 8)}"
+                $"Sec_{Guid.NewGuid().ToString().Substring(0, 8)}",
+                Guid.NewGuid()
             );
             var newOrder = 5;
 
@@ -90,7 +94,8 @@ namespace MP.Domain.Tests.HomePageContent
             // Arrange
             var section = await _sectionManager.CreateAsync(
                 HomePageSectionType.HeroBanner,
-                $"Sec_{Guid.NewGuid().ToString().Substring(0, 8)}"
+                $"Sec_{Guid.NewGuid().ToString().Substring(0, 8)}",
+                Guid.NewGuid()
             );
 
             // Act & Assert

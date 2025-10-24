@@ -9,6 +9,7 @@ namespace MP.Domain.Rentals
     public class RentalExtensionPayment : Entity<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
         public Guid RentalId { get; private set; }
         public DateTime OldEndDate { get; private set; }
         public DateTime NewEndDate { get; private set; }
@@ -25,6 +26,7 @@ namespace MP.Domain.Rentals
         public RentalExtensionPayment(
             Guid id,
             Guid rentalId,
+            Guid organizationalUnitId,
             DateTime oldEndDate,
             DateTime newEndDate,
             decimal extensionCost,
@@ -36,6 +38,7 @@ namespace MP.Domain.Rentals
             Guid? tenantId = null) : base(id)
         {
             RentalId = rentalId;
+            OrganizationalUnitId = organizationalUnitId;
             OldEndDate = oldEndDate;
             NewEndDate = newEndDate;
             ExtensionCost = extensionCost;

@@ -14,6 +14,7 @@ namespace MP.Domain.Settlements
     public class Settlement : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
         public Guid UserId { get; private set; }
         public string SettlementNumber { get; private set; } = null!;
         public SettlementStatus Status { get; private set; }
@@ -38,12 +39,14 @@ namespace MP.Domain.Settlements
         public Settlement(
             Guid id,
             Guid userId,
+            Guid organizationalUnitId,
             string settlementNumber,
             string? notes = null,
             string? bankAccountNumber = null,
             Guid? tenantId = null) : base(id)
         {
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             UserId = userId;
             SetSettlementNumber(settlementNumber);
             Notes = notes?.Trim();

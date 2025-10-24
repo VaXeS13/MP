@@ -18,6 +18,7 @@ using Volo.Abp.Uow;
 using Volo.Abp;
 using MP.Permissions;
 using MP.Domain.BoothTypes;
+using MP.Domain.OrganizationalUnits;
 
 namespace MP.Booths
 {
@@ -29,19 +30,22 @@ namespace MP.Booths
         private readonly BoothManager _boothManager;
         private readonly RentalManager _rentalManager;
         private readonly IBoothTypeRepository _boothTypeRepository;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public BoothAppService(
             IBoothRepository boothRepository,
             IRentalRepository rentalRepository,
             BoothManager boothManager,
             RentalManager rentalManager,
-            IBoothTypeRepository boothTypeRepository)
+            IBoothTypeRepository boothTypeRepository,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _boothRepository = boothRepository;
             _rentalRepository = rentalRepository;
             _boothManager = boothManager;
             _rentalManager = rentalManager;
             _boothTypeRepository = boothTypeRepository;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<BoothDto> GetAsync(Guid id)
@@ -112,6 +116,9 @@ namespace MP.Booths
         {
             Booth booth;
 
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             // Use new multi-period pricing if provided, otherwise fallback to legacy single price
             if (input.PricingPeriods != null && input.PricingPeriods.Count > 0)
             {
@@ -121,7 +128,8 @@ namespace MP.Booths
 
                 booth = await _boothManager.CreateWithPricingPeriodsAsync(
                     input.Number,
-                    pricingPeriods
+                    pricingPeriods,
+                    organizationalUnitId
                 );
             }
             else
@@ -135,7 +143,8 @@ namespace MP.Booths
 
                 booth = await _boothManager.CreateAsync(
                     input.Number,
-                    input.PricePerDay.Value
+                    input.PricePerDay.Value,
+                    organizationalUnitId
                 );
             }
 
@@ -335,11 +344,15 @@ namespace MP.Booths
                 throw new BusinessException("NO_ACTIVE_BOOTH_TYPE_AVAILABLE");
             }
 
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             // Create rental using RentalManager
             var rental = await _rentalManager.CreateRentalAsync(
                 input.UserId,
                 input.BoothId,
                 defaultBoothType.Id,
+                organizationalUnitId,
                 input.StartDate,
                 input.EndDate
             );

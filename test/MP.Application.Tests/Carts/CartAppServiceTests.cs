@@ -19,6 +19,8 @@ namespace MP.Application.Tests.Carts
 {
     public class CartAppServiceTests : MPApplicationTestBase<MPApplicationTestModule>
     {
+        private static readonly Guid DefaultOrganizationalUnitId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
         private readonly ICartAppService _cartAppService;
         private readonly IBoothRepository _boothRepository;
         private readonly IBoothTypeRepository _boothTypeRepository;
@@ -461,14 +463,14 @@ namespace MP.Application.Tests.Carts
         // Helper methods
         private async Task<MP.Domain.Booths.Booth> CreateTestBoothAsync(string number = "TEST-01", decimal price = 100m)
         {
-            var booth = new MP.Domain.Booths.Booth(Guid.NewGuid(), number, price);
+            var booth = new MP.Domain.Booths.Booth(Guid.NewGuid(), number, price, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
             return booth;
         }
 
         private async Task<BoothType> CreateTestBoothTypeAsync(string name = "Standard", string description = "Test booth type", decimal commission = 10m)
         {
-            var boothType = new BoothType(Guid.NewGuid(), name, description, commission);
+            var boothType = new BoothType(Guid.NewGuid(), name, description, commission, DefaultOrganizationalUnitId);
             await _boothTypeRepository.InsertAsync(boothType);
             return boothType;
         }

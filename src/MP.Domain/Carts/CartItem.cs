@@ -9,6 +9,7 @@ namespace MP.Domain.Carts
     public class CartItem : FullAuditedEntity<Guid>
     {
         public Guid CartId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
         public Guid BoothId { get; private set; }
         public Guid BoothTypeId { get; private set; }
 
@@ -44,6 +45,7 @@ namespace MP.Domain.Carts
         public CartItem(
             Guid id,
             Guid cartId,
+            Guid organizationalUnitId,
             Guid boothId,
             Guid boothTypeId,
             DateTime startDate,
@@ -57,6 +59,7 @@ namespace MP.Domain.Carts
             string? notes = null) : base(id)
         {
             CartId = cartId;
+            OrganizationalUnitId = organizationalUnitId;
             BoothId = boothId;
             BoothTypeId = boothTypeId;
             SetPeriod(startDate, endDate);

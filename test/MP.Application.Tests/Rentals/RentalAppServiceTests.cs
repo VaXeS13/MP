@@ -18,6 +18,7 @@ namespace MP.Application.Tests.Rentals
 {
     public class RentalAppServiceTests : MPApplicationTestBase<MPApplicationTestModule>
     {
+        private static readonly Guid DefaultOrganizationalUnitId = Guid.Parse("00000000-0000-0000-0000-000000000001");
         private static readonly Guid TestUserId1 = new Guid("00000000-0000-0000-0000-000000000001");
 
         private readonly IRentalAppService _rentalAppService;
@@ -379,7 +380,7 @@ namespace MP.Application.Tests.Rentals
 
         private async Task<MP.Domain.Booths.Booth> CreateTestBoothAsync(string number, decimal price = 100m)
         {
-            var booth = new MP.Domain.Booths.Booth(Guid.NewGuid(), number, price);
+            var booth = new MP.Domain.Booths.Booth(Guid.NewGuid(), number, price, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
             return booth;
         }
@@ -390,7 +391,8 @@ namespace MP.Application.Tests.Rentals
                 Guid.NewGuid(),
                 $"BoothType-{Guid.NewGuid().ToString().Substring(0, 8)}",
                 "Test booth type",
-                10m
+                10m,
+                DefaultOrganizationalUnitId
             );
             await _boothTypeRepository.InsertAsync(boothType);
             return boothType;

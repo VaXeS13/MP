@@ -11,6 +11,7 @@ namespace MP.Domain.Terminals
     public class TenantTerminalSettings : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
 
         /// <summary>
         /// Terminal provider identifier (e.g., "ingenico", "verifone", "stripe_terminal", "sumup", "adyen", "mock")
@@ -57,6 +58,7 @@ namespace MP.Domain.Terminals
 
         public TenantTerminalSettings(
             Guid id,
+            Guid organizationalUnitId,
             Guid? tenantId,
             string providerId,
             string displayName,
@@ -67,6 +69,7 @@ namespace MP.Domain.Terminals
             bool isSandbox = false) : base(id)
         {
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             SetProviderId(providerId);
             SetDisplayName(displayName);
             ConfigurationJson = configurationJson ?? "{}";

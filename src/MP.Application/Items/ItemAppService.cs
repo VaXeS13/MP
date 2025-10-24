@@ -9,6 +9,8 @@ using Volo.Abp.Settings;
 using MP.Domain.Items;
 using MP.Domain.Booths;
 using MP.Domain.Settings;
+using MP.Domain.OrganizationalUnits;
+using Volo.Abp;
 
 namespace MP.Items
 {
@@ -18,15 +20,18 @@ namespace MP.Items
         private readonly IItemRepository _itemRepository;
         private readonly ItemManager _itemManager;
         private readonly ISettingProvider _settingProvider;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public ItemAppService(
             IItemRepository itemRepository,
             ItemManager itemManager,
-            ISettingProvider settingProvider)
+            ISettingProvider settingProvider,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _itemRepository = itemRepository;
             _itemManager = itemManager;
             _settingProvider = settingProvider;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<ItemDto> GetAsync(Guid id)
@@ -72,6 +77,8 @@ namespace MP.Items
         public async Task<ItemDto> CreateAsync(CreateItemDto input)
         {
             var userId = CurrentUser.Id.Value;
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
 
             // Get tenant currency from settings (default to PLN if not set)
             var currencySettingValue = await _settingProvider.GetOrNullAsync(MPSettings.Tenant.Currency);
@@ -81,6 +88,7 @@ namespace MP.Items
 
             var item = await _itemManager.CreateAsync(
                 userId,
+                organizationalUnitId,
                 input.Name,
                 input.Price,
                 currency,
@@ -94,6 +102,8 @@ namespace MP.Items
         public async Task<BulkItemCreationResultDto> CreateBulkAsync(CreateBulkItemsDto input)
         {
             var userId = CurrentUser.Id.Value;
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
             var result = new BulkItemCreationResultDto();
 
             // Get tenant currency from settings (default to PLN if not set)
@@ -109,6 +119,7 @@ namespace MP.Items
                 {
                     var item = await _itemManager.CreateAsync(
                         userId,
+                        organizationalUnitId,
                         itemEntry.Name,
                         itemEntry.Price,
                         currency,

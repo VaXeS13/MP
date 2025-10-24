@@ -8,6 +8,7 @@ namespace MP.Domain.Payments
     public class P24Transaction : FullAuditedEntity<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; set; }
+        public Guid OrganizationalUnitId { get; set; }
 
         [Required]
         [StringLength(255)]

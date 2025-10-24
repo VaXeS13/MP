@@ -9,6 +9,7 @@ using MP.Domain.Rentals;
 using MP.Domain.Booths;
 using MP.Domain.Carts;
 using MP.Carts;
+using MP.Domain.OrganizationalUnits;
 
 namespace MP.Rentals
 {
@@ -21,6 +22,7 @@ namespace MP.Rentals
         private readonly IGuidGenerator _guidGenerator;
         private readonly ICurrentUser _currentUser;
         private readonly CartManager _cartManager;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public RentalExtensionHandler(
             IRentalRepository rentalRepository,
@@ -29,7 +31,8 @@ namespace MP.Rentals
             IRepository<RentalExtensionPayment, Guid> extensionPaymentRepository,
             IGuidGenerator guidGenerator,
             ICurrentUser currentUser,
-            CartManager cartManager)
+            CartManager cartManager,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _rentalRepository = rentalRepository;
             _boothRepository = boothRepository;
@@ -38,6 +41,7 @@ namespace MP.Rentals
             _guidGenerator = guidGenerator;
             _currentUser = currentUser;
             _cartManager = cartManager;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<Rental> HandleFreeExtensionAsync(Rental rental, DateTime newEndDate)
@@ -98,8 +102,11 @@ namespace MP.Rentals
             decimal cost,
             int? timeoutMinutes)
         {
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             // Get or create cart for user
-            var cart = await _cartManager.GetOrCreateCartAsync(rental.UserId);
+            var cart = await _cartManager.GetOrCreateCartAsync(rental.UserId, organizationalUnitId);
 
             // Set timeout
             var timeout = timeoutMinutes ?? 30;
@@ -109,6 +116,7 @@ namespace MP.Rentals
             var cartItem = new CartItem(
                 _guidGenerator.Create(),
                 cart.Id,
+                organizationalUnitId,
                 rental.BoothId,
                 rental.BoothTypeId,
                 rental.Period.StartDate,
@@ -136,9 +144,13 @@ namespace MP.Rentals
             string? transactionId = null,
             string? receiptNumber = null)
         {
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             var log = new RentalExtensionPayment(
                 _guidGenerator.Create(),
                 rentalId,
+                organizationalUnitId,
                 oldEndDate,
                 newEndDate,
                 cost,

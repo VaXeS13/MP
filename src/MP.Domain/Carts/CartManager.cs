@@ -37,13 +37,13 @@ namespace MP.Domain.Carts
         /// <summary>
         /// Gets or creates an active cart for a user
         /// </summary>
-        public async Task<Cart> GetOrCreateActiveCartAsync(Guid userId, Guid? tenantId = null)
+        public async Task<Cart> GetOrCreateActiveCartAsync(Guid userId, Guid organizationalUnitId, Guid? tenantId = null)
         {
             var cart = await _cartRepository.GetActiveCartByUserIdAsync(userId, includeItems: true);
 
             if (cart == null)
             {
-                cart = new Cart(_guidGenerator.Create(), userId, tenantId);
+                cart = new Cart(_guidGenerator.Create(), userId, organizationalUnitId, tenantId);
                 await _cartRepository.InsertAsync(cart);
             }
 
@@ -53,9 +53,9 @@ namespace MP.Domain.Carts
         /// <summary>
         /// Alias for GetOrCreateActiveCartAsync
         /// </summary>
-        public async Task<Cart> GetOrCreateCartAsync(Guid userId, Guid? tenantId = null)
+        public async Task<Cart> GetOrCreateCartAsync(Guid userId, Guid organizationalUnitId, Guid? tenantId = null)
         {
-            return await GetOrCreateActiveCartAsync(userId, tenantId);
+            return await GetOrCreateActiveCartAsync(userId, organizationalUnitId, tenantId);
         }
 
         /// <summary>

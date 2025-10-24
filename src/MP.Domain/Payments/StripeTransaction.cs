@@ -11,6 +11,7 @@ namespace MP.Domain.Payments
     public class StripeTransaction : FullAuditedEntity<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; set; }
+        public Guid OrganizationalUnitId { get; set; }
 
         /// <summary>
         /// Stripe PaymentIntent ID (e.g., "pi_1234567890")

@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Volo.Abp.Uow;
 using MP.Carts;
 using MP.Application.Contracts.Services;
+using MP.Domain.OrganizationalUnits;
 
 namespace MP.Rentals
 {
@@ -31,6 +32,7 @@ namespace MP.Rentals
         private readonly ICartRepository _cartRepository;
         private readonly ISignalRNotificationService _signalRNotificationService;
         private readonly RentalExtensionHandler _extensionHandler;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public RentalAppService(
             IRentalRepository rentalRepository,
@@ -39,7 +41,8 @@ namespace MP.Rentals
             IIdentityUserRepository userRepository,
             ICartRepository cartRepository,
             ISignalRNotificationService signalRNotificationService,
-            RentalExtensionHandler extensionHandler)
+            RentalExtensionHandler extensionHandler,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _rentalRepository = rentalRepository;
             _boothRepository = boothRepository;
@@ -48,6 +51,7 @@ namespace MP.Rentals
             _cartRepository = cartRepository;
             _signalRNotificationService = signalRNotificationService;
             _extensionHandler = extensionHandler;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<RentalDto> GetAsync(Guid id)
@@ -157,11 +161,15 @@ namespace MP.Rentals
             var user = await _userRepository.GetAsync(input.UserId);
             var booth = await _boothRepository.GetAsync(input.BoothId);
 
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             // Utwórz wynajęcie przez domain service
             var rental = await _rentalManager.CreateRentalAsync(
                 input.UserId,
                 input.BoothId,
                 input.BoothTypeId,
+                organizationalUnitId,
                 input.StartDate,
                 input.EndDate,
                 booth.PricePerDay
@@ -839,11 +847,15 @@ namespace MP.Rentals
             // Get booth for price calculation
             var booth = await _boothRepository.GetAsync(input.BoothId);
 
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             // Create rental through RentalManager
             var rental = await _rentalManager.CreateRentalAsync(
                 input.UserId.Value,
                 input.BoothId,
                 input.BoothTypeId.Value,
+                organizationalUnitId,
                 input.StartDate,
                 input.EndDate,
                 booth.PricePerDay);
@@ -975,7 +987,9 @@ namespace MP.Rentals
                     {
                         // Create cart using CartManager
                         var cartManager = LazyServiceProvider.LazyGetRequiredService<CartManager>();
-                        cart = await cartManager.GetOrCreateCartAsync(rental.UserId);
+                        var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                            .WithData("message", "Current organizational unit context is not set");
+                        cart = await cartManager.GetOrCreateActiveCartAsync(rental.UserId, organizationalUnitId, CurrentTenant.Id);
                     }
 
                     // Set reservation timeout (configurable, default 30 minutes for admin-created)
@@ -986,6 +1000,7 @@ namespace MP.Rentals
                     var cartItem = new CartItem(
                         GuidGenerator.Create(),
                         cart.Id,
+                        rental.OrganizationalUnitId,
                         rental.BoothId,
                         rental.BoothTypeId,
                         rental.Period.StartDate,
