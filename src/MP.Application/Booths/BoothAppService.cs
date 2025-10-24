@@ -121,7 +121,8 @@ namespace MP.Booths
 
                 booth = await _boothManager.CreateWithPricingPeriodsAsync(
                     input.Number,
-                    pricingPeriods
+                    pricingPeriods,
+                    input.OrganizationalUnitId
                 );
             }
             else
@@ -135,7 +136,8 @@ namespace MP.Booths
 
                 booth = await _boothManager.CreateAsync(
                     input.Number,
-                    input.PricePerDay.Value
+                    input.PricePerDay.Value,
+                    input.OrganizationalUnitId
                 );
             }
 

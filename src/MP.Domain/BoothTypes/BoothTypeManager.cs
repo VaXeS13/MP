@@ -18,12 +18,13 @@ namespace MP.Domain.BoothTypes
             string name,
             string description,
             decimal commissionPercentage,
+            Guid organizationalUnitId,
             Guid? tenantId = null)
         {
             await ValidateNameUniqueAsync(name);
 
             var id = GuidGenerator.Create();
-            return new BoothType(id, name, description, commissionPercentage, tenantId);
+            return new BoothType(id, name, description, commissionPercentage, organizationalUnitId, tenantId);
         }
 
         public async Task UpdateAsync(

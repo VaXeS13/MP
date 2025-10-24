@@ -8,6 +8,7 @@ namespace MP.Domain.FloorPlans
     public class FloorPlan : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
         public string Name { get; private set; } = null!;
         public int Level { get; private set; }
         public int Width { get; private set; }
@@ -22,10 +23,15 @@ namespace MP.Domain.FloorPlans
             int level,
             int width,
             int height,
+            Guid organizationalUnitId,
             Guid? tenantId = null
         ) : base(id)
         {
+            if (organizationalUnitId == Guid.Empty)
+                throw new BusinessException("FLOOR_PLAN_ORGANIZATIONAL_UNIT_REQUIRED");
+
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             SetName(name);
             SetLevel(level);
             SetDimensions(width, height);

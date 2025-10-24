@@ -10,6 +10,8 @@ namespace MP.Domain.Tests.BoothTypes
 {
     public class BoothTypeManagerSimpleTests : MPDomainTestBase<MPDomainTestModule>
     {
+        private static readonly Guid DefaultOrganizationalUnitId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    
         private readonly BoothTypeManager _boothTypeManager;
         private readonly IBoothTypeRepository _boothTypeRepository;
 
@@ -27,7 +29,7 @@ namespace MP.Domain.Tests.BoothTypes
             var typeName = $"BT_{Guid.NewGuid().ToString().Substring(0, 8)}";
 
             // Act
-            var boothType = await _boothTypeManager.CreateAsync(
+            var boothType = await _boothTypeManager.CreateAsync(DefaultOrganizationalUnitId, 
                 typeName,
                 "Test booth type",
                 10m
@@ -48,8 +50,8 @@ namespace MP.Domain.Tests.BoothTypes
             var type2Name = $"BT2_{Guid.NewGuid().ToString().Substring(0, 8)}";
 
             // Act
-            var type1 = await _boothTypeManager.CreateAsync(type1Name, "Desc1", 5m);
-            var type2 = await _boothTypeManager.CreateAsync(type2Name, "Desc2", 10m);
+            var type1 = await _boothTypeManager.CreateAsync(DefaultOrganizationalUnitId, type1Name, "Desc1", 5m);
+            var type2 = await _boothTypeManager.CreateAsync(DefaultOrganizationalUnitId, type2Name, "Desc2", 10m);
 
             // Assert
             type1.Id.ShouldNotBe(type2.Id);
@@ -62,7 +64,7 @@ namespace MP.Domain.Tests.BoothTypes
             // Arrange
             var origName = $"ORG_{Guid.NewGuid().ToString().Substring(0, 8)}";
             var newName = $"UPD_{Guid.NewGuid().ToString().Substring(0, 8)}";
-            var boothType = await _boothTypeManager.CreateAsync(origName, "Desc", 15m);
+            var boothType = await _boothTypeManager.CreateAsync(DefaultOrganizationalUnitId, origName, "Desc", 15m);
             await _boothTypeRepository.InsertAsync(boothType);
 
             // Act
@@ -87,8 +89,8 @@ namespace MP.Domain.Tests.BoothTypes
             // Arrange
             var type1Name = $"TP1_{Guid.NewGuid().ToString().Substring(0, 8)}";
             var type2Name = $"TP2_{Guid.NewGuid().ToString().Substring(0, 8)}";
-            var type1 = await _boothTypeManager.CreateAsync(type1Name, "Desc1", 5m);
-            var type2 = await _boothTypeManager.CreateAsync(type2Name, "Desc2", 10m);
+            var type1 = await _boothTypeManager.CreateAsync(DefaultOrganizationalUnitId, type1Name, "Desc1", 5m);
+            var type2 = await _boothTypeManager.CreateAsync(DefaultOrganizationalUnitId, type2Name, "Desc2", 10m);
             await _boothTypeRepository.InsertAsync(type1);
             await _boothTypeRepository.InsertAsync(type2);
 

@@ -29,6 +29,10 @@ namespace MP.Domain.Data
                 return; // Już mamy stanowiska
             }
 
+            // TODO: OU-12 - Seedowanie będzie aktualizowane gdy dodamy OrganizationalUnits
+            // Na razie używamy tymczasowego OrganizationalUnitId
+            var defaultOrganizationalUnitId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
             // Dodaj przykładowe stanowiska
             var testBooths = new[]
             {
@@ -37,9 +41,11 @@ namespace MP.Domain.Data
 
             foreach (var testBooth in testBooths)
             {
-                var booth = await _boothManager.CreateAsync(
+                var booth = new Booth(
+                    Guid.NewGuid(),
                     testBooth.Number,
-                    testBooth.Price
+                    testBooth.Price,
+                    defaultOrganizationalUnitId
                 );
 
                 await _boothRepository.InsertAsync(booth, autoSave: true);

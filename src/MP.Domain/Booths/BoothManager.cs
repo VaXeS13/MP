@@ -25,7 +25,8 @@ namespace MP.Domain.Booths
 
         public async Task<Booth> CreateAsync(
             string number,
-            decimal pricePerDay)
+            decimal pricePerDay,
+            Guid organizationalUnitId)
         {
             // Sprawdź czy numer jest unikalny w tym tenant
             if (!await _boothRepository.IsNumberUniqueAsync(number))
@@ -38,6 +39,7 @@ namespace MP.Domain.Booths
                 GuidGenerator.Create(),
                 number,
                 pricePerDay,
+                organizationalUnitId,
                 _currentTenant.Id
             );
 
@@ -49,7 +51,8 @@ namespace MP.Domain.Booths
         /// </summary>
         public async Task<Booth> CreateWithPricingPeriodsAsync(
             string number,
-            List<(int Days, decimal Price)> pricingPeriods)
+            List<(int Days, decimal Price)> pricingPeriods,
+            Guid organizationalUnitId)
         {
             // Sprawdź czy numer jest unikalny w tym tenant
             if (!await _boothRepository.IsNumberUniqueAsync(number))
@@ -67,6 +70,7 @@ namespace MP.Domain.Booths
                 boothId,
                 number,
                 periods,
+                organizationalUnitId,
                 _currentTenant.Id
             );
 

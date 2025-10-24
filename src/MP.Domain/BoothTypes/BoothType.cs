@@ -10,6 +10,7 @@ namespace MP.Domain.BoothTypes
     public class BoothType : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
         public string Name { get; private set; } = null!;
         public string Description { get; private set; } = null!;
         public decimal CommissionPercentage { get; private set; }
@@ -23,10 +24,15 @@ namespace MP.Domain.BoothTypes
             string name,
             string description,
             decimal commissionPercentage,
+            Guid organizationalUnitId,
             Guid? tenantId = null
         ) : base(id)
         {
+            if (organizationalUnitId == Guid.Empty)
+                throw new BusinessException("BOOTH_TYPE_ORGANIZATIONAL_UNIT_REQUIRED");
+
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             SetName(name);
             SetDescription(description);
             SetCommissionPercentage(commissionPercentage);

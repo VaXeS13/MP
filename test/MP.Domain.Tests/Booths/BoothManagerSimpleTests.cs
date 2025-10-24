@@ -10,6 +10,8 @@ namespace MP.Domain.Tests.Booths
 {
     public class BoothManagerSimpleTests : MPDomainTestBase<MPDomainTestModule>
     {
+        private static readonly Guid DefaultOrganizationalUnitId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    
         private readonly BoothManager _boothManager;
         private readonly IBoothRepository _boothRepository;
 
@@ -28,7 +30,7 @@ namespace MP.Domain.Tests.Booths
             var price = 100m;
 
             // Act
-            var booth = await _boothManager.CreateAsync(boothNumber, price);
+            var booth = await _boothManager.CreateAsync(DefaultOrganizationalUnitId, boothNumber, price);
 
             // Assert
             booth.ShouldNotBeNull();
@@ -42,12 +44,12 @@ namespace MP.Domain.Tests.Booths
         {
             // Arrange
             var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 4)}";
-            var booth1 = await _boothManager.CreateAsync(boothNumber, 100m);
+            var booth1 = await _boothManager.CreateAsync(DefaultOrganizationalUnitId, boothNumber, 100m);
             await _boothRepository.InsertAsync(booth1);
 
             // Act & Assert
             var exception = await Should.ThrowAsync<BusinessException>(
-                () => _boothManager.CreateAsync(boothNumber, 150m)
+                () => _boothManager.CreateAsync(DefaultOrganizationalUnitId, boothNumber, 150m, DefaultOrganizationalUnitId)
             );
 
             exception.Code.ShouldBe("BOOTH_NUMBER_ALREADY_EXISTS");
@@ -60,7 +62,7 @@ namespace MP.Domain.Tests.Booths
             // Arrange
             var oldNumber = $"OLD{Guid.NewGuid().ToString().Substring(0, 4)}";
             var newNumber = $"NEW{Guid.NewGuid().ToString().Substring(0, 4)}";
-            var booth = await _boothManager.CreateAsync(oldNumber, 100m);
+            var booth = await _boothManager.CreateAsync(DefaultOrganizationalUnitId, oldNumber, 100m);
             await _boothRepository.InsertAsync(booth);
 
             // Act

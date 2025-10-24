@@ -13,6 +13,7 @@ namespace MP.Domain.Booths
     public class Booth : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public Guid? TenantId { get; private set; }
+        public Guid OrganizationalUnitId { get; private set; }
         public string Number { get; private set; } = null!;
         public BoothStatus Status { get; private set; }
 
@@ -36,10 +37,15 @@ namespace MP.Domain.Booths
            Guid id,
            string number,
            decimal pricePerDay,
+           Guid organizationalUnitId,
            Guid? tenantId = null
        ) : base(id)
         {
+            if (organizationalUnitId == Guid.Empty)
+                throw new BusinessException("BOOTH_ORGANIZATIONAL_UNIT_REQUIRED");
+
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             SetNumber(number);
             SetPricePerDay(pricePerDay);
             Status = BoothStatus.Available;
@@ -52,10 +58,15 @@ namespace MP.Domain.Booths
            Guid id,
            string number,
            List<PricingPeriod> pricingPeriods,
+           Guid organizationalUnitId,
            Guid? tenantId = null
        ) : base(id)
         {
+            if (organizationalUnitId == Guid.Empty)
+                throw new BusinessException("BOOTH_ORGANIZATIONAL_UNIT_REQUIRED");
+
             TenantId = tenantId;
+            OrganizationalUnitId = organizationalUnitId;
             SetNumber(number);
             SetPricingPeriods(pricingPeriods);
             Status = BoothStatus.Available;

@@ -12,6 +12,8 @@ namespace MP.Booths
     public class CreateBoothDto
     {
         [Required]
+        public Guid OrganizationalUnitId { get; set; }
+        [Required]
         [StringLength(10, MinimumLength = 1)]
         [Display(Name = "Numer stanowiska")]
         public string Number { get; set; } = null!;
