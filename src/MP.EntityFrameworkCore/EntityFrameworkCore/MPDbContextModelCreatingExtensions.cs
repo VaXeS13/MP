@@ -16,6 +16,7 @@ using MP.Domain.Identity;
 using MP.Domain.HomePageContent;
 using MP.Domain.Files;
 using MP.Domain.LocalAgent;
+using MP.Domain.OrganizationalUnits;
 using MP.Carts;
 using System;
 using System.Collections.Generic;
@@ -2016,6 +2017,219 @@ namespace MP.EntityFrameworkCore
 
                 b.HasIndex(x => x.LastUsedAt)
                     .HasDatabaseName("IX_AgentApiKeys_LastUsedAt");
+            });
+
+            // Konfiguracja tabeli OrganizationalUnits
+            builder.Entity<OrganizationalUnit>(b =>
+            {
+                b.ToTable(MPConsts.DbTablePrefix + "OrganizationalUnits", MPConsts.DbSchema);
+                b.ConfigureByConvention();
+
+                b.Property(x => x.Name)
+                    .IsRequired()
+                    .HasMaxLength(200)
+                    .HasComment("Display name of the organizational unit");
+
+                b.Property(x => x.Code)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasComment("Unique code within tenant (e.g., MAIN, WARSAW-CENTER)");
+
+                b.Property(x => x.Address)
+                    .HasMaxLength(500)
+                    .HasComment("Street address");
+
+                b.Property(x => x.City)
+                    .HasMaxLength(100)
+                    .HasComment("City location");
+
+                b.Property(x => x.PostalCode)
+                    .HasMaxLength(20)
+                    .HasComment("Postal code");
+
+                b.Property(x => x.Email)
+                    .HasMaxLength(255)
+                    .HasComment("Contact email");
+
+                b.Property(x => x.Phone)
+                    .HasMaxLength(20)
+                    .HasComment("Contact phone");
+
+                b.Property(x => x.IsActive)
+                    .IsRequired()
+                    .HasDefaultValue(true)
+                    .HasComment("Whether unit is active");
+
+                // Unique constraint on tenant and code
+                b.HasIndex(x => new { x.TenantId, x.Code })
+                    .IsUnique()
+                    .HasDatabaseName("IX_OrganizationalUnits_TenantId_Code");
+
+                b.HasIndex(x => x.IsActive)
+                    .HasDatabaseName("IX_OrganizationalUnits_IsActive");
+            });
+
+            // Konfiguracja tabeli UserOrganizationalUnits
+            builder.Entity<UserOrganizationalUnit>(b =>
+            {
+                b.ToTable(MPConsts.DbTablePrefix + "UserOrganizationalUnits", MPConsts.DbSchema);
+                b.ConfigureByConvention();
+
+                b.Property(x => x.UserId)
+                    .IsRequired()
+                    .HasComment("User ID");
+
+                b.Property(x => x.OrganizationalUnitId)
+                    .IsRequired()
+                    .HasComment("Organizational unit ID");
+
+                b.Property(x => x.RoleId)
+                    .HasComment("Optional unit-specific role ID");
+
+                b.Property(x => x.IsActive)
+                    .IsRequired()
+                    .HasDefaultValue(true)
+                    .HasComment("Whether assignment is active");
+
+                b.Property(x => x.AssignedAt)
+                    .IsRequired()
+                    .HasComment("When user was assigned to unit");
+
+                // Foreign key to IdentityUser
+                b.HasOne(x => x.AppUser)
+                    .WithMany()
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                // Foreign key to OrganizationalUnit
+                b.HasOne(x => x.OrganizationalUnit)
+                    .WithMany()
+                    .HasForeignKey(x => x.OrganizationalUnitId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                // Unique constraint: one assignment per user per unit
+                b.HasIndex(x => new { x.TenantId, x.UserId, x.OrganizationalUnitId })
+                    .IsUnique()
+                    .HasDatabaseName("IX_UserOrgUnits_TenantId_UserId_OrgUnitId");
+
+                b.HasIndex(x => new { x.TenantId, x.OrganizationalUnitId })
+                    .HasDatabaseName("IX_UserOrgUnits_TenantId_OrgUnitId");
+
+                b.HasIndex(x => x.IsActive)
+                    .HasDatabaseName("IX_UserOrgUnits_IsActive");
+            });
+
+            // Konfiguracja tabeli OrganizationalUnitRegistrationCodes
+            builder.Entity<OrganizationalUnitRegistrationCode>(b =>
+            {
+                b.ToTable(MPConsts.DbTablePrefix + "OrgUnitRegistrationCodes", MPConsts.DbSchema);
+                b.ConfigureByConvention();
+
+                b.Property(x => x.OrganizationalUnitId)
+                    .IsRequired()
+                    .HasComment("The organizational unit this code is for");
+
+                b.Property(x => x.Code)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasComment("Unique registration code (format: TENANT-UNIT-RANDOM)");
+
+                b.Property(x => x.RoleId)
+                    .HasComment("Optional role to auto-assign when code is used");
+
+                b.Property(x => x.ExpiresAt)
+                    .HasComment("Optional expiration date");
+
+                b.Property(x => x.MaxUsageCount)
+                    .HasComment("Optional max usage limit");
+
+                b.Property(x => x.UsageCount)
+                    .IsRequired()
+                    .HasDefaultValue(0)
+                    .HasComment("Current usage count");
+
+                b.Property(x => x.LastUsedAt)
+                    .HasComment("When code was last used");
+
+                b.Property(x => x.IsActive)
+                    .IsRequired()
+                    .HasDefaultValue(true)
+                    .HasComment("Whether code is active");
+
+                // Foreign key to OrganizationalUnit
+                b.HasOne(x => x.OrganizationalUnit)
+                    .WithMany()
+                    .HasForeignKey(x => x.OrganizationalUnitId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                // Unique constraint on tenant and code
+                b.HasIndex(x => new { x.TenantId, x.Code })
+                    .IsUnique()
+                    .HasDatabaseName("IX_OrgUnitRegCodes_TenantId_Code");
+
+                b.HasIndex(x => new { x.TenantId, x.OrganizationalUnitId })
+                    .HasDatabaseName("IX_OrgUnitRegCodes_TenantId_OrgUnitId");
+
+                b.HasIndex(x => x.IsActive)
+                    .HasDatabaseName("IX_OrgUnitRegCodes_IsActive");
+
+                b.HasIndex(x => x.ExpiresAt)
+                    .HasDatabaseName("IX_OrgUnitRegCodes_ExpiresAt");
+            });
+
+            // Konfiguracja tabeli OrganizationalUnitSettings
+            builder.Entity<OrganizationalUnitSettings>(b =>
+            {
+                b.ToTable(MPConsts.DbTablePrefix + "OrgUnitSettings", MPConsts.DbSchema);
+                b.ConfigureByConvention();
+
+                b.Property(x => x.OrganizationalUnitId)
+                    .IsRequired()
+                    .HasComment("The organizational unit these settings apply to");
+
+                b.Property(x => x.Currency)
+                    .IsRequired()
+                    .HasMaxLength(3)
+                    .HasDefaultValue("PLN")
+                    .HasComment("Primary currency for the unit (PLN, EUR, USD, GBP, CZK)");
+
+                b.Property(x => x.EnabledPaymentProviders)
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasDefaultValue("{}")
+                    .HasComment("JSON configuration of enabled payment providers");
+
+                b.Property(x => x.DefaultPaymentProvider)
+                    .HasMaxLength(50)
+                    .HasComment("Default payment provider for unit (stripe, p24, paypal)");
+
+                b.Property(x => x.LogoUrl)
+                    .HasMaxLength(500)
+                    .HasComment("Optional logo URL for branding");
+
+                b.Property(x => x.BannerText)
+                    .HasMaxLength(1000)
+                    .HasComment("Optional banner text");
+
+                b.Property(x => x.IsMainUnit)
+                    .IsRequired()
+                    .HasDefaultValue(false)
+                    .HasComment("Whether this is the primary unit for tenant");
+
+                // Foreign key to OrganizationalUnit (one-to-one)
+                b.HasOne(x => x.OrganizationalUnit)
+                    .WithMany()
+                    .HasForeignKey(x => x.OrganizationalUnitId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                // Unique constraint: one settings per unit
+                b.HasIndex(x => new { x.TenantId, x.OrganizationalUnitId })
+                    .IsUnique()
+                    .HasDatabaseName("IX_OrgUnitSettings_TenantId_OrgUnitId");
             });
         }
     }

@@ -181,6 +181,7 @@ namespace MP.FloorPlans
                 input.Level,
                 input.Width,
                 input.Height,
+                input.OrganizationalUnitId,
                 tenantId);
 
             await _floorPlanRepository.InsertAsync(floorPlan);

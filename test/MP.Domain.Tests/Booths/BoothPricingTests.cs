@@ -242,7 +242,8 @@ namespace MP.Domain.Tests.Booths
         {
             // Arrange
             var boothId = Guid.NewGuid();
-            var booth = new Booth(boothId, "A-11", 10m); // Old constructor
+            var orgUnitId = Guid.NewGuid();
+            var booth = new Booth(boothId, "A-11", 10m, orgUnitId);
 
             var newPeriods = new List<PricingPeriod>
             {
@@ -264,7 +265,8 @@ namespace MP.Domain.Tests.Booths
         {
             // Arrange
             var boothId = Guid.NewGuid();
-            var booth = new Booth(boothId, "A-12", 10m); // Old constructor
+            var orgUnitId = Guid.NewGuid();
+            var booth = new Booth(boothId, "A-12", 10m, orgUnitId);
 
             var newPeriods = new List<PricingPeriod>
             {

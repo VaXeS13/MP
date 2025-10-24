@@ -1,9 +1,13 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace MP.Application.Contracts.BoothTypes
 {
     public class CreateBoothTypeDto
     {
+        [Required]
+        public Guid OrganizationalUnitId { get; set; }
+
         [Required]
         [StringLength(100)]
         public string Name { get; set; } = null!;

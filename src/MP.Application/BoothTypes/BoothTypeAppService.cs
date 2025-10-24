@@ -71,7 +71,7 @@ namespace MP.Application.BoothTypes
                 input.Name,
                 input.Description,
                 input.CommissionPercentage,
-                CurrentTenant.Id);
+                input.OrganizationalUnitId);
 
             var savedBoothType = await Repository.InsertAsync(boothType);
 

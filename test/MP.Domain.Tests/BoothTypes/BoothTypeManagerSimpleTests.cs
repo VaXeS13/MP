@@ -29,10 +29,11 @@ namespace MP.Domain.Tests.BoothTypes
             var typeName = $"BT_{Guid.NewGuid().ToString().Substring(0, 8)}";
 
             // Act
-            var boothType = await _boothTypeManager.CreateAsync(DefaultOrganizationalUnitId, 
+            var boothType = await _boothTypeManager.CreateAsync(
                 typeName,
                 "Test booth type",
-                10m
+                10m,
+                DefaultOrganizationalUnitId
             );
 
             // Assert
@@ -50,8 +51,8 @@ namespace MP.Domain.Tests.BoothTypes
             var type2Name = $"BT2_{Guid.NewGuid().ToString().Substring(0, 8)}";
 
             // Act
-            var type1 = await _boothTypeManager.CreateAsync(DefaultOrganizationalUnitId, type1Name, "Desc1", 5m);
-            var type2 = await _boothTypeManager.CreateAsync(DefaultOrganizationalUnitId, type2Name, "Desc2", 10m);
+            var type1 = await _boothTypeManager.CreateAsync(type1Name, "Desc1", 5m, DefaultOrganizationalUnitId);
+            var type2 = await _boothTypeManager.CreateAsync(type2Name, "Desc2", 10m, DefaultOrganizationalUnitId);
 
             // Assert
             type1.Id.ShouldNotBe(type2.Id);
@@ -64,7 +65,7 @@ namespace MP.Domain.Tests.BoothTypes
             // Arrange
             var origName = $"ORG_{Guid.NewGuid().ToString().Substring(0, 8)}";
             var newName = $"UPD_{Guid.NewGuid().ToString().Substring(0, 8)}";
-            var boothType = await _boothTypeManager.CreateAsync(DefaultOrganizationalUnitId, origName, "Desc", 15m);
+            var boothType = await _boothTypeManager.CreateAsync(origName, "Desc", 15m, DefaultOrganizationalUnitId);
             await _boothTypeRepository.InsertAsync(boothType);
 
             // Act
@@ -89,8 +90,8 @@ namespace MP.Domain.Tests.BoothTypes
             // Arrange
             var type1Name = $"TP1_{Guid.NewGuid().ToString().Substring(0, 8)}";
             var type2Name = $"TP2_{Guid.NewGuid().ToString().Substring(0, 8)}";
-            var type1 = await _boothTypeManager.CreateAsync(DefaultOrganizationalUnitId, type1Name, "Desc1", 5m);
-            var type2 = await _boothTypeManager.CreateAsync(DefaultOrganizationalUnitId, type2Name, "Desc2", 10m);
+            var type1 = await _boothTypeManager.CreateAsync(type1Name, "Desc1", 5m, DefaultOrganizationalUnitId);
+            var type2 = await _boothTypeManager.CreateAsync(type2Name, "Desc2", 10m, DefaultOrganizationalUnitId);
             await _boothTypeRepository.InsertAsync(type1);
             await _boothTypeRepository.InsertAsync(type2);
 

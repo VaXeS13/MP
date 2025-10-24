@@ -26,11 +26,11 @@ namespace MP.Domain.Tests.Booths
         public async Task CreateAsync_Should_Create_Booth()
         {
             // Arrange
-            var boothNumber = "BOOTH001";
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
             var price = 100m;
 
             // Act
-            var booth = await _boothManager.CreateAsync(DefaultOrganizationalUnitId, boothNumber, price);
+            var booth = await _boothManager.CreateAsync(boothNumber, price, DefaultOrganizationalUnitId);
 
             // Assert
             booth.ShouldNotBeNull();
@@ -43,13 +43,13 @@ namespace MP.Domain.Tests.Booths
         public async Task CreateAsync_Should_Throw_Duplicate_Number()
         {
             // Arrange
-            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 4)}";
-            var booth1 = await _boothManager.CreateAsync(DefaultOrganizationalUnitId, boothNumber, 100m);
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var booth1 = await _boothManager.CreateAsync(boothNumber, 100m, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth1);
 
             // Act & Assert
             var exception = await Should.ThrowAsync<BusinessException>(
-                () => _boothManager.CreateAsync(DefaultOrganizationalUnitId, boothNumber, 150m, DefaultOrganizationalUnitId)
+                () => _boothManager.CreateAsync(boothNumber, 150m, DefaultOrganizationalUnitId)
             );
 
             exception.Code.ShouldBe("BOOTH_NUMBER_ALREADY_EXISTS");
@@ -60,9 +60,9 @@ namespace MP.Domain.Tests.Booths
         public async Task ChangeNumberAsync_Should_Update_Number()
         {
             // Arrange
-            var oldNumber = $"OLD{Guid.NewGuid().ToString().Substring(0, 4)}";
-            var newNumber = $"NEW{Guid.NewGuid().ToString().Substring(0, 4)}";
-            var booth = await _boothManager.CreateAsync(DefaultOrganizationalUnitId, oldNumber, 100m);
+            var oldNumber = $"OLD{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
+            var newNumber = $"NEW{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
+            var booth = await _boothManager.CreateAsync(oldNumber, 100m, DefaultOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth);
 
             // Act
