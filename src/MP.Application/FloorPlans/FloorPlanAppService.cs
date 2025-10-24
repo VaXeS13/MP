@@ -53,13 +53,20 @@ namespace MP.FloorPlans
 
         public async Task<FloorPlanDto> GetAsync(Guid id)
         {
+            var floorPlan = await _floorPlanRepository.GetAsync(id);
+
+            // Validate access to organizational unit
+            if (floorPlan.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this floor plan");
+            }
+
             var cacheKey = $"FloorPlan_{id}";
 
             var cachedData = await _floorPlanCache.GetOrAddAsync(
                 cacheKey,
                 async () =>
                 {
-                    var floorPlan = await _floorPlanRepository.GetAsync(id);
                     var booths = await _floorPlanBoothRepository.GetListByFloorPlanAsync(id);
                     var elements = await _floorPlanElementRepository.GetListByFloorPlanAsync(id);
 
@@ -262,6 +269,12 @@ namespace MP.FloorPlans
         {
             var floorPlan = await _floorPlanRepository.GetAsync(id);
 
+            // Validate access to organizational unit
+            if (floorPlan.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this floor plan");
+            }
+
             // Allow same name for different levels
             floorPlan.SetName(input.Name);
             floorPlan.SetLevel(input.Level);
@@ -339,6 +352,13 @@ namespace MP.FloorPlans
         public async Task DeleteAsync(Guid id)
         {
             var floorPlan = await _floorPlanRepository.GetAsync(id);
+
+            // Validate access to organizational unit
+            if (floorPlan.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this floor plan");
+            }
+
             var tenantId = floorPlan.TenantId;
 
             await _floorPlanBoothRepository.DeleteByFloorPlanAsync(id);
@@ -352,6 +372,13 @@ namespace MP.FloorPlans
         public async Task<FloorPlanDto> PublishAsync(Guid id)
         {
             var floorPlan = await _floorPlanRepository.GetAsync(id);
+
+            // Validate access to organizational unit
+            if (floorPlan.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this floor plan");
+            }
+
             floorPlan.Publish();
             await _floorPlanRepository.UpdateAsync(floorPlan);
 
@@ -364,6 +391,13 @@ namespace MP.FloorPlans
         public async Task<FloorPlanDto> DeactivateAsync(Guid id)
         {
             var floorPlan = await _floorPlanRepository.GetAsync(id);
+
+            // Validate access to organizational unit
+            if (floorPlan.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this floor plan");
+            }
+
             floorPlan.Deactivate();
             await _floorPlanRepository.UpdateAsync(floorPlan);
 
@@ -375,6 +409,14 @@ namespace MP.FloorPlans
         [HttpGet("/api/app/floor-plan/{floorPlanId}/booths")]
         public async Task<List<FloorPlanBoothDto>> GetBoothsAsync(Guid floorPlanId)
         {
+            var floorPlan = await _floorPlanRepository.GetAsync(floorPlanId);
+
+            // Validate access to organizational unit
+            if (floorPlan.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this floor plan");
+            }
+
             var booths = await _floorPlanBoothRepository.GetListByFloorPlanAsync(floorPlanId);
             return ObjectMapper.Map<List<FloorPlanBooth>, List<FloorPlanBoothDto>>(booths);
         }
@@ -384,7 +426,14 @@ namespace MP.FloorPlans
         public async Task<FloorPlanBoothDto> AddBoothAsync(Guid floorPlanId, CreateFloorPlanBoothDto input)
         {
             // Verify floor plan and booth exist
-            await _floorPlanRepository.GetAsync(floorPlanId);
+            var floorPlan = await _floorPlanRepository.GetAsync(floorPlanId);
+
+            // Validate access to organizational unit
+            if (floorPlan.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this floor plan");
+            }
+
             await _boothRepository.GetAsync(input.BoothId);
 
             // Check if booth is already on this floor plan
@@ -413,6 +462,14 @@ namespace MP.FloorPlans
         [HttpPut("/api/app/floor-plan/{floorPlanId}/booths/{boothId}")]
         public async Task<FloorPlanBoothDto> UpdateBoothPositionAsync(Guid floorPlanId, Guid boothId, CreateFloorPlanBoothDto input)
         {
+            var floorPlan = await _floorPlanRepository.GetAsync(floorPlanId);
+
+            // Validate access to organizational unit
+            if (floorPlan.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this floor plan");
+            }
+
             var floorPlanBooth = await _floorPlanBoothRepository.FindByFloorPlanAndBoothAsync(floorPlanId, boothId);
             if (floorPlanBooth == null)
             {
@@ -429,6 +486,14 @@ namespace MP.FloorPlans
         [HttpDelete("/api/app/floor-plan/{floorPlanId}/booths/{boothId}")]
         public async Task RemoveBoothAsync(Guid floorPlanId, Guid boothId)
         {
+            var floorPlan = await _floorPlanRepository.GetAsync(floorPlanId);
+
+            // Validate access to organizational unit
+            if (floorPlan.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this floor plan");
+            }
+
             var floorPlanBooth = await _floorPlanBoothRepository.FindByFloorPlanAndBoothAsync(floorPlanId, boothId);
             if (floorPlanBooth != null)
             {
@@ -442,8 +507,14 @@ namespace MP.FloorPlans
             [FromQuery] DateTime startDate,
             [FromQuery] DateTime endDate)
         {
-            // Verify floor plan exists
-            await _floorPlanRepository.GetAsync(floorPlanId);
+            // Verify floor plan exists and user has access
+            var floorPlan = await _floorPlanRepository.GetAsync(floorPlanId);
+
+            // Validate access to organizational unit
+            if (floorPlan.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this floor plan");
+            }
 
             // Get all booths on this floor plan with booth details
             var floorPlanBooths = await _floorPlanBoothRepository.GetListByFloorPlanAsync(floorPlanId);

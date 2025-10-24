@@ -51,16 +51,27 @@ namespace MP.Booths
         public async Task<BoothDto> GetAsync(Guid id)
         {
             var booth = await _boothRepository.GetAsync(id, includeDetails: true);
+
+            // Validate access to organizational unit
+            if (booth.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this booth");
+            }
+
             return ObjectMapper.Map<Booth, BoothDto>(booth);
         }
 
         [HttpGet]
         public async Task<PagedResultDto<BoothListDto>> GetListAsync(GetBoothListDto input)
         {
-            var totalCount = await _boothRepository.GetCountAsync(input.Filter, input.Status);
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
+            var totalCount = await _boothRepository.GetCountAsync(organizationalUnitId, input.Filter, input.Status);
             var items = await _boothRepository.GetListWithActiveRentalsAsync(
                 input.SkipCount,
                 input.MaxResultCount,
+                organizationalUnitId,
                 input.Filter,
                 input.Status
             );
@@ -159,6 +170,12 @@ namespace MP.Booths
         {
             var booth = await _boothRepository.GetAsync(id, includeDetails: true);
 
+            // Validate access to organizational unit
+            if (booth.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this booth");
+            }
+
             // Zmiana numeru (przez domain service dla walidacji)
             if (booth.Number != input.Number.ToUpper())
             {
@@ -203,6 +220,12 @@ namespace MP.Booths
         {
             var booth = await _boothRepository.GetAsync(id);
 
+            // Validate access to organizational unit
+            if (booth.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this booth");
+            }
+
             // Sprawdź czy stanowisko nie jest wynajęte
             if (booth.Status == BoothStatus.Rented)
             {
@@ -215,7 +238,10 @@ namespace MP.Booths
         [HttpGet("available")]
         public async Task<List<BoothDto>> GetAvailableBoothsAsync()
         {
-            var booths = await _boothRepository.GetAvailableBoothsAsync();
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
+            var booths = await _boothRepository.GetAvailableBoothsAsync(organizationalUnitId);
             return ObjectMapper.Map<List<Booth>, List<BoothDto>>(booths);
         }
 
@@ -224,6 +250,12 @@ namespace MP.Booths
         public async Task<BoothDto> ChangeStatusAsync(Guid id, BoothStatus newStatus)
         {
             var booth = await _boothRepository.GetAsync(id);
+
+            // Validate access to organizational unit
+            if (booth.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this booth");
+            }
 
             switch (newStatus)
             {
@@ -253,10 +285,14 @@ namespace MP.Booths
         [HttpGet("my-booths")]
         public async Task<PagedResultDto<BoothListDto>> GetMyBoothsAsync([FromQuery] GetBoothListDto input)
         {
-            var totalCount = await _boothRepository.GetCountAsync(input.Filter, input.Status);
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
+            var totalCount = await _boothRepository.GetCountAsync(organizationalUnitId, input.Filter, input.Status);
             var items = await _boothRepository.GetListWithActiveRentalsAsync(
                 input.SkipCount,
                 input.MaxResultCount,
+                organizationalUnitId,
                 input.Filter,
                 input.Status
             );
@@ -346,6 +382,13 @@ namespace MP.Booths
 
             var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
                 .WithData("message", "Current organizational unit context is not set");
+
+            // Validate that booth belongs to current organizational unit
+            var booth = await _boothRepository.GetAsync(input.BoothId);
+            if (booth.OrganizationalUnitId != organizationalUnitId)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Booth does not belong to current organizational unit");
+            }
 
             // Create rental using RentalManager
             var rental = await _rentalManager.CreateRentalAsync(

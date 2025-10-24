@@ -14,6 +14,8 @@ namespace MP.Domain.Booths
 
         Task<List<Booth>> GetAvailableBoothsAsync(CancellationToken cancellationToken = default);
 
+        Task<List<Booth>> GetAvailableBoothsAsync(Guid organizationalUnitId, CancellationToken cancellationToken = default);
+
         Task<bool> IsNumberUniqueAsync(string number, Guid? excludeId = null, CancellationToken cancellationToken = default);
 
         Task<List<Booth>> GetListWithActiveRentalsAsync(
@@ -23,7 +25,17 @@ namespace MP.Domain.Booths
             BoothStatus? status = null,
             CancellationToken cancellationToken = default);
 
+        Task<List<Booth>> GetListWithActiveRentalsAsync(
+            int skipCount,
+            int maxResultCount,
+            Guid organizationalUnitId,
+            string? filter = null,
+            BoothStatus? status = null,
+            CancellationToken cancellationToken = default);
+
         Task<int> GetCountAsync(string? filter = null, BoothStatus? status = null, CancellationToken cancellationToken = default);
+
+        Task<int> GetCountAsync(Guid organizationalUnitId, string? filter = null, BoothStatus? status = null, CancellationToken cancellationToken = default);
     }
 
 }

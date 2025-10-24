@@ -37,19 +37,33 @@ namespace MP.Items
         public async Task<ItemDto> GetAsync(Guid id)
         {
             var item = await _itemRepository.GetAsync(id);
+
+            // Validate access to organizational unit
+            if (item.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this item");
+            }
+
             return ObjectMapper.Map<Item, ItemDto>(item);
         }
 
         public async Task<PagedResultDto<ItemDto>> GetListAsync(PagedAndSortedResultRequestDto input)
         {
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             var queryable = await _itemRepository.GetQueryableAsync();
             var query = queryable
+                .Where(x => x.OrganizationalUnitId == organizationalUnitId)
                 .OrderByDescending(x => x.CreationTime)
                 .Skip(input.SkipCount)
                 .Take(input.MaxResultCount);
 
             var items = await AsyncExecuter.ToListAsync(query);
-            var totalCount = await _itemRepository.GetCountAsync();
+            var totalCount = await AsyncExecuter.CountAsync(
+                (await _itemRepository.GetQueryableAsync())
+                    .Where(x => x.OrganizationalUnitId == organizationalUnitId)
+            );
 
             return new PagedResultDto<ItemDto>(
                 totalCount,

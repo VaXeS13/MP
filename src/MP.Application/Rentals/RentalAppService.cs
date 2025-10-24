@@ -60,13 +60,23 @@ namespace MP.Rentals
             if (rental == null)
                 throw new EntityNotFoundException(typeof(Rental), id);
 
+            // Validate access to organizational unit
+            if (rental.OrganizationalUnitId != _currentOrganizationalUnit.Id)
+            {
+                throw new Volo.Abp.Authorization.AbpAuthorizationException("Access denied to this rental");
+            }
+
             return ObjectMapper.Map<Rental, RentalDto>(rental);
         }
 
         public async Task<PagedResultDto<RentalListDto>> GetListAsync(GetRentalListDto input)
         {
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             var queryable = await _rentalRepository.GetQueryableAsync();
-            queryable = queryable.AsNoTracking();
+            queryable = queryable.AsNoTracking()
+                .Where(r => r.OrganizationalUnitId == organizationalUnitId);
 
             // Filtering
             if (!string.IsNullOrWhiteSpace(input.Filter))

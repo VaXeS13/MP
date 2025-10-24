@@ -91,6 +91,39 @@ namespace MP.Booths
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<Booth>> GetListWithActiveRentalsAsync(
+            int skipCount,
+            int maxResultCount,
+            Guid organizationalUnitId,
+            string? filter = null,
+            BoothStatus? status = null,
+            CancellationToken cancellationToken = default)
+        {
+            var dbContext = await GetDbContextAsync();
+
+            var query = dbContext.Booths
+                .Where(b => b.OrganizationalUnitId == organizationalUnitId)
+                .Include(b => b.PricingPeriods)
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                query = query.Where(b => b.Number.Contains(filter.ToUpper()));
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(b => b.Status == status.Value);
+            }
+
+            return await query
+                .OrderBy(b => b.Number)
+                .Skip(skipCount)
+                .Take(maxResultCount)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<int> GetCountAsync(string? filter = null, BoothStatus? status = null, CancellationToken cancellationToken = default)
         {
             var dbContext = await GetDbContextAsync();
@@ -109,6 +142,37 @@ namespace MP.Booths
             }
 
             return await query.CountAsync(cancellationToken);
+        }
+
+        public async Task<int> GetCountAsync(Guid organizationalUnitId, string? filter = null, BoothStatus? status = null, CancellationToken cancellationToken = default)
+        {
+            var dbContext = await GetDbContextAsync();
+            var query = dbContext.Booths
+                .Where(b => b.OrganizationalUnitId == organizationalUnitId)
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                query = query.Where(b => b.Number.Contains(filter.ToUpper()));
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(b => b.Status == status.Value);
+            }
+
+            return await query.CountAsync(cancellationToken);
+        }
+
+        public async Task<List<Booth>> GetAvailableBoothsAsync(Guid organizationalUnitId, CancellationToken cancellationToken = default)
+        {
+            var dbContext = await GetDbContextAsync();
+            return await dbContext.Booths
+                .Where(b => b.OrganizationalUnitId == organizationalUnitId && b.Status == BoothStatus.Available)
+                .AsNoTracking()
+                .OrderBy(b => b.Number)
+                .ToListAsync(cancellationToken);
         }
     }
 }

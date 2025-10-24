@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using MP.Carts;
 using MP.Domain.Promotions;
 using MP.Domain.Carts;
+using MP.Domain.OrganizationalUnits;
 using MP.Permissions;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
@@ -22,17 +23,20 @@ namespace MP.Promotions
         private readonly IPromotionUsageRepository _promotionUsageRepository;
         private readonly PromotionManager _promotionManager;
         private readonly IRepository<Cart, Guid> _cartRepository;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public PromotionAppService(
             IPromotionRepository promotionRepository,
             IPromotionUsageRepository promotionUsageRepository,
             PromotionManager promotionManager,
-            IRepository<Cart, Guid> cartRepository)
+            IRepository<Cart, Guid> cartRepository,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _promotionRepository = promotionRepository;
             _promotionUsageRepository = promotionUsageRepository;
             _promotionManager = promotionManager;
             _cartRepository = cartRepository;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<PagedResultDto<PromotionDto>> GetListAsync(GetPromotionsInput input)
@@ -64,9 +68,12 @@ namespace MP.Promotions
         [Authorize(MPPermissions.Promotions.Create)]
         public async Task<PromotionDto> CreateAsync(CreatePromotionDto input)
         {
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED")
+                .WithData("message", "Current organizational unit context is not set");
+
             var promotion = await _promotionManager.CreateAsync(
                 input.Name,
-                Guid.Empty, // TODO: Get organizationalUnitId from user context or input
+                organizationalUnitId,
                 input.Type,
                 input.DisplayMode,
                 input.DiscountType,
