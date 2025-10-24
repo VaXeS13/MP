@@ -27,6 +27,8 @@ using MP.Domain.Items;
 using MP.EntityFrameworkCore.Items;
 using MP.Domain.LocalAgent;
 using MP.EntityFrameworkCore.LocalAgent;
+using MP.Domain.OrganizationalUnits;
+using MP.OrganizationalUnits;
 
 namespace MP.EntityFrameworkCore;
 
@@ -82,5 +84,9 @@ public class MPEntityFrameworkCoreModule : AbpModule
         context.Services.AddTransient<IItemRepository, EfCoreItemRepository>();
         context.Services.AddTransient<IItemSheetRepository, EfCoreItemSheetRepository>();
         context.Services.AddTransient<IAgentApiKeyRepository, EfCoreAgentApiKeyRepository>();
+        context.Services.AddTransient<IOrganizationalUnitRepository, EfCoreOrganizationalUnitRepository>();
+        context.Services.AddTransient<IUserOrganizationalUnitRepository, EfCoreUserOrganizationalUnitRepository>();
+        context.Services.AddTransient<IOrganizationalUnitSettingsRepository, EfCoreOrganizationalUnitSettingsRepository>();
+        context.Services.AddTransient<IOrganizationalUnitRegistrationCodeRepository, EfCoreOrganizationalUnitRegistrationCodeRepository>();
     }
 }
