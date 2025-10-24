@@ -208,5 +208,13 @@ function configureRoutes() {
         order: 3,
         requiredPolicy: 'MP.Booths.Create',
       },
+      {
+        path: '/floor-plans/bulk-booking',
+        name: '::Menu:BulkBookingCalendar',
+        parentName: '::Menu:FloorPlans',
+        iconClass: 'fas fa-calendar-alt',
+        order: 4,
+        requiredPolicy: 'MP.Booths',
+      },
   ]);
 }

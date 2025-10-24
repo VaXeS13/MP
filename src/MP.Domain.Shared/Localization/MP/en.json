@@ -34,6 +34,7 @@
     "Menu:TenantCurrency": "Tenant Currency",
     "Menu:Promotions": "Promotions",
     "Menu:HomePageContent": "Homepage Content",
+    "Menu:BulkBookingCalendar": "Bulk Booking Calendar",
 
     "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
     "Welcome": "Welcome",

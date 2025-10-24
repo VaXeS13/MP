@@ -31,6 +31,7 @@
     "Menu:Logout": "Wyloguj",
     "Menu:PaymentProviders": "Dostawcy Płatności",
     "Menu:Cart": "Koszyk",
+    "Menu:BulkBookingCalendar": "Rezerwacja Wielu Stanowisk",
 
     "LongWelcomeMessage": "Witamy w aplikacji. To jest projekt startupowy oparty na frameworku ABP. Aby uzyskać więcej informacji, odwiedź",
     "Welcome": "Witamy",

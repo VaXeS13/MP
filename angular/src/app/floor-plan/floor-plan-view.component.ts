@@ -118,6 +118,16 @@ import { CartDto, CartItemDto } from '../shared/models/cart.model';
           <!-- Zoom Controls -->
           <div class="flex align-items-center gap-2">
             <p-button
+              label="Rezerwuj wiele"
+              icon="pi pi-th"
+              severity="success"
+              (onClick)="openBulkBooking()"
+              pTooltip="Rezerwuj stanowiska masowo">
+            </p-button>
+
+            <p-divider layout="vertical"></p-divider>
+
+            <p-button
               label="Zmień plan"
               icon="pi pi-list"
               [text]="true"
@@ -586,6 +596,12 @@ export class FloorPlanViewComponent implements OnInit, AfterViewInit, OnDestroy 
 
       // Subscribe to updates specific to this floor plan
       this.subscribeToFloorPlanUpdates(floorPlanId);
+    }
+  }
+
+  openBulkBooking() {
+    if (this.selectedFloorPlanId) {
+      this.router.navigate(['/floor-plans/bulk-booking', this.selectedFloorPlanId]);
     }
   }
 

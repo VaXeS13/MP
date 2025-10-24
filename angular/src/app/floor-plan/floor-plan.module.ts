@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
 // PrimeNG Modules
@@ -23,6 +23,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { TabViewModule } from 'primeng/tabview';
 import { ScrollerModule } from 'primeng/scroller';
+import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { DialogService } from 'primeng/dynamicdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
@@ -31,6 +32,7 @@ import { FloorPlanEditorComponent } from './floor-plan-editor.component';
 import { FloorPlanViewComponent } from './floor-plan-view.component';
 import { FloorPlanListComponent } from './floor-plan-list.component';
 import { BoothBookingDialogComponent } from './booth-booking-dialog.component';
+import { BulkBookingCalendarComponent } from './bulk-booking-calendar.component';
 
 // ABP Guards
 import { AuthGuard, permissionGuard } from '@abp/ng.core';
@@ -57,6 +59,12 @@ const routes: Routes = [
     data: { title: 'Podgląd Planu Sali' }
   },
   {
+    path: 'bulk-booking',
+    component: BulkBookingCalendarComponent,
+    canActivate: [AuthGuard],
+    data: { title: 'Rezerwacja Wielu Stanowisk' }
+  },
+  {
     path: 'editor',
     component: FloorPlanEditorComponent,
     canActivate: [AuthGuard],
@@ -81,11 +89,13 @@ const routes: Routes = [
     FloorPlanEditorComponent,
     FloorPlanViewComponent,
     FloorPlanListComponent,
-    BoothBookingDialogComponent
+    BoothBookingDialogComponent,
+    BulkBookingCalendarComponent
   ],
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     RouterModule.forChild(routes),
 
     // PrimeNG
@@ -107,7 +117,8 @@ const routes: Routes = [
     ConfirmDialogModule,
     ToastModule,
     TabViewModule,
-    ScrollerModule
+    ScrollerModule,
+    ScrollPanelModule
   ],
   providers: [
     DialogService,

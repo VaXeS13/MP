@@ -1,0 +1,411 @@
+<div class="bulk-booking-calendar">
+  <!-- Header -->
+  <div class="calendar-header p-3 surface-section border-bottom-1 border-surface-border sticky-top">
+    <!-- Floor Plan Selection -->
+    <div class="flex align-items-center gap-3 mb-3">
+      <label class="text-sm font-semibold">Filtruj plan:</label>
+      <p-dropdown
+        *ngIf="!isLoadingFloorPlans"
+        [options]="floorPlans"
+        optionLabel="name"
+        optionValue="id"
+        [value]="floorPlanId"
+        (onChange)="selectFloorPlan($event.value)"
+        [disabled]="isLoadingFloorPlans"
+        placeholder="Wszystkie stanowiska"
+        [showClear]="true"
+        styleClass="w-full md:w-300px">
+      </p-dropdown>
+      <p-progressSpinner
+        *ngIf="isLoadingFloorPlans"
+        [style]="{ width: '30px', height: '30px' }"
+        strokeWidth="8"
+        fill="var(--surface-ground)"
+        animationDuration=".5s">
+      </p-progressSpinner>
+    </div>
+
+    <!-- Month Navigation -->
+    <div class="flex align-items-center justify-content-between mb-3">
+      <div class="flex align-items-center gap-3">
+        <p-button
+          icon="pi pi-arrow-left"
+          [text]="true"
+          severity="secondary"
+          (onClick)="previousMonth()">
+        </p-button>
+        <h2 class="m-0">{{ getCurrentMonths() }}</h2>
+        <p-button
+          icon="pi pi-arrow-right"
+          [text]="true"
+          severity="secondary"
+          (onClick)="nextMonth()">
+        </p-button>
+      </div>
+      <div class="text-sm text-color-secondary" *ngIf="!floorPlanId && floorPlans.length > 0">
+        Razem stanowisk: {{ booths.length }}
+      </div>
+      <div class="text-sm text-color-secondary" *ngIf="floorPlan">
+        {{ floorPlan.name }} - Poziom {{ floorPlan.level }}
+      </div>
+    </div>
+
+    <!-- Info Section - Booth Settings -->
+    <div class="info-section p-3 surface-100 border-round">
+      <div class="grid">
+        <div class="col-12 md:col-4">
+          <div class="text-sm text-color-secondary">
+            <i class="pi pi-calendar mr-2"></i>
+            Minimalny okres wynajmu
+          </div>
+          <div class="font-semibold">{{ minimumRentalDays }} dni</div>
+        </div>
+        <div class="col-12 md:col-4">
+          <div class="text-sm text-color-secondary">
+            <i class="pi pi-calendar-minus mr-2"></i>
+            Minimalny gap między rezerwacjami
+          </div>
+          <div class="font-semibold">{{ minimumGapDays }} dni</div>
+        </div>
+        <div class="col-12 md:col-4">
+          <div class="text-sm text-color-secondary">
+            <i class="pi pi-info-circle mr-2"></i>
+            Liczba stanowisk
+          </div>
+          <div class="font-semibold">{{ booths.length }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content - Full Width -->
+  <div class="main-content gap-3 p-3">
+    <!-- Calendar Grid - Full Width -->
+    <div>
+      <div class="calendar-container" *ngIf="!totalLoading; else loadingTemplate">
+        <!-- Month Headers Row -->
+        <div class="months-header">
+          <div class="booth-header-cell"></div>
+          <ng-container *ngFor="let month of getMonthHeaders(); trackBy: trackByMonthIndex">
+            <div class="month-cell" [style.grid-column]="'span ' + month.daysInMonth">
+              {{ month.monthName }}
+            </div>
+          </ng-container>
+        </div>
+
+        <div class="calendar-grid-wrapper">
+          <!-- Days Header -->
+          <div class="days-header">
+            <div class="booth-header-cell">Stanowisko</div>
+            <div class="day-cell-header" *ngFor="let day of allCalendarDays; trackBy: trackByDayIndex"
+                 [ngClass]="getDayHeaderClass(day)">
+              <div class="day-number">{{ day.getDate() }}</div>
+            </div>
+          </div>
+
+          <!-- Booth Rows -->
+          <ng-container *ngFor="let entry of calendarData | keyvalue; trackBy: trackByBoothId">
+            <ng-container *ngIf="entry.value as boothData">
+              <div class="booth-row">
+                <!-- Booth Header -->
+                <div class="booth-header-cell booth-number"
+                     [ngClass]="{ 'booth-selected': currentSelectionBoothId === boothData.boothId }">
+                  {{ boothData.boothNumber }}
+                </div>
+
+                <!-- Day Cells -->
+                <div class="day-cell"
+                     *ngFor="let cell of boothData.cells; trackBy: trackByDayIndex"
+                     [ngClass]="getCellClass(cell)"
+                     (click)="onCellClick(cell)"
+                     [title]="cell.statusDisplayName">
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+
+        <!-- Calendar Legend -->
+        <div class="calendar-legend mt-3 p-3 surface-100 border-round">
+          <div class="grid">
+            <div class="col-6 md:col-3">
+              <div class="flex align-items-center gap-2">
+                <div class="legend-box legend-available"></div>
+                <span class="text-sm">Dostępne</span>
+              </div>
+            </div>
+            <div class="col-6 md:col-3">
+              <div class="flex align-items-center gap-2">
+                <div class="legend-box legend-reserved"></div>
+                <span class="text-sm">Zarezerwowane</span>
+              </div>
+            </div>
+            <div class="col-6 md:col-3">
+              <div class="flex align-items-center gap-2">
+                <div class="legend-box legend-occupied"></div>
+                <span class="text-sm">Zajęte</span>
+              </div>
+            </div>
+            <div class="col-6 md:col-3">
+              <div class="flex align-items-center gap-2">
+                <div class="legend-box legend-selected"></div>
+                <span class="text-sm">Wybrane</span>
+              </div>
+            </div>
+            <div class="col-6 md:col-3">
+              <div class="flex align-items-center gap-2">
+                <div class="legend-box legend-in-cart"></div>
+                <span class="text-sm">W koszyku</span>
+              </div>
+            </div>
+            <div class="col-6 md:col-3">
+              <div class="flex align-items-center gap-2">
+                <div class="legend-box legend-in-selected-bookings"></div>
+                <span class="text-sm">Na liście</span>
+              </div>
+            </div>
+            <div class="col-6 md:col-3">
+              <div class="flex align-items-center gap-2">
+                <div class="legend-box legend-past"></div>
+                <span class="text-sm">Przeszłe</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #loadingTemplate>
+        <div class="flex align-items-center justify-content-center py-6">
+          <p-progressSpinner [style]="{ width: '50px', height: '50px' }" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Bottom: Sidebar + Selected Bookings - Full Width -->
+    <div class="sidebar-wrapper">
+      <!-- Booth Info Panel (Fixed) -->
+      <div class="sidebar-panel surface-section border-1 border-surface-border border-round p-3">
+        <h5 class="m-0 mb-3">
+          <i class="pi pi-info-circle mr-2"></i>
+          Informacje o stanowisku
+        </h5>
+
+        <ng-container *ngIf="currentSelectionBoothId">
+          <ng-container *ngIf="getSelectedBoothData() as boothData">
+            <div class="booth-info-content">
+              <div class="mb-3 pb-3 border-bottom-1 border-surface-border">
+                <div class="text-sm text-color-secondary mb-1">Stanowisko</div>
+                <div class="font-semibold text-lg">{{ boothData.boothNumber }}</div>
+              </div>
+
+              <div class="mb-3 pb-3 border-bottom-1 border-surface-border" *ngIf="boothData.boothDto">
+                <div class="text-sm text-color-secondary mb-1">Cena za dzień</div>
+                <div class="font-semibold">{{ boothData.boothDto.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</div>
+              </div>
+
+              <div class="mb-3" *ngIf="boothData.boothDto && boothData.boothDto.pricingPeriods && boothData.boothDto.pricingPeriods.length > 0">
+                <div class="text-sm text-color-secondary mb-2">Cennik tiered</div>
+                <div class="pricing-periods">
+                  <div class="pricing-period" *ngFor="let period of boothData.boothDto.pricingPeriods">
+                    <span class="text-sm">{{ period.days }}+ dni</span>
+                    <span class="font-semibold">{{ period.pricePerPeriod | currency:tenantCurrencyCode:'symbol':'1.2-2' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selection Info - Dates and Pricing -->
+              <ng-container *ngIf="getSelectedBoothData() as selectionData">
+                <div class="mt-3 pt-3 border-top-1 border-surface-border" *ngIf="selectionData.selectedStartDate">
+                  <div class="mb-2">
+                    <div class="text-sm text-color-secondary">Wybrane daty</div>
+                    <div class="font-semibold text-sm">
+                      {{ formatDate(selectionData.selectedStartDate) }} -
+                      <span *ngIf="selectionData.selectedEndDate">{{ formatDate(selectionData.selectedEndDate) }}</span>
+                      <span *ngIf="!selectionData.selectedEndDate">(wybierz datę końcową)</span>
+                    </div>
+                  </div>
+
+                  <div *ngIf="selectionData.selectedEndDate" class="mb-3">
+                    <div class="text-sm text-color-secondary">Liczba dni</div>
+                    <div class="font-semibold text-sm">
+                      {{ calculateDaysCount(selectionData.selectedStartDate, selectionData.selectedEndDate) }} dni
+                    </div>
+                  </div>
+
+                  <!-- Price Breakdown for Selection -->
+                  <div *ngIf="selectionData.selectedEndDate && selectionData.boothDto" class="mb-3 pb-3 border-bottom-1 border-surface-border">
+                    <div class="text-sm text-color-secondary mb-2">Wyliczona cena:</div>
+                    <div class="flex flex-column gap-1">
+                      <div *ngFor="let item of getPriceBreakdownForSelection(); trackBy: trackByIndex" class="text-xs text-color-secondary">
+                        {{ item.label }}
+                      </div>
+                      <div class="font-bold text-sm mt-2">
+                        Razem: {{ getTotalPriceForSelection() | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Booth Type Selection and Info -->
+                  <div class="mb-3" *ngIf="boothTypes.length > 0">
+                    <label class="text-sm text-color-secondary block mb-1">Typ stanowiska</label>
+                    <p-dropdown
+                      [options]="boothTypes"
+                      optionValue="id"
+                      [(ngModel)]="selectedBoothTypeId"
+                      placeholder="Wybierz typ stanowiska"
+                      [showClear]="true"
+                      styleClass="w-full">
+                      <!-- Item template with commission percentage -->
+                      <ng-template pTemplate="item" let-option>
+                        {{ option.name }} ({{ option.commissionPercentage }}%)
+                      </ng-template>
+                      <!-- Selected item template -->
+                      <ng-template pTemplate="selectedItem" let-option>
+                        <span *ngIf="option">
+                          {{ option.name }} ({{ option.commissionPercentage }}%)
+                        </span>
+                        <span *ngIf="!option" class="text-color-secondary">Wybierz typ stanowiska</span>
+                      </ng-template>
+                    </p-dropdown>
+
+                    <!-- Booth Type Description -->
+                    <div *ngIf="selectedBoothTypeId && getSelectedBoothType() as boothType" class="mt-2 p-2 bg-surface-ground border-1 border-surface-border border-round">
+                      <p class="text-xs text-color-secondary mb-1">Opis:</p>
+                      <p class="text-sm m-0">{{ boothType.description }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Validation Errors -->
+                <div class="validation-errors mt-2" *ngIf="validationErrors.length > 0">
+                  <p-message
+                    *ngFor="let error of validationErrors; trackBy: trackByBookingIndex"
+                    severity="error"
+                    [text]="error"
+                    class="w-full">
+                  </p-message>
+                </div>
+
+                <!-- Add Button -->
+                <p-button
+                  label="Dodaj do listy"
+                  icon="pi pi-plus"
+                  class="w-full mt-3"
+                  [disabled]="!canAddToSelectedBookings()"
+                  (onClick)="addToSelectedBookings()"
+                  [loading]="isSaving">
+                </p-button>
+              </ng-container>
+            </div>
+          </ng-container>
+        </ng-container>
+
+        <div *ngIf="!currentSelectionBoothId" class="text-center py-3 text-color-secondary">
+          <p class="text-sm">Wybierz stanowisko na kalendarzu</p>
+        </div>
+      </div>
+
+      <!-- Selected Bookings List -->
+      <div class="selected-bookings-panel surface-section border-1 border-surface-border border-round p-3 mt-3">
+        <h5 class="m-0 mb-3">
+          <i class="pi pi-list mr-2"></i>
+          Wybrane stanowiska
+          <p-badge [value]="selectedBookings.length" severity="primary"></p-badge>
+        </h5>
+
+        <p-scrollPanel [style]="{ width: '100%', height: '300px' }" styleClass="custom-scrollpanel">
+          <div class="selected-bookings-list">
+            <div class="booking-card" *ngFor="let booking of selectedBookings; let i = index; trackBy: trackByBookingIndex">
+              <div class="flex justify-content-between align-items-start mb-2">
+                <div>
+                  <div class="text-sm font-semibold">Stanowisko {{ booking.boothNumber }}</div>
+                  <div class="text-xs text-color-secondary">
+                    📅 {{ formatDate(booking.startDate) }} - {{ formatDate(booking.endDate) }}
+                  </div>
+                  <div *ngIf="booking.boothTypeId && getBoothTypeById(booking.boothTypeId) as boothType" class="text-xs text-primary font-semibold mt-1">
+                    {{ boothType.name }}
+                  </div>
+                </div>
+                <p-button
+                  icon="pi pi-times"
+                  [text]="true"
+                  severity="danger"
+                  [rounded]="true"
+                  (onClick)="removeSelectedBooking(i)">
+                </p-button>
+              </div>
+              <!-- Price Breakdown -->
+              <div class="border-top-1 border-surface-border pt-2">
+                <!-- Display breakdown items if available -->
+                <div *ngIf="booking.priceBreakdown && booking.priceBreakdown.length > 0" class="mb-2">
+                  <div *ngFor="let item of booking.priceBreakdown; trackBy: trackByIndex" class="text-xs text-color-secondary">
+                    {{ item.label }}
+                  </div>
+                </div>
+                <!-- Fallback for old bookings without breakdown -->
+                <div *ngIf="!booking.priceBreakdown || booking.priceBreakdown.length === 0" class="text-xs text-color-secondary mb-2">
+                  {{ booking.daysCount }} dni × {{ booking.pricePerDay | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
+                </div>
+                <!-- Total Price -->
+                <div class="flex justify-content-between align-items-center">
+                  <span class="text-xs font-semibold">Razem:</span>
+                  <span class="font-bold text-sm text-primary">
+                    {{ booking.totalPrice | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="selectedBookings.length === 0" class="text-center py-3 text-color-secondary">
+              <p class="text-sm">Brak wybranych stanowisk</p>
+            </div>
+          </div>
+        </p-scrollPanel>
+
+        <!-- Summary and Action -->
+        <div class="mt-3 pt-3 border-top-1 border-surface-border" *ngIf="selectedBookings.length > 0">
+          <div class="flex justify-content-between align-items-center mb-3">
+            <span class="font-semibold">Łącznie:</span>
+            <span class="font-bold text-lg text-primary">
+              {{ getTotalPrice() | currency:tenantCurrencyCode:'symbol':'1.2-2' }}
+            </span>
+          </div>
+
+          <p-button
+            label="Dodaj do koszyka"
+            icon="pi pi-shopping-cart"
+            class="w-full"
+            [loading]="isSaving"
+            (onClick)="addAllToCart()">
+          </p-button>
+        </div>
+      </div>
+
+      <!-- Floor Plan Preview Section -->
+      <div *ngIf="showFloorPlanSection && selectedBoothFloorPlans.length > 0"
+           class="floor-plan-preview-section p-3 mt-3 bg-white border-round shadow-1">
+        <div class="flex align-items-center justify-content-between mb-3">
+          <h5 class="m-0">
+            <i class="pi pi-map mr-2"></i>
+            Lokalizacja stanowiska na planie
+          </h5>
+          <p-badge [value]="selectedBoothFloorPlans.length.toString()" severity="info"></p-badge>
+        </div>
+
+        <div #floorPlanCanvasContainer class="floor-plan-canvas-container">
+          <div *ngFor="let floorPlan of selectedBoothFloorPlans; trackBy: trackByFloorPlanId"
+               class="floor-plan-canvas-wrapper">
+            <div class="floor-plan-name mb-2 text-center font-semibold">
+              {{ floorPlan.name }} (Poziom {{ floorPlan.level }})
+            </div>
+            <canvas [attr.id]="'floor-plan-canvas-' + floorPlan.id"
+                    [width]="800"
+                    [height]="600"
+                    class="floor-plan-canvas">
+            </canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
