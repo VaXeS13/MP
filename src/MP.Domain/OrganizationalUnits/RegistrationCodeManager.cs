@@ -94,7 +94,7 @@ namespace MP.Domain.OrganizationalUnits
         /// <summary>
         /// Validates if a registration code exists, is active, not expired, and hasn't exceeded usage limits
         /// </summary>
-        public async Task<OrganizationalUnitRegistrationCode> ValidateCodeAsync(Guid tenantId, string code)
+        public async Task<OrganizationalUnitRegistrationCode> ValidateCodeAsync(Guid? tenantId, string code)
         {
             if (string.IsNullOrWhiteSpace(code))
                 throw new BusinessException("RegistrationCode.CodeRequired", "Code is required");

@@ -49,6 +49,7 @@ public class MPDomainModule : AbpModule
         // Register domain services
         context.Services.AddScoped<OrganizationalUnitManager>();
         context.Services.AddScoped<RegistrationCodeManager>();
+        context.Services.AddScoped<UserOrganizationalUnitManager>();
 
 #if DEBUG
         context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
