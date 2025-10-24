@@ -14,6 +14,8 @@ namespace MP.Booth
 {
     public class BoothAppServiceTests : MPApplicationTestBase<MPApplicationTestModule>
     {
+        private static readonly Guid TestOrganizationalUnitId = new Guid("00000000-0000-0000-0000-000000000010");
+
         private readonly IBoothAppService _boothAppService;
         private readonly IBoothRepository _boothRepository;
 
@@ -31,6 +33,7 @@ namespace MP.Booth
             var boothNumber = $"BOOTH{Guid.NewGuid().ToString().Substring(0, 5)}".ToUpper();
             var createDto = new CreateBoothDto
             {
+                OrganizationalUnitId = TestOrganizationalUnitId,
                 Number = boothNumber,
                 PricePerDay = 25.00m
             };
@@ -52,6 +55,7 @@ namespace MP.Booth
             // Arrange
             var createDto = new CreateBoothDto
             {
+                OrganizationalUnitId = TestOrganizationalUnitId,
                 Number = "",
                 PricePerDay = 25.00m
             };
@@ -67,11 +71,12 @@ namespace MP.Booth
         {
             // Arrange - Create first booth with specific number
             var duplicateNumber = $"DUP{Guid.NewGuid().ToString().Substring(0, 5)}".ToUpper();
-            var booth1 = new MP.Domain.Booths.Booth(Guid.NewGuid(), duplicateNumber, 25.00m);
+            var booth1 = new MP.Domain.Booths.Booth(Guid.NewGuid(), duplicateNumber, 25.00m, TestOrganizationalUnitId);
             await _boothRepository.InsertAsync(booth1);
 
             var createDto = new CreateBoothDto
             {
+                OrganizationalUnitId = TestOrganizationalUnitId,
                 Number = duplicateNumber,
                 PricePerDay = 30.00m
             };
@@ -90,8 +95,8 @@ namespace MP.Booth
             // Arrange
             var availableNumber = $"AVAIL{Guid.NewGuid().ToString().Substring(0, 4)}".ToUpper();
             var rentedNumber = $"RENTED{Guid.NewGuid().ToString().Substring(0, 3)}".ToUpper();
-            var availableBooth = new MP.Domain.Booths.Booth(Guid.NewGuid(), availableNumber, 25.00m);
-            var rentedBooth = new MP.Domain.Booths.Booth(Guid.NewGuid(), rentedNumber, 25.00m);
+            var availableBooth = new MP.Domain.Booths.Booth(Guid.NewGuid(), availableNumber, 25.00m, TestOrganizationalUnitId);
+            var rentedBooth = new MP.Domain.Booths.Booth(Guid.NewGuid(), rentedNumber, 25.00m, TestOrganizationalUnitId);
             rentedBooth.MarkAsRented();
 
             await _boothRepository.InsertAsync(availableBooth);
@@ -112,12 +117,14 @@ namespace MP.Booth
             // Arrange
             var createDto1 = new CreateBoothDto
             {
+                OrganizationalUnitId = TestOrganizationalUnitId,
                 Number = $"SELF{Guid.NewGuid().ToString().Substring(0, 4)}".ToUpper(),
                 PricePerDay = 25.00m
             };
 
             var createDto2 = new CreateBoothDto
             {
+                OrganizationalUnitId = TestOrganizationalUnitId,
                 Number = $"SHOP{Guid.NewGuid().ToString().Substring(0, 4)}".ToUpper(),
                 PricePerDay = 35.00m
             };
@@ -138,6 +145,7 @@ namespace MP.Booth
             // Arrange
             var booth = await _boothAppService.CreateAsync(new CreateBoothDto
             {
+                OrganizationalUnitId = TestOrganizationalUnitId,
                 Number = $"STAT{Guid.NewGuid().ToString().Substring(0, 5)}".ToUpper(),
                 PricePerDay = 25.00m
             });

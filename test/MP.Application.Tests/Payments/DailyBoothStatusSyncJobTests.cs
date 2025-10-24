@@ -19,6 +19,7 @@ namespace MP.Application.Tests.Payments
     public class DailyBoothStatusSyncJobTests : MPApplicationTestBase<MPApplicationTestModule>
     {
         private static readonly Guid TestUserId1 = new Guid("00000000-0000-0000-0000-000000000001");
+        private static readonly Guid TestOrganizationalUnitId = new Guid("00000000-0000-0000-0000-000000000010");
 
         private readonly DailyBoothStatusSyncJob _dailyBoothStatusSyncJob;
         private readonly IBoothRepository _boothRepository;
@@ -50,7 +51,8 @@ namespace MP.Application.Tests.Payments
                     Guid.NewGuid(),
                     $"T{guid1.Substring(0, 3)}",
                     "Test Description",
-                    10m
+                    10m,
+                    TestOrganizationalUnitId
                 );
                 await _boothTypeRepository.InsertAsync(boothType);
 
@@ -58,7 +60,8 @@ namespace MP.Application.Tests.Payments
                 var booth = new MP.Domain.Booths.Booth(
                     Guid.NewGuid(),
                     $"R{guid2.Substring(0, 9)}",
-                    100m
+                    100m,
+                    TestOrganizationalUnitId
                 );
                 await _boothRepository.InsertAsync(booth);
 
@@ -111,7 +114,8 @@ namespace MP.Application.Tests.Payments
                     Guid.NewGuid(),
                     $"T{guid1.Substring(0, 3)}",
                     "Test Description",
-                    10m
+                    10m,
+                    TestOrganizationalUnitId
                 );
                 await _boothTypeRepository.InsertAsync(boothType);
 
@@ -119,7 +123,8 @@ namespace MP.Application.Tests.Payments
                 var booth = new MP.Domain.Booths.Booth(
                     Guid.NewGuid(),
                     $"R{guid2.Substring(0, 9)}",
-                    100m
+                    100m,
+                    TestOrganizationalUnitId
                 );
                 await _boothRepository.InsertAsync(booth);
 
@@ -169,7 +174,8 @@ namespace MP.Application.Tests.Payments
                 var booth = new MP.Domain.Booths.Booth(
                     Guid.NewGuid(),
                     $"A{guid1.Substring(0, 9)}",
-                    100m
+                    100m,
+                    TestOrganizationalUnitId
                 );
                 await _boothRepository.InsertAsync(booth);
 
@@ -203,7 +209,8 @@ namespace MP.Application.Tests.Payments
                 var booth = new MP.Domain.Booths.Booth(
                     Guid.NewGuid(),
                     $"M{guid1.Substring(0, 9)}",
-                    100m
+                    100m,
+                    TestOrganizationalUnitId
                 );
                 booth.MarkAsMaintenance();
                 await _boothRepository.InsertAsync(booth);
@@ -240,7 +247,8 @@ namespace MP.Application.Tests.Payments
                     Guid.NewGuid(),
                     $"T{guid1.Substring(0, 3)}",
                     "Test Description",
-                    10m
+                    10m,
+                    TestOrganizationalUnitId
                 );
                 await _boothTypeRepository.InsertAsync(boothType);
 
@@ -248,7 +256,8 @@ namespace MP.Application.Tests.Payments
                 var booth = new MP.Domain.Booths.Booth(
                     Guid.NewGuid(),
                     $"P{guid2.Substring(0, 9)}",
-                    100m
+                    100m,
+                    TestOrganizationalUnitId
                 );
                 await _boothRepository.InsertAsync(booth);
 

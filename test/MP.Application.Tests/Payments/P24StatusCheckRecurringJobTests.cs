@@ -19,6 +19,7 @@ namespace MP.Application.Tests.Payments
     public class P24StatusCheckRecurringJobTests : MPApplicationTestBase<MPApplicationTestModule>
     {
         private static readonly Guid TestUserId1 = new Guid("00000000-0000-0000-0000-000000000001");
+        private static readonly Guid TestOrganizationalUnitId = new Guid("00000000-0000-0000-0000-000000000010");
         private readonly IBoothRepository _boothRepository;
         private readonly IRepository<Rental, Guid> _rentalRepository;
         private readonly IRepository<BoothType, Guid> _boothTypeRepository;
@@ -48,7 +49,8 @@ namespace MP.Application.Tests.Payments
                 Guid.NewGuid(),
                 $"T{guid1.Substring(0, 3)}",
                 "Test Description",
-                10m
+                10m,
+                TestOrganizationalUnitId
             );
             await _boothTypeRepository.InsertAsync(boothType);
 
@@ -56,7 +58,8 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 $"P{guid2.Substring(0, 9)}",
-                100m
+                100m,
+                TestOrganizationalUnitId
             );
             booth.MarkAsReserved();
             await _boothRepository.InsertAsync(booth);
@@ -140,7 +143,8 @@ namespace MP.Application.Tests.Payments
                 Guid.NewGuid(),
                 $"T{Guid.NewGuid().ToString().Replace("-", "").Substring(0, 3)}",
                 "Test Description",
-                10m
+                10m,
+                TestOrganizationalUnitId
             );
             await _boothTypeRepository.InsertAsync(boothType);
 
@@ -148,7 +152,8 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 $"M{Guid.NewGuid().ToString().Replace("-", "").Substring(0, 9)}",
-                100m
+                100m,
+                TestOrganizationalUnitId
             );
             booth.MarkAsMaintenance();
             await _boothRepository.InsertAsync(booth);
@@ -205,7 +210,8 @@ namespace MP.Application.Tests.Payments
                 Guid.NewGuid(),
                 $"T{Guid.NewGuid().ToString().Replace("-", "").Substring(0, 3)}",
                 "Test Description",
-                10m
+                10m,
+                TestOrganizationalUnitId
             );
             await _boothTypeRepository.InsertAsync(boothType);
 
@@ -213,7 +219,8 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 $"F{Guid.NewGuid().ToString().Replace("-", "").Substring(0, 9)}",
-                100m
+                100m,
+                TestOrganizationalUnitId
             );
             await _boothRepository.InsertAsync(booth);
 
@@ -268,7 +275,8 @@ namespace MP.Application.Tests.Payments
                 Guid.NewGuid(),
                 $"T{Guid.NewGuid().ToString().Replace("-", "").Substring(0, 3)}",
                 "Test Description",
-                10m
+                10m,
+                TestOrganizationalUnitId
             );
             await _boothTypeRepository.InsertAsync(boothType);
 
@@ -276,7 +284,8 @@ namespace MP.Application.Tests.Payments
             var booth = new MP.Domain.Booths.Booth(
                 Guid.NewGuid(),
                 $"C{Guid.NewGuid().ToString().Replace("-", "").Substring(0, 9)}",
-                100m
+                100m,
+                TestOrganizationalUnitId
             );
             booth.MarkAsReserved();
             await _boothRepository.InsertAsync(booth);
