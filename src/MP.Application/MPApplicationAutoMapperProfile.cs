@@ -29,6 +29,8 @@ using MP.Domain.Payments;
 using MP.Payments;
 using MP.Domain.Carts;
 using MP.Carts;
+using MP.Domain.OrganizationalUnits;
+using MP.OrganizationalUnits.Dtos;
 
 namespace MP;
 
@@ -256,6 +258,11 @@ public class MPApplicationAutoMapperProfile : Profile
         // PAYMENT TRANSACTION MAPPINGS
         CreateMap<P24Transaction, PaymentTransactionDto>()
             .ForMember(dest => dest.IsVerified, opt => opt.MapFrom(src => src.Verified));
+
+        // ORGANIZATIONAL UNITS - REGISTRATION CODE MAPPINGS
+        CreateMap<OrganizationalUnitRegistrationCode, RegistrationCodeDto>()
+            .ForMember(dest => dest.IsExpired, opt => opt.MapFrom(src => src.IsExpired()))
+            .ForMember(dest => dest.IsUsageLimitReached, opt => opt.MapFrom(src => src.IsUsageLimitReached()));
     }
 
     private static Application.Contracts.Notifications.NotificationSeverity MapNotificationSeverity(Domain.Notifications.NotificationSeverity severity)

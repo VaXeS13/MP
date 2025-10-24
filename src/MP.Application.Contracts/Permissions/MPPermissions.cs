@@ -83,6 +83,7 @@ public static class MPPermissions
     {
         public const string Default = GroupName + ".Tenant";
         public const string ManageCurrency = Default + ".ManageCurrency"; // Manage tenant currency settings
+        public const string ManageOrganizationalUnits = Default + ".ManageOrganizationalUnits"; // Manage organizational units and registration codes
     }
 
     // Promotions permissions

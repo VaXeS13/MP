@@ -74,6 +74,7 @@ public class MPPermissionDefinitionProvider : PermissionDefinitionProvider
         // Tenant settings permissions
         var tenantPermission = myGroup.AddPermission(MPPermissions.Tenant.Default, L("Permission:Tenant"));
         tenantPermission.AddChild(MPPermissions.Tenant.ManageCurrency, L("Permission:Tenant.ManageCurrency"));
+        tenantPermission.AddChild(MPPermissions.Tenant.ManageOrganizationalUnits, L("Permission:Tenant.ManageOrganizationalUnits"));
 
         // Promotions permissions
         var promotionsPermission = myGroup.AddPermission(MPPermissions.Promotions.Default, L("Permission:Promotions"));

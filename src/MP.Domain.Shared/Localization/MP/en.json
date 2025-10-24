@@ -79,6 +79,7 @@
     "Permission:Chat.ManageCustomerChats": "Manage Customer Chats (Admin/Seller)",
     "Permission:Tenant": "Tenant",
     "Permission:Tenant.ManageCurrency": "Manage Tenant Currency",
+    "Permission:Tenant.ManageOrganizationalUnits": "Manage Organizational Units",
     "Permission:Promotions": "Promotions",
     "Permission:Promotions.Create": "Create Promotions",
     "Permission:Promotions.Edit": "Edit Promotions",

@@ -72,6 +72,11 @@
     "Permission:Dashboard.ExportReports": "Eksport Raportów",
     "Permission:PaymentProviders": "Dostawcy Płatności",
     "Permission:PaymentProviders.Manage": "Zarządzanie Dostawcami Płatności",
+    "Permission:Chat": "Chat",
+    "Permission:Chat.ManageCustomerChats": "Zarządzanie Chatami Klientów (Admin/Sprzedawca)",
+    "Permission:Tenant": "Najemca",
+    "Permission:Tenant.ManageCurrency": "Zarządzanie Walutą Najemcy",
+    "Permission:Tenant.ManageOrganizationalUnits": "Zarządzanie Jednostkami Organizacyjnymi",
 
     "Common:Actions": "Akcje",
     "Common:Edit": "Edytuj",
