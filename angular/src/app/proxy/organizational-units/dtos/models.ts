@@ -10,6 +10,35 @@ export interface CreateRegistrationCodeDto {
   expirationDays?: number;
 }
 
+export interface CreateUpdateOrganizationalUnitDto {
+  name: string;
+  code: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
+  email?: string;
+  phone?: string;
+  isActive: boolean;
+}
+
+export interface CurrentUnitDto {
+  unitId?: string;
+  unitName?: string;
+  unitCode?: string;
+  currency?: string;
+  userRole?: string;
+  settings: OrganizationalUnitSettingsDto;
+}
+
+export interface GenerateRegistrationCodeRequestDto {
+  organizationalUnitId?: string;
+  createDto: CreateRegistrationCodeDto;
+}
+
+export interface JoinUnitDto {
+  code: string;
+}
+
 export interface JoinUnitResultDto {
   unitId?: string;
   unitName?: string;
@@ -22,6 +51,34 @@ export interface MyUnitDto {
   unitCode?: string;
   role?: string;
   currency?: string;
+}
+
+export interface OrganizationalUnitDto {
+  id?: string;
+  name?: string;
+  code?: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
+  email?: string;
+  phone?: string;
+  isActive: boolean;
+  creationTime?: string;
+  lastModificationTime?: string;
+  settings: OrganizationalUnitSettingsDto;
+}
+
+export interface OrganizationalUnitSettingsDto {
+  id?: string;
+  organizationalUnitId?: string;
+  currency?: string;
+  enabledPaymentProviders: Record<string, boolean>;
+  defaultPaymentProvider?: string;
+  logoUrl?: string;
+  bannerText?: string;
+  isMainUnit: boolean;
+  creationTime?: string;
+  lastModificationTime?: string;
 }
 
 export interface RegistrationCodeDto {
@@ -42,6 +99,14 @@ export interface SwitchUnitDto {
   unitId?: string;
   unitName?: string;
   cookieSet: boolean;
+}
+
+export interface UpdateUnitSettingsDto {
+  currency: string;
+  enabledPaymentProviders: Record<string, boolean>;
+  defaultPaymentProvider?: string;
+  logoUrl?: string;
+  bannerText?: string;
 }
 
 export interface UpdateUserRoleDto {

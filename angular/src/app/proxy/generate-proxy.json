@@ -9204,6 +9204,504 @@
             }
           }
         },
+        "MP.Controllers.OrganizationalUnitsController": {
+          "controllerName": "OrganizationalUnits",
+          "controllerGroupName": "OrganizationalUnits",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "MP.Controllers.OrganizationalUnitsController",
+          "interfaces": [
+            {
+              "type": "MP.OrganizationalUnits.IOrganizationalUnitAppService",
+              "name": "IOrganizationalUnitAppService",
+              "methods": [
+                {
+                  "name": "GetAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto"
+                  }
+                },
+                {
+                  "name": "GetListAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<MP.OrganizationalUnits.Dtos.OrganizationalUnitDto>",
+                    "typeSimple": "[MP.OrganizationalUnits.Dtos.OrganizationalUnitDto]"
+                  }
+                },
+                {
+                  "name": "CreateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto, MP.Application.Contracts",
+                      "type": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                      "typeSimple": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto"
+                  }
+                },
+                {
+                  "name": "UpdateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto, MP.Application.Contracts",
+                      "type": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                      "typeSimple": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto"
+                  }
+                },
+                {
+                  "name": "DeleteAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetCurrentUnitAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.CurrentUnitDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.CurrentUnitDto"
+                  }
+                },
+                {
+                  "name": "SwitchUnitAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "unitId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.SwitchUnitDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.SwitchUnitDto"
+                  }
+                },
+                {
+                  "name": "UpdateSettingsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "unitId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto, MP.Application.Contracts",
+                      "type": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto",
+                      "typeSimple": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto"
+                  }
+                },
+                {
+                  "name": "GetSettingsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "unitId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "GetAsyncById": {
+              "uniqueName": "GetAsyncById",
+              "name": "GetAsync",
+              "httpMethod": "GET",
+              "url": "api/app/organizational-units/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "GetListAsync": {
+              "uniqueName": "GetListAsync",
+              "name": "GetListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/organizational-units",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<MP.OrganizationalUnits.Dtos.OrganizationalUnitDto>",
+                "typeSimple": "[MP.OrganizationalUnits.Dtos.OrganizationalUnitDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/organizational-units",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto, MP.Application.Contracts",
+                  "type": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "UpdateAsyncByIdAndInput": {
+              "uniqueName": "UpdateAsyncByIdAndInput",
+              "name": "UpdateAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/organizational-units/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto, MP.Application.Contracts",
+                  "type": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "DeleteAsyncById": {
+              "uniqueName": "DeleteAsyncById",
+              "name": "DeleteAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/organizational-units/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "GetSettingsAsyncByUnitId": {
+              "uniqueName": "GetSettingsAsyncByUnitId",
+              "name": "GetSettingsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/organizational-units/{unitId}/settings",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "unitId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "unitId",
+                  "name": "unitId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "UpdateSettingsAsyncByUnitIdAndInput": {
+              "uniqueName": "UpdateSettingsAsyncByUnitIdAndInput",
+              "name": "UpdateSettingsAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/organizational-units/{unitId}/settings",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "unitId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto, MP.Application.Contracts",
+                  "type": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "unitId",
+                  "name": "unitId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "GetCurrentUnitAsync": {
+              "uniqueName": "GetCurrentUnitAsync",
+              "name": "GetCurrentUnitAsync",
+              "httpMethod": "GET",
+              "url": "api/app/organizational-units/current",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.CurrentUnitDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.CurrentUnitDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "SwitchUnitAsyncByUnitId": {
+              "uniqueName": "SwitchUnitAsyncByUnitId",
+              "name": "SwitchUnitAsync",
+              "httpMethod": "POST",
+              "url": "api/app/organizational-units/switch",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "unitId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "unitId",
+                  "name": "unitId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.SwitchUnitDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.SwitchUnitDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            }
+          }
+        },
         "MP.Controllers.PaymentController": {
           "controllerName": "Payment",
           "controllerGroupName": null,
@@ -9396,6 +9894,238 @@
               },
               "allowAnonymous": null,
               "implementFrom": "MP.Controllers.PaymentController"
+            }
+          }
+        },
+        "MP.Controllers.RegistrationCodesController": {
+          "controllerName": "RegistrationCodes",
+          "controllerGroupName": null,
+          "isRemoteService": false,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "MP.Controllers.RegistrationCodesController",
+          "interfaces": [],
+          "actions": {
+            "GenerateCodeAsyncByInput": {
+              "uniqueName": "GenerateCodeAsyncByInput",
+              "name": "GenerateCodeAsync",
+              "httpMethod": "POST",
+              "url": "api/app/registration-codes/generate",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.OrganizationalUnits.Dtos.GenerateRegistrationCodeRequestDto, MP.Application.Contracts",
+                  "type": "MP.OrganizationalUnits.Dtos.GenerateRegistrationCodeRequestDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.GenerateRegistrationCodeRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "OrganizationalUnitId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "CreateDto.RoleId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "CreateDto.MaxUsageCount",
+                  "jsonName": null,
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "CreateDto.ExpirationDays",
+                  "jsonName": null,
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.RegistrationCodeDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.RegistrationCodeDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.RegistrationCodesController"
+            },
+            "JoinUnitWithCodeAsyncByInput": {
+              "uniqueName": "JoinUnitWithCodeAsyncByInput",
+              "name": "JoinUnitWithCodeAsync",
+              "httpMethod": "POST",
+              "url": "api/app/registration-codes/join",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.OrganizationalUnits.Dtos.JoinUnitDto, MP.Application.Contracts",
+                  "type": "MP.OrganizationalUnits.Dtos.JoinUnitDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.JoinUnitDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "Code",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.JoinUnitResultDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.JoinUnitResultDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.RegistrationCodesController"
+            },
+            "ValidateCodeAsyncByCode": {
+              "uniqueName": "ValidateCodeAsyncByCode",
+              "name": "ValidateCodeAsync",
+              "httpMethod": "GET",
+              "url": "api/app/registration-codes/validate",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "code",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "code",
+                  "name": "code",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.ValidateCodeResultDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.ValidateCodeResultDto"
+              },
+              "allowAnonymous": true,
+              "implementFrom": "MP.Controllers.RegistrationCodesController"
+            },
+            "DeactivateCodeAsyncByCodeId": {
+              "uniqueName": "DeactivateCodeAsyncByCodeId",
+              "name": "DeactivateCodeAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/registration-codes/{codeId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "codeId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "codeId",
+                  "name": "codeId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.RegistrationCodesController"
+            },
+            "ListCodesAsyncByUnitId": {
+              "uniqueName": "ListCodesAsyncByUnitId",
+              "name": "ListCodesAsync",
+              "httpMethod": "GET",
+              "url": "api/app/registration-codes/by-unit/{unitId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "unitId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "unitId",
+                  "name": "unitId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<MP.OrganizationalUnits.Dtos.RegistrationCodeDto>",
+                "typeSimple": "[MP.OrganizationalUnits.Dtos.RegistrationCodeDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.RegistrationCodesController"
             }
           }
         },
@@ -11294,6 +12024,309 @@
               },
               "allowAnonymous": null,
               "implementFrom": "MP.Controllers.SubdomainInfoController"
+            }
+          }
+        },
+        "MP.Controllers.UserOrganizationalUnitsController": {
+          "controllerName": "UserOrganizationalUnits",
+          "controllerGroupName": null,
+          "isRemoteService": false,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "MP.Controllers.UserOrganizationalUnitsController",
+          "interfaces": [],
+          "actions": {
+            "GetMyUnitsAsync": {
+              "uniqueName": "GetMyUnitsAsync",
+              "name": "GetMyUnitsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/organizational-units/my-units",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<MP.OrganizationalUnits.Dtos.MyUnitDto>",
+                "typeSimple": "[MP.OrganizationalUnits.Dtos.MyUnitDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.UserOrganizationalUnitsController"
+            },
+            "GetUsersInUnitAsyncByUnitId": {
+              "uniqueName": "GetUsersInUnitAsyncByUnitId",
+              "name": "GetUsersInUnitAsync",
+              "httpMethod": "GET",
+              "url": "api/app/organizational-units/{unitId}/users",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "unitId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "unitId",
+                  "name": "unitId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<MP.OrganizationalUnits.Dtos.UserInUnitDto>",
+                "typeSimple": "[MP.OrganizationalUnits.Dtos.UserInUnitDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.UserOrganizationalUnitsController"
+            },
+            "AssignUserToUnitAsyncByUnitIdAndInput": {
+              "uniqueName": "AssignUserToUnitAsyncByUnitIdAndInput",
+              "name": "AssignUserToUnitAsync",
+              "httpMethod": "POST",
+              "url": "api/app/organizational-units/{unitId}/users",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "unitId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "MP.OrganizationalUnits.Dtos.AssignUserDto, MP.Application.Contracts",
+                  "type": "MP.OrganizationalUnits.Dtos.AssignUserDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.AssignUserDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "unitId",
+                  "name": "unitId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "UserId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "RoleId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.UserInUnitDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.UserInUnitDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.UserOrganizationalUnitsController"
+            },
+            "RemoveUserFromUnitAsyncByUnitIdAndUserId": {
+              "uniqueName": "RemoveUserFromUnitAsyncByUnitIdAndUserId",
+              "name": "RemoveUserFromUnitAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/organizational-units/{unitId}/users/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "unitId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "unitId",
+                  "name": "unitId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.UserOrganizationalUnitsController"
+            },
+            "UpdateUserRoleAsyncByUnitIdAndUserIdAndInput": {
+              "uniqueName": "UpdateUserRoleAsyncByUnitIdAndUserIdAndInput",
+              "name": "UpdateUserRoleAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/organizational-units/{unitId}/users/{userId}/role",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "unitId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "MP.OrganizationalUnits.Dtos.UpdateUserRoleDto, MP.Application.Contracts",
+                  "type": "MP.OrganizationalUnits.Dtos.UpdateUserRoleDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.UpdateUserRoleDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "unitId",
+                  "name": "unitId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "RoleId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.UserInUnitDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.UserInUnitDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.UserOrganizationalUnitsController"
+            },
+            "JoinUnitWithCodeAsyncByInput": {
+              "uniqueName": "JoinUnitWithCodeAsyncByInput",
+              "name": "JoinUnitWithCodeAsync",
+              "httpMethod": "POST",
+              "url": "api/app/organizational-units/join",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.OrganizationalUnits.Dtos.JoinUnitDto, MP.Application.Contracts",
+                  "type": "MP.OrganizationalUnits.Dtos.JoinUnitDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.JoinUnitDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "Code",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.JoinUnitResultDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.JoinUnitResultDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.Controllers.UserOrganizationalUnitsController"
             }
           }
         },
@@ -13998,6 +15031,504 @@
               },
               "allowAnonymous": false,
               "implementFrom": "MP.Items.IItemSheetAppService"
+            }
+          }
+        },
+        "MP.OrganizationalUnits.OrganizationalUnitAppService": {
+          "controllerName": "OrganizationalUnit",
+          "controllerGroupName": "OrganizationalUnit",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "MP.OrganizationalUnits.OrganizationalUnitAppService",
+          "interfaces": [
+            {
+              "type": "MP.OrganizationalUnits.IOrganizationalUnitAppService",
+              "name": "IOrganizationalUnitAppService",
+              "methods": [
+                {
+                  "name": "GetAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto"
+                  }
+                },
+                {
+                  "name": "GetListAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<MP.OrganizationalUnits.Dtos.OrganizationalUnitDto>",
+                    "typeSimple": "[MP.OrganizationalUnits.Dtos.OrganizationalUnitDto]"
+                  }
+                },
+                {
+                  "name": "CreateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto, MP.Application.Contracts",
+                      "type": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                      "typeSimple": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto"
+                  }
+                },
+                {
+                  "name": "UpdateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto, MP.Application.Contracts",
+                      "type": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                      "typeSimple": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto"
+                  }
+                },
+                {
+                  "name": "DeleteAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetCurrentUnitAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.CurrentUnitDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.CurrentUnitDto"
+                  }
+                },
+                {
+                  "name": "SwitchUnitAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "unitId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.SwitchUnitDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.SwitchUnitDto"
+                  }
+                },
+                {
+                  "name": "UpdateSettingsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "unitId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "input",
+                      "typeAsString": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto, MP.Application.Contracts",
+                      "type": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto",
+                      "typeSimple": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto"
+                  }
+                },
+                {
+                  "name": "GetSettingsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "unitId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto",
+                    "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/organizational-unit",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto, MP.Application.Contracts",
+                  "type": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "GetAsyncById": {
+              "uniqueName": "GetAsyncById",
+              "name": "GetAsync",
+              "httpMethod": "GET",
+              "url": "api/app/organizational-unit/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "GetListAsync": {
+              "uniqueName": "GetListAsync",
+              "name": "GetListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/organizational-unit",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<MP.OrganizationalUnits.Dtos.OrganizationalUnitDto>",
+                "typeSimple": "[MP.OrganizationalUnits.Dtos.OrganizationalUnitDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "UpdateAsyncByIdAndInput": {
+              "uniqueName": "UpdateAsyncByIdAndInput",
+              "name": "UpdateAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/organizational-unit/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto, MP.Application.Contracts",
+                  "type": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "DeleteAsyncById": {
+              "uniqueName": "DeleteAsyncById",
+              "name": "DeleteAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/organizational-unit/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "GetCurrentUnitAsync": {
+              "uniqueName": "GetCurrentUnitAsync",
+              "name": "GetCurrentUnitAsync",
+              "httpMethod": "GET",
+              "url": "api/app/organizational-unit/current-unit",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.CurrentUnitDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.CurrentUnitDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "SwitchUnitAsyncByUnitId": {
+              "uniqueName": "SwitchUnitAsyncByUnitId",
+              "name": "SwitchUnitAsync",
+              "httpMethod": "POST",
+              "url": "api/app/organizational-unit/switch-unit/{unitId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "unitId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "unitId",
+                  "name": "unitId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.SwitchUnitDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.SwitchUnitDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "GetSettingsAsyncByUnitId": {
+              "uniqueName": "GetSettingsAsyncByUnitId",
+              "name": "GetSettingsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/organizational-unit/settings/{unitId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "unitId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "unitId",
+                  "name": "unitId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
+            },
+            "UpdateSettingsAsyncByUnitIdAndInput": {
+              "uniqueName": "UpdateSettingsAsyncByUnitIdAndInput",
+              "name": "UpdateSettingsAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/organizational-unit/settings/{unitId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "unitId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto, MP.Application.Contracts",
+                  "type": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "unitId",
+                  "name": "unitId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto",
+                  "typeSimple": "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto",
+                "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "MP.OrganizationalUnits.IOrganizationalUnitAppService"
             }
           }
         },
@@ -20198,6 +21729,18 @@
       "enumValues": null,
       "genericArguments": null,
       "properties": [
+        {
+          "name": "OrganizationalUnitId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
         {
           "name": "Name",
           "jsonName": null,
@@ -28738,6 +30281,18 @@
       "genericArguments": null,
       "properties": [
         {
+          "name": "OrganizationalUnitId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "Number",
           "jsonName": null,
           "type": "System.String",
@@ -30401,6 +31956,18 @@
       "enumValues": null,
       "genericArguments": null,
       "properties": [
+        {
+          "name": "OrganizationalUnitId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
         {
           "name": "Name",
           "jsonName": null,
@@ -32230,6 +33797,246 @@
         }
       ]
     },
+    "MP.OrganizationalUnits.Dtos.CreateUpdateOrganizationalUnitDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 200,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Code",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": "^[a-zA-Z0-9-]+$"
+        },
+        {
+          "name": "Address",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 300,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "City",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PostalCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 20,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 255,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Phone",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 20,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.OrganizationalUnits.Dtos.CurrentUnitDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UnitId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UnitName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UnitCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Currency",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserRole",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Settings",
+          "jsonName": null,
+          "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto",
+          "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.OrganizationalUnits.Dtos.GenerateRegistrationCodeRequestDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "OrganizationalUnitId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreateDto",
+          "jsonName": null,
+          "type": "MP.OrganizationalUnits.Dtos.CreateRegistrationCodeDto",
+          "typeSimple": "MP.OrganizationalUnits.Dtos.CreateRegistrationCodeDto",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.OrganizationalUnits.Dtos.JoinUnitDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Code",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "MP.OrganizationalUnits.Dtos.JoinUnitResultDto": {
       "baseType": null,
       "isEnum": false,
@@ -32335,6 +34142,288 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.OrganizationalUnits.Dtos.OrganizationalUnitDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Code",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Address",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "City",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PostalCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Phone",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreationTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastModificationTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Settings",
+          "jsonName": null,
+          "type": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto",
+          "typeSimple": "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.OrganizationalUnits.Dtos.OrganizationalUnitSettingsDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OrganizationalUnitId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Currency",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EnabledPaymentProviders",
+          "jsonName": null,
+          "type": "{System.String:System.Boolean}",
+          "typeSimple": "{string:boolean}",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DefaultPaymentProvider",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LogoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BannerText",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsMainUnit",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreationTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastModificationTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -32524,6 +34613,75 @@
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MP.OrganizationalUnits.Dtos.UpdateUnitSettingsDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Currency",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 3,
+          "maxLength": 3,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EnabledPaymentProviders",
+          "jsonName": null,
+          "type": "{System.String:System.Boolean}",
+          "typeSimple": "{string:boolean}",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DefaultPaymentProvider",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LogoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BannerText",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 1000,
           "minimum": null,
           "maximum": null,
           "regex": null

@@ -1,0 +1,31 @@
+<div class="registration-code-input">
+  <p-toast position="top-right" />
+
+  <div class="input-group">
+    <input
+      type="text"
+      pInputText
+      [(ngModel)]="code"
+      (keypress)="onKeyPress($event)"
+      placeholder="e.g., CTO-MAIN-ABC123"
+      [disabled]="isLoading"
+      class="code-input"
+    />
+    <button
+      pButton
+      type="button"
+      icon="pi pi-check"
+      (click)="validateAndJoin()"
+      [loading]="isLoading"
+      [disabled]="isLoading || !code"
+      label="Join"
+      class="p-button-raised"
+    />
+  </div>
+
+  <div class="error-message" *ngIf="error" [@slideInOut]>
+    <i class="pi pi-exclamation-triangle"></i>
+    <span>{{ error }}</span>
+    <i class="pi pi-times" (click)="clearError()" style="cursor: pointer"></i>
+  </div>
+</div>

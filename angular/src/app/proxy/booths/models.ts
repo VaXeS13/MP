@@ -39,6 +39,7 @@ export interface BoothSettingsDto {
 }
 
 export interface CreateBoothDto {
+  organizationalUnitId: string;
   number: string;
   pricePerDay?: number;
   pricingPeriods: BoothPricingPeriodDto[];

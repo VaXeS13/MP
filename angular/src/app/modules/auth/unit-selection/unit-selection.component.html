@@ -1,0 +1,39 @@
+<div class="unit-selection-container">
+  <div class="unit-selection-card">
+    <div class="header">
+      <h2>Select Your Unit</h2>
+      <p>Choose the organizational unit you want to work with</p>
+    </div>
+
+    <div class="loading-state" *ngIf="isLoading">
+      <p-progressSpinner
+        [strokeWidth]="2"
+        [style]="{ 'width': '50px', 'height': '50px' }"
+      />
+      <p>Loading your units...</p>
+    </div>
+
+    <div class="units-grid" *ngIf="!isLoading && units.length > 0">
+      <div class="unit-card" *ngFor="let unit of units" (click)="selectUnit(unit)">
+        <div class="unit-card-content">
+          <h3>{{ unit.name }}</h3>
+          <p class="unit-code">{{ unit.code }}</p>
+          <p class="unit-address" *ngIf="unit.address">{{ unit.address }}</p>
+          <p class="unit-city" *ngIf="unit.city">{{ unit.city }}</p>
+          <span class="status-badge" [ngClass]="{ active: unit.isActive, inactive: !unit.isActive }">
+            {{ unit.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        <button pButton type="button" label="Select" icon="pi pi-check" class="p-button-rounded" />
+      </div>
+    </div>
+
+    <div class="no-units" *ngIf="!isLoading && units.length === 0">
+      <p>No units available. Please contact your administrator.</p>
+    </div>
+
+    <div class="footer" *ngIf="!isLoading && units.length > 0">
+      <button pButton type="button" label="Skip" class="p-button-text" (click)="skipSelection()" />
+    </div>
+  </div>
+</div>

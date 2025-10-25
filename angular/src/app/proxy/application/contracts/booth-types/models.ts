@@ -8,6 +8,7 @@ export interface BoothTypeDto extends FullAuditedEntityDto<string> {
 }
 
 export interface CreateBoothTypeDto {
+  organizationalUnitId: string;
   name: string;
   description: string;
   commissionPercentage: number;

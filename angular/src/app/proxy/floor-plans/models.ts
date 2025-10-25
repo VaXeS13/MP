@@ -20,6 +20,7 @@ export interface CreateFloorPlanBoothDto {
 }
 
 export interface CreateFloorPlanDto {
+  organizationalUnitId: string;
   name: string;
   level: number;
   width: number;

@@ -1,0 +1,44 @@
+<div class="unit-switcher" *ngIf="showSwitcher && !isLoading">
+  <div class="unit-badge">
+    <span class="badge-circle">{{ getCurrentUnitCode() }}</span>
+    <span class="badge-text">{{ getCurrentUnitName() }}</span>
+  </div>
+
+  <p-dropdown
+    [options]="units"
+    [(ngModel)]="selectedUnitId"
+    optionLabel="name"
+    optionValue="id"
+    placeholder="Switch Unit"
+    [showClear]="false"
+    styleClass="unit-dropdown"
+    [disabled]="isLoading"
+  >
+    <ng-template pTemplate="item" let-option>
+      <div class="unit-dropdown-item" *ngIf="option">
+        <span class="unit-name">{{ option.name }}</span>
+        <span class="unit-code" *ngIf="option.code">({{ option.code }})</span>
+        <span class="unit-status" [ngClass]="{ active: option.isActive, inactive: !option.isActive }">
+          {{ option.isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+    </ng-template>
+  </p-dropdown>
+
+  <button
+    pButton
+    type="button"
+    icon="pi pi-check"
+    [disabled]="!selectedUnitId || isLoading || selectedUnitId === (currentUnit$ | async)?.unitId"
+    (click)="switchToUnit(units | filter: (selectedUnitId) as selectedUnit)"
+    class="p-button-rounded p-button-text"
+    [title]="'Switch to ' + (units | filter: (selectedUnitId) as u)[0]?.name"
+  />
+</div>
+
+<div class="unit-switcher-loading" *ngIf="isLoading">
+  <p-progressSpinner
+    [strokeWidth]="2"
+    [style]="{ 'width': '40px', 'height': '40px' }"
+  />
+</div>
