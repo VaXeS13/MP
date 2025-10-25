@@ -1,0 +1,131 @@
+.units-list-container {
+  padding: 20px;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+    }
+  }
+
+  .search-section {
+    margin-bottom: 20px;
+
+    .search-input {
+      width: 300px;
+      padding: 10px 12px 10px 35px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+
+      &:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+    }
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background: #e3f2fd;
+    color: #1976d2;
+    border-radius: 3px;
+    font-weight: 500;
+    font-size: 12px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+
+    &.active {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    &.inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+  }
+
+  .font-weight-600 {
+    font-weight: 600;
+  }
+
+  .mr-2 {
+    margin-right: 8px;
+  }
+
+  ::ng-deep {
+    .p-datatable {
+      .p-datatable-thead > tr > th {
+        background: #f8f9fa;
+        font-weight: 600;
+        padding: 12px;
+      }
+
+      .p-datatable-tbody > tr {
+        &:hover {
+          background: #f8f9fa;
+        }
+
+        > td {
+          padding: 12px;
+        }
+      }
+    }
+
+    .p-paginator {
+      padding: 12px;
+      background: #f8f9fa;
+      border-top: 1px solid #ddd;
+    }
+
+    .p-button-rounded {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      &:not(:disabled):hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    .p-input-icon-left > i {
+      left: 12px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .units-list-container {
+    padding: 15px;
+
+    .page-header {
+      flex-direction: column;
+      gap: 15px;
+      align-items: flex-start;
+    }
+
+    .search-section .search-input {
+      width: 100%;
+    }
+  }
+}

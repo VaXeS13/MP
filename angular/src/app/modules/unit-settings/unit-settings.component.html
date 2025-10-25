@@ -1,0 +1,96 @@
+<div class="unit-settings-container">
+  <p-toast position="top-right" />
+
+  <div class="page-header">
+    <h2>{{ 'Unit:EditSettings' | abp }}</h2>
+  </div>
+
+  <div class="settings-card" *ngIf="!isLoading">
+    <p-tabView>
+      <!-- Basic Info Tab -->
+      <p-tabPanel header="Basic Information">
+        <div class="tab-content">
+          <div class="form-group">
+            <label>{{ 'Unit:Currency' | abp }} *</label>
+            <p-dropdown
+              [options]="currencies"
+              [(ngModel)]="form.get('currency')!.value"
+              placeholder="Select currency"
+              class="w-full"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>{{ 'Unit:Logo' | abp }}</label>
+            <input
+              pInputText
+              type="url"
+              [formControl]="form.get('logoUrl')!"
+              placeholder="https://example.com/logo.png"
+              class="w-full"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>{{ 'Unit:Banner' | abp }}</label>
+            <textarea
+              pInputTextarea
+              [formControl]="form.get('bannerText')!"
+              placeholder="Welcome message or banner text"
+              rows="3"
+              class="w-full"
+            ></textarea>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Payment Providers Tab -->
+      <p-tabPanel header="Payment Providers">
+        <div class="tab-content">
+          <div class="form-group">
+            <label>{{ 'Unit:EnabledProviders' | abp }}</label>
+            <div class="providers-list">
+              <div class="provider-item" *ngFor="let provider of paymentProviders">
+                <p-checkbox
+                  [ngModel]="isProviderEnabled(provider.name)"
+                  (onChange)="toggleProvider(provider.name)"
+                  [binary]="true"
+                  label="{{ provider.label }}"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>{{ 'Unit:DefaultProvider' | abp }}</label>
+            <p-dropdown
+              [options]="paymentProviders"
+              [(ngModel)]="form.get('defaultPaymentProvider')!.value"
+              optionLabel="label"
+              optionValue="name"
+              placeholder="Select default provider"
+              class="w-full"
+            />
+          </div>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading">
+    <p-progressSpinner [strokeWidth]="2" [style]="{ 'width': '50px', 'height': '50px' }" />
+    <p>Loading settings...</p>
+  </div>
+
+  <div class="form-footer">
+    <button pButton type="button" label="Cancel" class="p-button-text" />
+    <button
+      pButton
+      type="button"
+      label="Save Changes"
+      (click)="saveSettings()"
+      [loading]="isSaving"
+      [disabled]="!form.valid || isSaving"
+    />
+  </div>
+</div>

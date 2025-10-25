@@ -1,0 +1,95 @@
+<div class="codes-list-container">
+  <div class="page-header">
+    <h2>{{ 'Menu:RegistrationCodes' | abp }}</h2>
+    <button pButton type="button" label="Generate Code" icon="pi pi-plus" (click)="openGenerateDialog()" />
+  </div>
+
+  <p-table [value]="codes" [loading]="isLoading" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+    <ng-template pTemplate="caption">
+      <div class="flex align-items-center justify-content-between">
+        <span>Active registration codes for unit members</span>
+      </div>
+    </ng-template>
+
+    <p-column field="code" header="Code" [sortable]="true">
+      <ng-template pTemplate="body" let-rowData>
+        <span class="code-badge">{{ rowData.code }}</span>
+      </ng-template>
+    </p-column>
+
+    <p-column field="usageCount" header="Usage">
+      <ng-template pTemplate="body" let-rowData>
+        <span>{{ rowData.usageCount }} / {{ rowData.maxUsageCount || '∞' }}</span>
+      </ng-template>
+    </p-column>
+
+    <p-column field="expiresAt" header="Expires At" [sortable]="true">
+      <ng-template pTemplate="body" let-rowData>
+        {{ rowData.expiresAt | date: 'short' || 'Never' }}
+      </ng-template>
+    </p-column>
+
+    <p-column field="isActive" header="Status" [sortable]="true">
+      <ng-template pTemplate="body" let-rowData>
+        <span class="status-badge" [ngClass]="{ active: rowData.isActive && !rowData.isExpired, inactive: !rowData.isActive || rowData.isExpired }">
+          {{ rowData.isExpired ? 'Expired' : (rowData.isActive ? 'Active' : 'Inactive') }}
+        </span>
+      </ng-template>
+    </p-column>
+
+    <p-column [style]="{ width: '12rem' }" header="Actions">
+      <ng-template pTemplate="body" let-rowData>
+        <button
+          pButton
+          pRipple
+          type="button"
+          icon="pi pi-copy"
+          class="p-button-rounded p-button-info mr-2"
+          (click)="copyToClipboard(rowData.code)"
+          pTooltip="Copy"
+          tooltipPosition="top"
+        ></button>
+        <button
+          pButton
+          pRipple
+          type="button"
+          icon="pi pi-trash"
+          class="p-button-rounded p-button-danger"
+          (click)="revokeCode(rowData)"
+          pTooltip="Revoke"
+          tooltipPosition="top"
+        ></button>
+      </ng-template>
+    </p-column>
+  </p-table>
+
+  <p-dialog [(visible)]="showDialog" header="Generate Registration Code" [modal]="true" [style]="{ width: '40vw' }" [breakpoints]="{ '960px': '75vw', '640px': '90vw' }">
+    <div class="dialog-content">
+      <div class="form-group" *ngIf="!generatedCode">
+        <label>Expiration Days</label>
+        <p-inputNumber [(ngModel)]="expirationDays" [min]="1" [max]="365" placeholder="Days until expiration" />
+      </div>
+
+      <div class="form-group" *ngIf="!generatedCode">
+        <label>Max Usage Count (optional)</label>
+        <p-inputNumber [(ngModel)]="maxUsageCount" [min]="1" placeholder="Leave empty for unlimited" />
+      </div>
+
+      <div class="success-section" *ngIf="generatedCode">
+        <p-card>
+          <div class="generated-code">
+            <p class="label">Your generated code:</p>
+            <p class="code">{{ generatedCode }}</p>
+            <button pButton type="button" label="Copy Code" icon="pi pi-copy" (click)="copyToClipboard(generatedCode!)" />
+          </div>
+        </p-card>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" (click)="closeDialog()" class="p-button-text" />
+      <button pButton type="button" label="Generate" (click)="generateCode()" *ngIf="!generatedCode" />
+      <button pButton type="button" label="Close" (click)="closeDialog()" *ngIf="generatedCode" />
+    </ng-template>
+  </p-dialog>
+</div>

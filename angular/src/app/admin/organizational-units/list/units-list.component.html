@@ -1,0 +1,104 @@
+<div class="units-list-container">
+  <div class="page-header">
+    <h2>{{ 'Menu:OrganizationalUnits' | abp }}</h2>
+    <button pButton type="button" label="Create Unit" icon="pi pi-plus" (click)="createUnit()" />
+  </div>
+
+  <div class="search-section">
+    <span class="p-input-icon-left">
+      <i class="pi pi-search"></i>
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="searchText"
+        placeholder="Search units by name, code, or email..."
+        class="search-input"
+      />
+    </span>
+  </div>
+
+  <p-table
+    [value]="getFilteredUnits()"
+    [loading]="isLoading"
+    [paginator]="true"
+    [rows]="10"
+    [globalFilterFields]="['name', 'code', 'email']"
+    responsiveLayout="scroll"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    [(selection)]="selectedUnits"
+  >
+    <ng-template pTemplate="caption">
+      <div class="flex align-items-center justify-content-between">
+        <span>Manage organizational units</span>
+      </div>
+    </ng-template>
+
+    <p-column [style]="{ width: '3rem' }" selectionPropertyName="id" [header]="selectHeader">
+      <ng-template pTemplate="header">
+        <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+      </ng-template>
+      <ng-template pTemplate="body" let-rowData>
+        <p-tableCheckbox [value]="rowData" [rowData]="rowData"></p-tableCheckbox>
+      </ng-template>
+    </p-column>
+
+    <p-column field="name" header="Unit Name" [sortable]="true">
+      <ng-template pTemplate="body" let-unit>
+        <span class="font-weight-600">{{ unit.name }}</span>
+      </ng-template>
+    </p-column>
+
+    <p-column field="code" header="Code" [sortable]="true" [style]="{ width: '10%' }">
+      <ng-template pTemplate="body" let-unit>
+        <span class="badge">{{ unit.code }}</span>
+      </ng-template>
+    </p-column>
+
+    <p-column field="email" header="Email" [sortable]="true">
+      <ng-template pTemplate="body" let-unit>
+        {{ unit.email || '-' }}
+      </ng-template>
+    </p-column>
+
+    <p-column field="city" header="City" [style]="{ width: '12%' }">
+      <ng-template pTemplate="body" let-unit>
+        {{ unit.city || '-' }}
+      </ng-template>
+    </p-column>
+
+    <p-column field="isActive" header="Status" [sortable]="true" [style]="{ width: '10%' }">
+      <ng-template pTemplate="body" let-unit>
+        <span class="status-badge" [ngClass]="{ active: unit.isActive, inactive: !unit.isActive }">
+          {{ unit.isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </ng-template>
+    </p-column>
+
+    <p-column [style]="{ width: '15rem' }" header="Actions">
+      <ng-template pTemplate="body" let-unit>
+        <button pButton pRipple type="button" pButton icon="pi pi-pencil" class="p-button-rounded p-button-warning mr-2" (click)="editUnit(unit)" pTooltip="Edit" tooltipPosition="top"></button>
+        <button pButton pRipple type="button" pButton icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteUnit(unit)" pTooltip="Delete" tooltipPosition="top"></button>
+      </ng-template>
+    </p-column>
+  </p-table>
+
+  <p-dialog
+    [(visible)]="showDialog"
+    [header]="isEditMode ? 'Edit Unit' : 'Create Unit'"
+    [modal]="true"
+    [style]="{ width: '50vw' }"
+    [breakpoints]="{ '960px': '75vw', '640px': '90vw' }"
+  >
+    <app-unit-dialog
+      *ngIf="showDialog"
+      [unit]="selectedUnit"
+      [isEditMode]="isEditMode"
+      (save)="onDialogSave($event)"
+      (close)="onDialogClose()"
+    />
+  </p-dialog>
+</div>
+
+<ng-template #selectHeader>
+  <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+</ng-template>
