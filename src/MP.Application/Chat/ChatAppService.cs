@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Volo.Abp;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Authorization;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
 using MP.Application.Contracts.Chat;
 using MP.Permissions;
 using Volo.Abp.Domain.Repositories;
 using MP.Domain.Chat;
+using MP.Domain.OrganizationalUnits;
 
 namespace MP.Application.Chat
 {
@@ -19,15 +22,18 @@ namespace MP.Application.Chat
         private readonly IIdentityUserRepository _userRepository;
         private readonly IdentityUserManager _userManager;
         private readonly IRepository<ChatMessage, Guid> _chatMessageRepository;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public ChatAppService(
             IIdentityUserRepository userRepository,
             IdentityUserManager userManager,
-            IRepository<ChatMessage, Guid> chatMessageRepository)
+            IRepository<ChatMessage, Guid> chatMessageRepository,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _userRepository = userRepository;
             _userManager = userManager;
             _chatMessageRepository = chatMessageRepository;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<List<SupportUserDto>> GetAvailableSupportUsersAsync()
@@ -92,6 +98,7 @@ namespace MP.Application.Chat
         public async Task<List<ChatConversationDto>> GetMyConversationsAsync()
         {
             var currentUserId = CurrentUser.GetId();
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED");
             var hasAdminPermission = await AuthorizationService
                 .IsGrantedAsync(MPPermissions.Chat.ManageCustomerChats);
 
@@ -99,9 +106,10 @@ namespace MP.Application.Chat
 
             if (hasAdminPermission)
             {
-                // Admin view: Get all users who have sent or received messages from this admin
+                // Admin view: Get all users who have sent or received messages from this admin (within organizational unit)
                 var messages = await _chatMessageRepository.GetListAsync(
-                    m => m.SenderId == currentUserId || m.ReceiverId == currentUserId
+                    m => (m.SenderId == currentUserId || m.ReceiverId == currentUserId) &&
+                         m.OrganizationalUnitId == organizationalUnitId
                 );
 
                 // Group by other user ID
@@ -165,9 +173,10 @@ namespace MP.Application.Chat
             }
             else
             {
-                // Customer view: Get all messages involving current user
+                // Customer view: Get all messages involving current user (within organizational unit)
                 var messages = await _chatMessageRepository.GetListAsync(
-                    m => m.SenderId == currentUserId || m.ReceiverId == currentUserId
+                    m => (m.SenderId == currentUserId || m.ReceiverId == currentUserId) &&
+                         m.OrganizationalUnitId == organizationalUnitId
                 );
 
                 if (messages.Any())
@@ -251,11 +260,13 @@ namespace MP.Application.Chat
         public async Task<List<ChatMessageDto>> GetMessagesAsync(Guid otherUserId)
         {
             var currentUserId = CurrentUser.GetId();
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED");
 
-            // Get all messages between current user and other user
+            // Get all messages between current user and other user (within organizational unit)
             var messages = await _chatMessageRepository.GetListAsync(
-                m => (m.SenderId == currentUserId && m.ReceiverId == otherUserId) ||
-                     (m.SenderId == otherUserId && m.ReceiverId == currentUserId)
+                m => ((m.SenderId == currentUserId && m.ReceiverId == otherUserId) ||
+                     (m.SenderId == otherUserId && m.ReceiverId == currentUserId)) &&
+                     m.OrganizationalUnitId == organizationalUnitId
             );
 
             // Get user info for sender names
@@ -283,12 +294,14 @@ namespace MP.Application.Chat
         public async Task MarkMessagesAsReadAsync(Guid senderId)
         {
             var currentUserId = CurrentUser.GetId();
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED");
 
-            // Find all unread messages from sender to current user
+            // Find all unread messages from sender to current user (within organizational unit)
             var unreadMessages = await _chatMessageRepository.GetListAsync(
                 m => m.SenderId == senderId &&
                      m.ReceiverId == currentUserId &&
-                     !m.IsRead
+                     !m.IsRead &&
+                     m.OrganizationalUnitId == organizationalUnitId
             );
 
             // Mark all as read in a single transaction

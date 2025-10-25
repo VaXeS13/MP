@@ -409,8 +409,7 @@ namespace MP.Booths
                 // Mark as paid to allow confirmation
                 rental.MarkAsPaid(rental.Payment.TotalAmount, DateTime.Now, "MANUAL_RESERVATION");
 
-                // Get booth and mark as rented
-                var booth = await _boothRepository.GetAsync(input.BoothId);
+                // Mark booth as rented
                 booth.MarkAsRented();
                 await _boothRepository.UpdateAsync(booth);
             }

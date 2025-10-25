@@ -9,6 +9,7 @@ using Volo.Abp.Settings;
 using Volo.Abp.SettingManagement;
 using MP.Application.Contracts.PaymentProviders;
 using MP.Domain.Settings;
+using MP.Domain.OrganizationalUnits;
 using MP.Permissions;
 
 namespace MP.Application.PaymentProviders
@@ -20,20 +21,25 @@ namespace MP.Application.PaymentProviders
         private readonly ISettingManager _settingManager;
         private readonly ISettingProvider _settingProvider;
         private readonly IDistributedCache<PaymentProviderSettingsDto> _cache;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public PaymentProviderSettingsAppService(
             ISettingManager settingManager,
             ISettingProvider settingProvider,
-            IDistributedCache<PaymentProviderSettingsDto> cache)
+            IDistributedCache<PaymentProviderSettingsDto> cache,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _settingManager = settingManager;
             _settingProvider = settingProvider;
             _cache = cache;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<PaymentProviderSettingsDto> GetAsync()
         {
-            var cacheKey = $"PaymentSettings_Tenant_{CurrentTenant?.Id}";
+            // Get organizational unit context if available for future unit-level overrides
+            var organizationalUnitId = _currentOrganizationalUnit.Id;
+            var cacheKey = $"PaymentSettings_Tenant_{CurrentTenant?.Id}_Unit_{organizationalUnitId}";
 
             var cachedData = await _cache.GetOrAddAsync(
                 cacheKey,
@@ -96,7 +102,8 @@ namespace MP.Application.PaymentProviders
 
         private async Task InvalidateCacheAsync()
         {
-            var cacheKey = $"PaymentSettings_Tenant_{CurrentTenant?.Id}";
+            var organizationalUnitId = _currentOrganizationalUnit.Id;
+            var cacheKey = $"PaymentSettings_Tenant_{CurrentTenant?.Id}_Unit_{organizationalUnitId}";
             await _cache.RemoveAsync(cacheKey);
         }
     }

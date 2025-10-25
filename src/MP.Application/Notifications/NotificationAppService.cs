@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Uow;
@@ -14,6 +15,7 @@ using MP.Application.Contracts.Notifications;
 using MP.Application.Contracts.Services;
 using MP.Application.Contracts.SignalR;
 using MP.Domain.Notifications;
+using MP.Domain.OrganizationalUnits;
 
 namespace MP.Application.Notifications
 {
@@ -25,6 +27,7 @@ namespace MP.Application.Notifications
         private readonly IRepository<UserNotification, Guid> _notificationRepository;
         private readonly ICurrentUser _currentUser;
         private readonly ICurrentTenant _currentTenant;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
         private readonly ISignalRNotificationService _signalRNotificationService;
 
         public NotificationAppService(
@@ -32,12 +35,14 @@ namespace MP.Application.Notifications
             IRepository<UserNotification, Guid> notificationRepository,
             ICurrentUser currentUser,
             ICurrentTenant currentTenant,
+            ICurrentOrganizationalUnit currentOrganizationalUnit,
             ISignalRNotificationService signalRNotificationService)
         {
             _userNotificationRepository = userNotificationRepository;
             _notificationRepository = notificationRepository;
             _currentUser = currentUser;
             _currentTenant = currentTenant;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
             _signalRNotificationService = signalRNotificationService;
         }
 
@@ -51,8 +56,10 @@ namespace MP.Application.Notifications
 
             // Get TenantId - prefer CurrentTenant (works in Hangfire context) with fallback to CurrentUser
             var tenantId = _currentTenant.Id ?? _currentUser.TenantId;
-            Logger.LogInformation("[NOTIFICATION] Sending notification to user {UserId} in tenant {TenantId}. Type={Type}, Title={Title}",
-                userId, tenantId, notification.Type, notification.Title);
+            var organizationalUnitId = _currentOrganizationalUnit.Id;
+
+            Logger.LogInformation("[NOTIFICATION] Sending notification to user {UserId} in tenant {TenantId}, unit {UnitId}. Type={Type}, Title={Title}",
+                userId, tenantId, organizationalUnitId, notification.Type, notification.Title);
 
             var userNotification = new UserNotification(
                 GuidGenerator.Create(),
@@ -65,6 +72,7 @@ namespace MP.Application.Notifications
                 null,
                 null,
                 null,
+                organizationalUnitId,
                 tenantId
             );
 

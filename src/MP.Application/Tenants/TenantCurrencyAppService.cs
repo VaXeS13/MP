@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using MP.Domain.Booths;
 using MP.Domain.Settings;
+using MP.Domain.OrganizationalUnits;
 using MP.Permissions;
 using Volo.Abp.Application.Services;
 using Volo.Abp.SettingManagement;
@@ -13,14 +14,21 @@ namespace MP.Tenants
     public class TenantCurrencyAppService : ApplicationService, ITenantCurrencyAppService
     {
         private readonly ISettingManager _settingManager;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
-        public TenantCurrencyAppService(ISettingManager settingManager)
+        public TenantCurrencyAppService(
+            ISettingManager settingManager,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _settingManager = settingManager;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<TenantCurrencyDto> GetTenantCurrencyAsync()
         {
+            // Get organizational unit context if available for future unit-level overrides
+            var organizationalUnitId = _currentOrganizationalUnit.Id;
+
             var currencySetting = await _settingManager.GetOrNullForCurrentTenantAsync(MPSettings.Tenant.Currency);
 
             Currency currency = Currency.PLN; // Default

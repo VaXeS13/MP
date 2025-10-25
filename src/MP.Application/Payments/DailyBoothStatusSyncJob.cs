@@ -138,77 +138,54 @@ namespace MP.Application.Payments
             _logger.LogInformation("[Hangfire] Processing {BoothCount} booths for organizational unit {UnitId}",
                 unitBooths.Count, organizationalUnitId);
 
-                            _logger.LogInformation("[Hangfire] Processing {BoothCount} booths for tenant {TenantId}",
-                                tenantBooths.Count, tenantId);
+            // Get all rentals for this organizational unit that could affect booth status
+            var relevantRentals = await _rentalRepository.GetListAsync(r =>
+                r.Payment.PaymentStatus == PaymentStatus.Completed &&
+                (r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended) &&
+                r.Period.EndDate >= today);
 
-                            // Get all rentals for this tenant that could affect booth status
-                            var relevantRentals = await _rentalRepository.GetListAsync(r =>
-                                r.Payment.PaymentStatus == PaymentStatus.Completed &&
-                                (r.Status == RentalStatus.Active || r.Status == RentalStatus.Extended) &&
-                                r.Period.EndDate >= today);
+            _logger.LogInformation("[Hangfire] Found {RentalCount} active paid rentals for organizational unit {UnitId}",
+                relevantRentals.Count, organizationalUnitId);
 
-                            _logger.LogInformation("[Hangfire] Found {RentalCount} active paid rentals for tenant {TenantId}",
-                                relevantRentals.Count, tenantId);
+            // Create lookup dictionary for faster access: BoothId -> Active Rental
+            var boothRentalMap = relevantRentals
+                .Where(r => r.Period.StartDate <= today && r.Period.EndDate >= today)
+                .GroupBy(r => r.BoothId)
+                .ToDictionary(g => g.Key, g => g.First());
 
-                            // Create lookup dictionary for faster access: BoothId -> Active Rental
-                            var boothRentalMap = relevantRentals
-                                .Where(r => r.Period.StartDate <= today && r.Period.EndDate >= today)
-                                .GroupBy(r => r.BoothId)
-                                .ToDictionary(g => g.Key, g => g.First());
+            // Create lookup for future rentals (paid but not started yet)
+            var boothFutureRentalMap = relevantRentals
+                .Where(r => r.Period.StartDate > today)
+                .GroupBy(r => r.BoothId)
+                .ToDictionary(g => g.Key, g => g.First());
 
-                            // Create lookup for future rentals (paid but not started yet)
-                            var boothFutureRentalMap = relevantRentals
-                                .Where(r => r.Period.StartDate > today)
-                                .GroupBy(r => r.BoothId)
-                                .ToDictionary(g => g.Key, g => g.First());
+            // Process each booth
+            foreach (var booth in unitBooths)
+            {
+                var expectedStatus = DetermineBoothStatus(booth, boothRentalMap, boothFutureRentalMap, today);
 
-                            // Process each booth
-                            foreach (var booth in tenantBooths)
-                            {
-                                var expectedStatus = DetermineBoothStatus(booth, boothRentalMap, boothFutureRentalMap, today);
+                if (booth.Status != expectedStatus)
+                {
+                    var oldStatus = booth.Status;
 
-                                if (booth.Status != expectedStatus)
-                                {
-                                    var oldStatus = booth.Status;
-
-                                    // Update booth status
-                                    switch (expectedStatus)
-                                    {
-                                        case BoothStatus.Rented:
-                                            booth.MarkAsRented();
-                                            boothsMarkedRented++;
-                                            break;
-                                        case BoothStatus.Reserved:
-                                            booth.MarkAsReserved();
-                                            boothsMarkedReserved++;
-                                            break;
-                                        case BoothStatus.Available:
-                                            booth.MarkAsAvailable();
-                                            boothsMarkedAvailable++;
-                                            break;
-                                    }
-
-                                    await _boothRepository.UpdateAsync(booth);
-                                    boothsUpdated++;
-
-                                    _logger.LogInformation("[Hangfire] Booth {BoothId} ({BoothNumber}) status changed: {OldStatus} -> {NewStatus}",
-                                        booth.Id, booth.Number, oldStatus, expectedStatus);
-                                }
-                            }
-                        }
+                    // Update booth status
+                    switch (expectedStatus)
+                    {
+                        case BoothStatus.Rented:
+                            booth.MarkAsRented();
+                            break;
+                        case BoothStatus.Reserved:
+                            booth.MarkAsReserved();
+                            break;
+                        case BoothStatus.Available:
+                            booth.MarkAsAvailable();
+                            break;
                     }
 
-                    await uow.CompleteAsync();
+                    await _boothRepository.UpdateAsync(booth);
 
-                    _logger.LogInformation(
-                        "[Hangfire] Daily booth status sync completed. Total updated: {UpdatedCount} " +
-                        "(Rented: {RentedCount}, Available: {AvailableCount}, Reserved: {ReservedCount})",
-                        boothsUpdated, boothsMarkedRented, boothsMarkedAvailable, boothsMarkedReserved);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "[Hangfire] Error during daily booth status synchronization");
-                    throw;
+                    _logger.LogInformation("[Hangfire] Booth {BoothId} ({BoothNumber}) status changed: {OldStatus} -> {NewStatus}",
+                        booth.Id, booth.Number, oldStatus, expectedStatus);
                 }
             }
         }

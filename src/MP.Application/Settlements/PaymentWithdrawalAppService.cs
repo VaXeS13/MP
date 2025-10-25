@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Authorization;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 using Volo.Abp.Identity;
@@ -12,6 +13,7 @@ using MP.Application.Contracts.Settlements;
 using MP.Application.Payments;
 using MP.Domain.Settlements;
 using MP.Domain.Identity;
+using MP.Domain.OrganizationalUnits;
 
 namespace MP.Application.Settlements
 {
@@ -25,28 +27,33 @@ namespace MP.Application.Settlements
         private readonly IRepository<UserProfile, Guid> _userProfileRepository;
         private readonly StripePayoutsService _stripePayoutsService;
         private readonly ILogger<PaymentWithdrawalAppService> _logger;
+        private readonly ICurrentOrganizationalUnit _currentOrganizationalUnit;
 
         public PaymentWithdrawalAppService(
             IRepository<Settlement, Guid> settlementRepository,
             IRepository<IdentityUser, Guid> userRepository,
             IRepository<UserProfile, Guid> userProfileRepository,
             StripePayoutsService stripePayoutsService,
-            ILogger<PaymentWithdrawalAppService> logger)
+            ILogger<PaymentWithdrawalAppService> logger,
+            ICurrentOrganizationalUnit currentOrganizationalUnit)
         {
             _settlementRepository = settlementRepository;
             _userRepository = userRepository;
             _userProfileRepository = userProfileRepository;
             _stripePayoutsService = stripePayoutsService;
             _logger = logger;
+            _currentOrganizationalUnit = currentOrganizationalUnit;
         }
 
         public async Task<PagedResultDto<PaymentWithdrawalDto>> GetListAsync(PagedAndSortedResultRequestDto input)
         {
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED");
+
             var queryable = await _settlementRepository.GetQueryableAsync();
             var userQueryable = await _userRepository.GetQueryableAsync();
             var profileQueryable = await _userProfileRepository.GetQueryableAsync();
 
-            var query = from s in queryable
+            var query = from s in queryable.Where(s => s.OrganizationalUnitId == organizationalUnitId)
                         join u in userQueryable on s.UserId equals u.Id
                         join p in profileQueryable on s.UserId equals p.UserId into profiles
                         from profile in profiles.DefaultIfEmpty()
@@ -83,26 +90,29 @@ namespace MP.Application.Settlements
 
         public async Task<PaymentWithdrawalStatsDto> GetStatsAsync()
         {
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED");
+
             var queryable = await _settlementRepository.GetQueryableAsync();
+            var unitQueryable = queryable.Where(s => s.OrganizationalUnitId == organizationalUnitId);
 
             var stats = new PaymentWithdrawalStatsDto();
 
             // Pending
             var pending = await AsyncExecuter.ToListAsync(
-                queryable.Where(s => s.Status == SettlementStatus.Pending));
+                unitQueryable.Where(s => s.Status == SettlementStatus.Pending));
             stats.PendingCount = pending.Count;
             stats.PendingAmount = pending.Sum(s => s.NetAmount);
 
             // Processing
             var processing = await AsyncExecuter.ToListAsync(
-                queryable.Where(s => s.Status == SettlementStatus.Processing));
+                unitQueryable.Where(s => s.Status == SettlementStatus.Processing));
             stats.ProcessingCount = processing.Count;
             stats.ProcessingAmount = processing.Sum(s => s.NetAmount);
 
             // Completed this month
             var firstDayOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             var completedThisMonth = await AsyncExecuter.ToListAsync(
-                queryable.Where(s => s.Status == SettlementStatus.Completed &&
+                unitQueryable.Where(s => s.Status == SettlementStatus.Completed &&
                                      s.PaidAt >= firstDayOfMonth));
             stats.CompletedThisMonthCount = completedThisMonth.Count;
             stats.CompletedThisMonthAmount = completedThisMonth.Sum(s => s.NetAmount);
@@ -113,6 +123,13 @@ namespace MP.Application.Settlements
         public async Task<PaymentWithdrawalDto> GetAsync(Guid id)
         {
             var settlement = await _settlementRepository.GetAsync(id);
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED");
+
+            if (settlement.OrganizationalUnitId != organizationalUnitId)
+            {
+                throw new AbpAuthorizationException("You do not have permission to access this settlement");
+            }
+
             var user = await _userRepository.GetAsync(settlement.UserId);
 
             var profile = await _userProfileRepository.FirstOrDefaultAsync(p => p.UserId == settlement.UserId);
@@ -144,6 +161,13 @@ namespace MP.Application.Settlements
         public async Task<PaymentWithdrawalDto> ProcessAsync(ProcessWithdrawalDto input)
         {
             var settlement = await _settlementRepository.GetAsync(input.SettlementId);
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED");
+
+            if (settlement.OrganizationalUnitId != organizationalUnitId)
+            {
+                throw new AbpAuthorizationException("You do not have permission to access this settlement");
+            }
+
             var currentUserId = CurrentUser.GetId();
 
             // Parse payment method
@@ -172,6 +196,12 @@ namespace MP.Application.Settlements
         public async Task<PaymentWithdrawalDto> CompleteAsync(CompleteWithdrawalDto input)
         {
             var settlement = await _settlementRepository.GetAsync(input.SettlementId);
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED");
+
+            if (settlement.OrganizationalUnitId != organizationalUnitId)
+            {
+                throw new AbpAuthorizationException("You do not have permission to access this settlement");
+            }
 
             settlement.Complete(input.TransactionReference);
 
@@ -192,6 +222,12 @@ namespace MP.Application.Settlements
         public async Task<PaymentWithdrawalDto> RejectAsync(RejectWithdrawalDto input)
         {
             var settlement = await _settlementRepository.GetAsync(input.SettlementId);
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED");
+
+            if (settlement.OrganizationalUnitId != organizationalUnitId)
+            {
+                throw new AbpAuthorizationException("You do not have permission to access this settlement");
+            }
 
             settlement.Reject(input.Reason);
 
@@ -207,6 +243,13 @@ namespace MP.Application.Settlements
         public async Task<PaymentWithdrawalDto> ExecuteStripePayoutAsync(Guid settlementId)
         {
             var settlement = await _settlementRepository.GetAsync(settlementId);
+            var organizationalUnitId = _currentOrganizationalUnit.Id ?? throw new BusinessException("ORGANIZATIONAL_UNIT_REQUIRED");
+
+            if (settlement.OrganizationalUnitId != organizationalUnitId)
+            {
+                throw new AbpAuthorizationException("You do not have permission to access this settlement");
+            }
+
             var user = await _userRepository.GetAsync(settlement.UserId);
 
             if (settlement.Status != SettlementStatus.Processing)
