@@ -20,11 +20,8 @@ SELECT
     ou.TenantId,
     ou.Id
 FROM AppOrganizationalUnits ou
-WHERE os.IsMainUnit = 1 AND ou.Id IN (
-    SELECT OrganizationalUnitId
-    FROM AppOrganizationalUnitSettings
-    WHERE IsMainUnit = 1
-);
+INNER JOIN AppOrganizationalUnitSettings ous ON ou.Id = ous.OrganizationalUnitId
+WHERE ous.IsMainUnit = 1;
 
 -- OU-47: Update all 27 entities with OrganizationalUnitId
 -- Core Business Entities (14)
@@ -34,91 +31,91 @@ UPDATE AppBooths
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppBooths.TenantId = tdtu.TenantId
-  AND AppBooths.OrganizationalUnitId IS NULL OR AppBooths.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER);
+  AND AppBooths.OrganizationalUnitId IS NULL;
 
 -- 2. BoothTypes
 UPDATE AppBoothTypes
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppBoothTypes.TenantId = tdtu.TenantId
-  AND (AppBoothTypes.OrganizationalUnitId IS NULL OR AppBoothTypes.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppBoothTypes.OrganizationalUnitId IS NULL;
 
 -- 3. Rentals
 UPDATE AppRentals
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppRentals.TenantId = tdtu.TenantId
-  AND (AppRentals.OrganizationalUnitId IS NULL OR AppRentals.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppRentals.OrganizationalUnitId IS NULL;
 
 -- 4. RentalExtensionPayments
 UPDATE AppRentalExtensionPayments
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppRentalExtensionPayments.TenantId = tdtu.TenantId
-  AND (AppRentalExtensionPayments.OrganizationalUnitId IS NULL OR AppRentalExtensionPayments.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppRentalExtensionPayments.OrganizationalUnitId IS NULL;
 
 -- 5. Carts
 UPDATE AppCarts
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppCarts.TenantId = tdtu.TenantId
-  AND (AppCarts.OrganizationalUnitId IS NULL OR AppCarts.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppCarts.OrganizationalUnitId IS NULL;
 
 -- 6. CartItems
 UPDATE AppCartItems
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppCartItems.TenantId = tdtu.TenantId
-  AND (AppCartItems.OrganizationalUnitId IS NULL OR AppCartItems.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppCartItems.OrganizationalUnitId IS NULL;
 
 -- 7. Items
 UPDATE AppItems
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppItems.TenantId = tdtu.TenantId
-  AND (AppItems.OrganizationalUnitId IS NULL OR AppItems.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppItems.OrganizationalUnitId IS NULL;
 
 -- 8. ItemSheets
 UPDATE AppItemSheets
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppItemSheets.TenantId = tdtu.TenantId
-  AND (AppItemSheets.OrganizationalUnitId IS NULL OR AppItemSheets.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppItemSheets.OrganizationalUnitId IS NULL;
 
 -- 9. FloorPlans
 UPDATE AppFloorPlans
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppFloorPlans.TenantId = tdtu.TenantId
-  AND (AppFloorPlans.OrganizationalUnitId IS NULL OR AppFloorPlans.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppFloorPlans.OrganizationalUnitId IS NULL;
 
 -- 10. Settlements
 UPDATE AppSettlements
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppSettlements.TenantId = tdtu.TenantId
-  AND (AppSettlements.OrganizationalUnitId IS NULL OR AppSettlements.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppSettlements.OrganizationalUnitId IS NULL;
 
 -- 11. Promotions
 UPDATE AppPromotions
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppPromotions.TenantId = tdtu.TenantId
-  AND (AppPromotions.OrganizationalUnitId IS NULL OR AppPromotions.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppPromotions.OrganizationalUnitId IS NULL;
 
 -- 12. PromotionUsages
 UPDATE AppPromotionUsages
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppPromotionUsages.TenantId = tdtu.TenantId
-  AND (AppPromotionUsages.OrganizationalUnitId IS NULL OR AppPromotionUsages.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppPromotionUsages.OrganizationalUnitId IS NULL;
 
 -- 13. HomePageSections
 UPDATE AppHomePageSections
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppHomePageSections.TenantId = tdtu.TenantId
-  AND (AppHomePageSections.OrganizationalUnitId IS NULL OR AppHomePageSections.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppHomePageSections.OrganizationalUnitId IS NULL;
 
 -- 14. ChatMessages (nullable, so only update if null)
 UPDATE AppChatMessages
@@ -134,21 +131,21 @@ UPDATE AppP24Transactions
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppP24Transactions.TenantId = tdtu.TenantId
-  AND (AppP24Transactions.OrganizationalUnitId IS NULL OR AppP24Transactions.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppP24Transactions.OrganizationalUnitId IS NULL;
 
 -- 16. StripeTransactions
 UPDATE AppStripeTransactions
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppStripeTransactions.TenantId = tdtu.TenantId
-  AND (AppStripeTransactions.OrganizationalUnitId IS NULL OR AppStripeTransactions.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppStripeTransactions.OrganizationalUnitId IS NULL;
 
 -- 17. PayPalTransactions
 UPDATE AppPayPalTransactions
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppPayPalTransactions.TenantId = tdtu.TenantId
-  AND (AppPayPalTransactions.OrganizationalUnitId IS NULL OR AppPayPalTransactions.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppPayPalTransactions.OrganizationalUnitId IS NULL;
 
 -- Device & Terminal Settings (2)
 
@@ -157,14 +154,14 @@ UPDATE AppTenantTerminalSettings
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppTenantTerminalSettings.TenantId = tdtu.TenantId
-  AND (AppTenantTerminalSettings.OrganizationalUnitId IS NULL OR AppTenantTerminalSettings.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppTenantTerminalSettings.OrganizationalUnitId IS NULL;
 
 -- 19. TenantFiscalPrinterSettings
 UPDATE AppTenantFiscalPrinterSettings
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppTenantFiscalPrinterSettings.TenantId = tdtu.TenantId
-  AND (AppTenantFiscalPrinterSettings.OrganizationalUnitId IS NULL OR AppTenantFiscalPrinterSettings.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppTenantFiscalPrinterSettings.OrganizationalUnitId IS NULL;
 
 -- Local Agent & Security (1)
 
@@ -173,7 +170,7 @@ UPDATE AppAgentApiKeys
 SET OrganizationalUnitId = tdtu.DefaultUnitId
 FROM #TenantDefaultUnits tdtu
 WHERE AppAgentApiKeys.TenantId = tdtu.TenantId
-  AND (AppAgentApiKeys.OrganizationalUnitId IS NULL OR AppAgentApiKeys.OrganizationalUnitId = CAST(0 AS UNIQUEIDENTIFIER));
+  AND AppAgentApiKeys.OrganizationalUnitId IS NULL;
 
 -- File Management & Notifications (2) - Nullable fields
 
@@ -201,10 +198,10 @@ WHERE AppUserNotifications.TenantId = tdtu.TenantId
 DROP TABLE #TenantDefaultUnits;
 
 -- Verification: Log summary of updates
-DECLARE @TotalBooths INT = (SELECT COUNT(*) FROM AppBooths WHERE OrganizationalUnitId IS NOT NULL AND OrganizationalUnitId != CAST(0 AS UNIQUEIDENTIFIER));
-DECLARE @TotalRentals INT = (SELECT COUNT(*) FROM AppRentals WHERE OrganizationalUnitId IS NOT NULL AND OrganizationalUnitId != CAST(0 AS UNIQUEIDENTIFIER));
-DECLARE @TotalCarts INT = (SELECT COUNT(*) FROM AppCarts WHERE OrganizationalUnitId IS NOT NULL AND OrganizationalUnitId != CAST(0 AS UNIQUEIDENTIFIER));
-DECLARE @TotalItems INT = (SELECT COUNT(*) FROM AppItems WHERE OrganizationalUnitId IS NOT NULL AND OrganizationalUnitId != CAST(0 AS UNIQUEIDENTIFIER));
+DECLARE @TotalBooths INT = (SELECT COUNT(*) FROM AppBooths WHERE OrganizationalUnitId IS NOT NULL);
+DECLARE @TotalRentals INT = (SELECT COUNT(*) FROM AppRentals WHERE OrganizationalUnitId IS NOT NULL);
+DECLARE @TotalCarts INT = (SELECT COUNT(*) FROM AppCarts WHERE OrganizationalUnitId IS NOT NULL);
+DECLARE @TotalItems INT = (SELECT COUNT(*) FROM AppItems WHERE OrganizationalUnitId IS NOT NULL);
 
 PRINT 'OU-47 Migration Summary:';
 PRINT '- Booths assigned: ' + CAST(@TotalBooths AS VARCHAR(10));
