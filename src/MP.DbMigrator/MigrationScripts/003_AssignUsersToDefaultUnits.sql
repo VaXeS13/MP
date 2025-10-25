@@ -79,9 +79,7 @@ BEGIN
                 RoleId,
                 TenantId,
                 IsActive,
-                AssignedAt,
-                CreationTime,
-                CreatorId
+                AssignedAt
             )
             VALUES (
                 NEWID(),                           -- Id (GUID)
@@ -90,9 +88,7 @@ BEGIN
                 @RoleId,                           -- RoleId (null, can be assigned later)
                 @TenantId,                         -- TenantId
                 1,                                 -- IsActive = true
-                GETUTCDATE(),                      -- AssignedAt = now
-                GETUTCDATE(),                      -- CreationTime = now
-                NULL                               -- CreatorId = null
+                GETUTCDATE()                       -- AssignedAt = now
             );
         END;
 
