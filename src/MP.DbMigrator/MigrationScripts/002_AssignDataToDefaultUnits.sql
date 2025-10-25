@@ -10,7 +10,7 @@
 
 -- Get the default unit ID (assuming one main unit exists, or use first by creation)
 DECLARE @DefaultUnitId UNIQUEIDENTIFIER;
-SELECT TOP 1 @DefaultUnitId = Id
+SELECT TOP 1 @DefaultUnitId = ou.Id
 FROM AppOrganizationalUnits ou
 INNER JOIN AppOrganizationalUnitSettings ous ON ou.Id = ous.OrganizationalUnitId
 WHERE ous.IsMainUnit = 1
