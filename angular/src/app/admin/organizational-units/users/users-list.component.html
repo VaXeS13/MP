@@ -1,0 +1,86 @@
+<div class="users-list-container">
+  <div class="page-header">
+    <h2>{{ 'Menu:UnitMembers' | abp }}</h2>
+    <button pButton type="button" label="Add Member" icon="pi pi-plus" (click)="openAssignDialog()" />
+  </div>
+
+  <p-table [value]="users" [loading]="isLoading" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+    <ng-template pTemplate="caption">
+      <div class="flex align-items-center justify-content-between">
+        <span>Manage unit members and their roles</span>
+      </div>
+    </ng-template>
+
+    <p-column field="userName" header="Name" [sortable]="true">
+      <ng-template pTemplate="body" let-rowData>
+        <span class="font-weight-600">{{ rowData.userName }}</span>
+      </ng-template>
+    </p-column>
+
+    <p-column field="email" header="Email" [sortable]="true">
+      <ng-template pTemplate="body" let-rowData>
+        {{ rowData.email }}
+      </ng-template>
+    </p-column>
+
+    <p-column field="role" header="Role" [sortable]="true" [style]="{ width: '12%' }">
+      <ng-template pTemplate="body" let-rowData>
+        <span class="role-badge">{{ rowData.role || 'Member' }}</span>
+      </ng-template>
+    </p-column>
+
+    <p-column field="assignedDate" header="Assigned" [sortable]="true" [style]="{ width: '12%' }">
+      <ng-template pTemplate="body" let-rowData>
+        {{ rowData.assignedDate | date: 'short' }}
+      </ng-template>
+    </p-column>
+
+    <p-column field="isActive" header="Status" [sortable]="true" [style]="{ width: '10%' }">
+      <ng-template pTemplate="body" let-rowData>
+        <span class="status-badge" [ngClass]="{ active: rowData.isActive, inactive: !rowData.isActive }">
+          {{ rowData.isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </ng-template>
+    </p-column>
+
+    <p-column [style]="{ width: '12rem' }" header="Actions">
+      <ng-template pTemplate="body" let-rowData>
+        <button
+          pButton
+          pRipple
+          type="button"
+          icon="pi pi-user-edit"
+          class="p-button-rounded p-button-info mr-2"
+          (click)="changeRole(rowData)"
+          pTooltip="Change Role"
+          tooltipPosition="top"
+        ></button>
+        <button
+          pButton
+          pRipple
+          type="button"
+          icon="pi pi-trash"
+          class="p-button-rounded p-button-danger"
+          (click)="removeUser(rowData)"
+          pTooltip="Remove"
+          tooltipPosition="top"
+        ></button>
+      </ng-template>
+    </p-column>
+  </p-table>
+
+  <p-dialog
+    [(visible)]="showDialog"
+    header="Add Member to Unit"
+    [modal]="true"
+    [style]="{ width: '50vw' }"
+    [breakpoints]="{ '960px': '75vw', '640px': '90vw' }"
+  >
+    <app-assign-user-dialog
+      *ngIf="showDialog"
+      [unitId]="currentUnitId"
+      (assigned)="onUserAssigned()"
+      (close)="onDialogClose()"
+    />
+  </p-dialog>
+</div>

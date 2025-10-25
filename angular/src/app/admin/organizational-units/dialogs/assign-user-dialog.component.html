@@ -1,0 +1,58 @@
+<form [formGroup]="form">
+  <p-toast position="top-right" />
+
+  <div class="form-group">
+    <label>Select User *</label>
+    <p-autoComplete
+      [(ngModel)]="form.get('userId')!.value"
+      [ngModelOptions]="{ standalone: true }"
+      [suggestions]="users"
+      (completeMethod)="searchUsers($event)"
+      field="id"
+      [itemSize]="200"
+      [minLength]="1"
+      placeholder="Search by name or email..."
+      [loading]="isSearching"
+    >
+      <ng-template let-user pTemplate="item">
+        <div class="user-item">
+          <span class="user-name">{{ user.name }}</span>
+          <span class="user-email">{{ user.email }}</span>
+        </div>
+      </ng-template>
+    </p-autoComplete>
+    <small class="error-message" *ngIf="form.get('userId')?.invalid && form.get('userId')?.touched">
+      Please select a user
+    </small>
+  </div>
+
+  <div class="form-group">
+    <label>Role *</label>
+    <p-dropdown
+      [options]="roles"
+      [(ngModel)]="form.get('roleId')!.value"
+      [ngModelOptions]="{ standalone: true }"
+      placeholder="Select role"
+      class="w-full"
+    />
+  </div>
+
+  <div class="dialog-footer">
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      (click)="closeDialog()"
+      class="p-button-text"
+      [disabled]="isLoading"
+    />
+    <button
+      pButton
+      type="button"
+      label="Assign"
+      (click)="assignUser()"
+      [loading]="isLoading"
+      [disabled]="!form.valid || isLoading"
+    />
+  </div>
+</form>
