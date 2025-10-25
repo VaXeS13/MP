@@ -28,6 +28,9 @@ namespace MP.Domain.BoothTypes
             Guid? tenantId = null
         ) : base(id)
         {
+            if (organizationalUnitId == Guid.Empty)
+                throw new BusinessException("BOOTH_TYPE_ORGANIZATIONAL_UNIT_REQUIRED");
+
             TenantId = tenantId;
             OrganizationalUnitId = organizationalUnitId;
             SetName(name);

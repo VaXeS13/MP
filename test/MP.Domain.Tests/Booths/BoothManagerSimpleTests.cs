@@ -10,6 +10,8 @@ namespace MP.Domain.Tests.Booths
 {
     public class BoothManagerSimpleTests : MPDomainTestBase<MPDomainTestModule>
     {
+        private static readonly Guid DefaultOrganizationalUnitId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    
         private readonly BoothManager _boothManager;
         private readonly IBoothRepository _boothRepository;
 
@@ -24,7 +26,7 @@ namespace MP.Domain.Tests.Booths
         public async Task CreateAsync_Should_Create_Booth()
         {
             // Arrange
-            var boothNumber = "BOOTH001";
+            var boothNumber = $"B{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
             var price = 100m;
             var organizationalUnitId = Guid.NewGuid();
 

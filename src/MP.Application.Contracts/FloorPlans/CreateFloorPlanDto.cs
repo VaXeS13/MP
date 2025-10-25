@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 
@@ -5,6 +6,9 @@ namespace MP.FloorPlans
 {
     public class CreateFloorPlanDto
     {
+        [Required]
+        public Guid OrganizationalUnitId { get; set; }
+
         [Required]
         [StringLength(100, MinimumLength = 1)]
         [Display(Name = "Nazwa planu")]

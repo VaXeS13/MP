@@ -29,6 +29,7 @@ namespace MP.Domain.Tests.Rentals
         // Use known test user IDs that are seeded in MPDomainTestModule
         private static readonly Guid TestUserId1 = new Guid("00000000-0000-0000-0000-000000000001");
         private static readonly Guid TestUserId2 = new Guid("00000000-0000-0000-0000-000000000002");
+        private static readonly Guid DefaultOrganizationalUnitId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
         public RentalManagerTests()
         {

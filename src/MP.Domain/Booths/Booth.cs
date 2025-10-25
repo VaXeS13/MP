@@ -41,6 +41,9 @@ namespace MP.Domain.Booths
            Guid? tenantId = null
        ) : base(id)
         {
+            if (organizationalUnitId == Guid.Empty)
+                throw new BusinessException("BOOTH_ORGANIZATIONAL_UNIT_REQUIRED");
+
             TenantId = tenantId;
             OrganizationalUnitId = organizationalUnitId;
             SetNumber(number);
@@ -59,6 +62,9 @@ namespace MP.Domain.Booths
            Guid? tenantId = null
        ) : base(id)
         {
+            if (organizationalUnitId == Guid.Empty)
+                throw new BusinessException("BOOTH_ORGANIZATIONAL_UNIT_REQUIRED");
+
             TenantId = tenantId;
             OrganizationalUnitId = organizationalUnitId;
             SetNumber(number);

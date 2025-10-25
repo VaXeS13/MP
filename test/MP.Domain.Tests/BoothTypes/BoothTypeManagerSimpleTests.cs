@@ -10,6 +10,8 @@ namespace MP.Domain.Tests.BoothTypes
 {
     public class BoothTypeManagerSimpleTests : MPDomainTestBase<MPDomainTestModule>
     {
+        private static readonly Guid DefaultOrganizationalUnitId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    
         private readonly BoothTypeManager _boothTypeManager;
         private readonly IBoothTypeRepository _boothTypeRepository;
 

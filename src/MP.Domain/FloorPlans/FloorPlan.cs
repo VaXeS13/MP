@@ -27,6 +27,9 @@ namespace MP.Domain.FloorPlans
             Guid? tenantId = null
         ) : base(id)
         {
+            if (organizationalUnitId == Guid.Empty)
+                throw new BusinessException("FLOOR_PLAN_ORGANIZATIONAL_UNIT_REQUIRED");
+
             TenantId = tenantId;
             OrganizationalUnitId = organizationalUnitId;
             SetName(name);

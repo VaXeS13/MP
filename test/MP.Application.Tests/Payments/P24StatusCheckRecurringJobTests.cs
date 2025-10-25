@@ -20,6 +20,7 @@ namespace MP.Application.Tests.Payments
     {
         private static readonly Guid DefaultOrganizationalUnitId = Guid.Parse("00000000-0000-0000-0000-000000000001");
         private static readonly Guid TestUserId1 = new Guid("00000000-0000-0000-0000-000000000001");
+        private static readonly Guid TestOrganizationalUnitId = new Guid("00000000-0000-0000-0000-000000000010");
         private readonly IBoothRepository _boothRepository;
         private readonly IRepository<Rental, Guid> _rentalRepository;
         private readonly IRepository<BoothType, Guid> _boothTypeRepository;
