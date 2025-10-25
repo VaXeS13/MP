@@ -54,7 +54,10 @@ public class NewTenantOrganizationalUnitSeedContributor : IDataSeedContributor, 
                 // Generate tenant code for organizational unit
                 // For new tenants, use a simple code pattern based on tenant ID
                 // In production, this should be called from tenant creation handler which has tenant name
-                var tenantCode = $"TENANT-{tenantId:N}".Substring(0, 50).TrimEnd('-');
+                var tenantCodeBase = $"TENANT-{tenantId:N}";
+                var tenantCode = tenantCodeBase.Length > 50
+                    ? tenantCodeBase.Substring(0, 50).TrimEnd('-')
+                    : tenantCodeBase;
 
                 _logger.LogInformation($"Creating default organizational unit for tenant {tenantId} (OU-49)");
 
